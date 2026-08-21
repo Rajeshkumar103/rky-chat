@@ -8,11 +8,16 @@ const path = require("path");
 const webpush = require("web-push");
 const db = require("./database");
 
-webpush.setVapidDetails(
-    "mailto:rkychat@example.com",
-    process.env.VAPID_PUBLIC_KEY,
-    process.env.VAPID_PRIVATE_KEY
-);
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+    webpush.setVapidDetails(
+        "mailto:rkychat@example.com",
+        process.env.VAPID_PUBLIC_KEY,
+        process.env.VAPID_PRIVATE_KEY
+    );
+    console.log("VAPID configured ✅");
+} else {
+    console.log("VAPID keys not configured — push notifications disabled ⚠️");
+}
 
 const app = express();
 const voiceStorage = multer.diskStorage({

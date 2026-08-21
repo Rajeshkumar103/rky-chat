@@ -11207,7 +11207,7 @@ console.log("CALLING SEEN API");
     console.error("Load messages error:", error);
 
     document.getElementById("messages").innerHTML =
-        "<p>Server connection failed.</p>";
+        "<p>Load error: " + String(error) + "</p>";
 
     return;
 }
@@ -12338,7 +12338,7 @@ console.log("🔥 LOAD REQUESTS RUNNING:", currentUser);
     }catch(error){
         console.error("Request loading error:", error);
         list.innerHTML =
-            "<p>Server connection failed.</p>";
+            "<p>Request load error: " + String(error) + "</p>";
     }
 }
 

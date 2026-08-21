@@ -148,6 +148,21 @@ db.exec(`
     );
 `);
 
+
+// ========================================
+// ❤️ Individual message reactions
+// ========================================
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS message_reactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message_id INTEGER NOT NULL,
+        username TEXT NOT NULL,
+        reaction TEXT NOT NULL,
+        UNIQUE(message_id, username)
+    );
+`);
+
 console.log("Rky Chat Database Ready ✅");
 
 module.exports = db;

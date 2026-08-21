@@ -10814,9 +10814,9 @@ alert("LOGIN FUNCTION STARTED");
     }
 }
 
-function register(){
+async function register(){
 
-    let user = document.getElementById("username").value;
+    let user = document.getElementById("username").value.trim();
     let password = document.getElementById("password").value;
 
     if(user==""){
@@ -10829,50 +10829,39 @@ function register(){
         return;
     }
 
-    
-let exist = false;
+    try{
 
-for(let i=0; i<users.length; i++){
+        let response = await fetch("/api/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                username: user,
+                password: password
+            })
+        });
 
-    if(users[i].username == user){
+        let data = await response.json();
 
-        exist = true;
+        if(!data.success){
+            alert(data.message || "Registration failed");
+            return;
+        }
+
+        alert("Register Success");
+
+        document.getElementById("username").value = "";
+        document.getElementById("password").value = "";
+
+    }catch(error){
+
+        console.error("Register error:", error);
+        alert("REGISTER ERROR: " + error.message);
+
     }
-
 }
 
-if(exist){
-
-    alert("Username already exists");
-
-}
-else{
-
-    let profileName = prompt("Enter your name");
-
-if(profileName == "" || profileName == null){
-
-profileName = user;
-
-}
-users.push({
-    username: user,
-    password: password,
-    profileName: profileName,
-    photo: "",
-    friends: [],
-requests: [],
-notifications: {},
-status: "Offline",
-lastSeen: ""
-});
-localStorage.setItem("users",
-JSON.stringify(users));
-    alert("Register Success");
-
-}
-    
-}
 let mediaRecorder = null;
 let voiceChunks = [];
 

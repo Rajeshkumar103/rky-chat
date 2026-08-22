@@ -547,6 +547,15 @@ style="width:90%; padding:10px; border-radius:8px; border:1px solid #ccc;">
 style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-radius:10px; border:1px solid #ddd;">
 </div>
 
+<div style="display:flex; justify-content:flex-end; margin:5px 0;">
+  <button
+    type="button"
+    onclick="clearCurrentChat()"
+    style="background:#f44336; color:white; border:none; padding:7px 12px; border-radius:8px; cursor:pointer;">
+    🗑️ Clear Chat
+  </button>
+</div>
+
 <div id="messages" style="border:1px solid black; height:200px; padding:5px; margin-bottom:10px; overflow-y:auto;">
 </div>
   <p id="typing"></p>
@@ -13398,6 +13407,90 @@ function formatMessageTime(time){
         });
 
     return dateText + " " + timeText;
+}
+
+async function clearCurrentChat(){
+
+    if(!currentUser){
+        alert("Please login first");
+        return;
+    }
+
+    if(!selectedFriend){
+        alert("Please select a friend first");
+        return;
+    }
+
+    const confirmed = confirm(
+        "🗑️ Clear entire chat with " +
+        selectedFriend +
+        "?\n\nThis will remove all messages between both of you."
+    );
+
+    if(!confirmed){
+        return;
+    }
+
+    try{
+
+        const response = await fetch(
+            "/api/messages/clear-chat",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: currentUser,
+                    friend: selectedFriend
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if(!response.ok || !data.success){
+            alert(
+                data.message ||
+                "Failed to clear chat"
+            );
+            return;
+        }
+
+        chats = chats.filter(function(msg){
+            return !(
+                (msg.from === currentUser &&
+                 msg.to === selectedFriend) ||
+                (msg.from === selectedFriend &&
+                 msg.to === currentUser)
+            );
+        });
+
+        localStorage.setItem(
+            "chats",
+            JSON.stringify(chats)
+        );
+
+        const box =
+            document.getElementById("messages");
+
+        if(box){
+            box.innerHTML = "";
+        }
+
+        alert("✅ Chat cleared successfully");
+
+    }catch(error){
+
+        console.error(
+            "Clear chat error:",
+            error
+        );
+
+        alert(
+            "❌ Server connection failed"
+        );
+    }
 }
 
 async function pinMessage(id){

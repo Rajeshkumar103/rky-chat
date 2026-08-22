@@ -1322,6 +1322,72 @@ app.get("/pin-test", (req, res) => {
         </form>
     `);
 });
+// Clear entire chat between two users
+app.post("/api/messages/clear-chat", (req, res) => {
+    const { username, friend } = req.body;
+
+    if (!username || !friend) {
+        return res.status(400).json({
+            success: false,
+            message: "username and friend are required"
+        });
+    }
+
+    try {
+        const messages = db.prepare(`
+            SELECT id
+            FROM messages
+            WHERE
+                (sender = ? AND receiver = ?)
+                OR
+                (sender = ? AND receiver = ?)
+        `).all(username, friend, friend, username);
+
+        const ids = messages.map(row => row.id);
+
+        db.exec("BEGIN");
+
+        if (ids.length > 0) {
+            const placeholders = ids.map(() => "?").join(",");
+
+            db.prepare(`
+                DELETE FROM message_reactions
+                WHERE message_id IN (${placeholders})
+            `).run(...ids);
+
+            db.prepare(`
+                DELETE FROM deleted_for
+                WHERE message_id IN (${placeholders})
+            `).run(...ids);
+
+            db.prepare(`
+                DELETE FROM messages
+                WHERE id IN (${placeholders})
+            `).run(...ids);
+        }
+
+        db.exec("COMMIT");
+
+        res.json({
+            success: true,
+            message: "Chat cleared successfully",
+            deletedCount: ids.length
+        });
+
+    } catch (error) {
+        try {
+            db.exec("ROLLBACK");
+        } catch (_) {}
+
+        console.error("Clear chat error:", error);
+
+        res.status(500).json({
+            success: false,
+            message: "Failed to clear chat"
+        });
+    }
+});
+
 // Delete message
 app.post("/api/messages/delete", (req, res) => {
     const { message_id, username } = req.body;

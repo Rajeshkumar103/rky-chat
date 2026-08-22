@@ -5,6 +5,13 @@ const http = require("http");
 const { Server } = require("socket.io");
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+const photoUploadDir = path.join(__dirname, "uploads", "photo");
+const videoUploadDir = path.join(__dirname, "uploads", "video");
+
+fs.mkdirSync(photoUploadDir, { recursive: true });
+fs.mkdirSync(videoUploadDir, { recursive: true });
 const webpush = require("web-push");
 const db = require("./database");
 
@@ -2098,10 +2105,10 @@ app.get("/typing-test", (req, res) => {
 const mediaStorage = multer.diskStorage({
     destination: function(req, file, cb){
         if(file.mimetype.startsWith("image/")){
-            cb(null, "server/uploads/photo");
+            cb(null, photoUploadDir);
         }
         else if(file.mimetype.startsWith("video/")){
-            cb(null, "server/uploads/video");
+            cb(null, videoUploadDir);
         }
         else{
             cb(new Error("Only image and video files are allowed"));
@@ -2133,8 +2140,8 @@ const mediaUpload = multer({
     }
 });
 
-app.use("/uploads/photo", express.static("server/uploads/photo"));
-app.use("/uploads/video", express.static("server/uploads/video"));
+app.use("/uploads/photo", express.static(photoUploadDir));
+app.use("/uploads/video", express.static(videoUploadDir));
 
 app.post(
     "/api/messages/media-upload",

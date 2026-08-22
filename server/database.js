@@ -163,6 +163,24 @@ db.exec(`
     );
 `);
 
+
+try {
+    db.exec(`
+        ALTER TABLE message_reactions
+        ADD COLUMN created_at TEXT
+    `);
+
+    console.log("Message reactions created_at column added ✅");
+
+} catch (error) {
+    if (!error.message.includes("duplicate column")) {
+        console.log(
+            "Message reactions created_at migration:",
+            error.message
+        );
+    }
+}
+
 console.log("Rky Chat Database Ready ✅");
 
 module.exports = db;

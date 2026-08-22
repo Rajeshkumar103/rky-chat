@@ -13362,43 +13362,44 @@ async function removeReaction(id){
 
 function formatMessageTime(time){
 
-let date = new Date(time);
+    const date = new Date(time);
 
-if(isNaN(date.getTime())){
-return time;
+    if(isNaN(date.getTime())){
+        return time;
+    }
+
+    const now = new Date();
+
+    const dateKey = date.toLocaleDateString("en-CA");
+    const todayKey = now.toLocaleDateString("en-CA");
+
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const yesterdayKey =
+        yesterday.toLocaleDateString("en-CA");
+
+    let dateText;
+
+    if(dateKey === todayKey){
+        dateText = "Today";
+    }
+    else if(dateKey === yesterdayKey){
+        dateText = "Yesterday";
+    }
+    else{
+        dateText = date.toLocaleDateString();
+    }
+
+    const timeText =
+        date.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+    return dateText + " " + timeText;
 }
 
-let today = new Date();
-
-let yesterday = new Date();
-yesterday.setDate(today.getDate() - 1);
-
-let dateText = "";
-
-if(date.toDateString() == today.toDateString()){
-
-dateText = "Today";
-
-}
-else if(date.toDateString() == yesterday.toDateString()){
-
-dateText = "Yesterday";
-
-}
-else{
-
-dateText =
-date.toLocaleDateString();
-
-}
-
-return dateText + " " +
-date.toLocaleTimeString([], {
-hour:"2-digit",
-minute:"2-digit"
-});
-
-}
 async function pinMessage(id){
 
     if(!currentUser){

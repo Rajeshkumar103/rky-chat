@@ -9,9 +9,11 @@ const fs = require("fs");
 
 const photoUploadDir = path.join(__dirname, "uploads", "photo");
 const videoUploadDir = path.join(__dirname, "uploads", "video");
+const voiceUploadDir = path.join(__dirname, "uploads", "voice");
 
 fs.mkdirSync(photoUploadDir, { recursive: true });
 fs.mkdirSync(videoUploadDir, { recursive: true });
+fs.mkdirSync(voiceUploadDir, { recursive: true });
 const webpush = require("web-push");
 const db = require("./database");
 
@@ -29,7 +31,7 @@ if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
 const app = express();
 const voiceStorage = multer.diskStorage({
     destination: function(req, file, cb){
-        cb(null, "server/uploads/voice");
+        cb(null, voiceUploadDir);
     },
     filename: function(req, file, cb){
         cb(null, Date.now() + "-" + file.originalname);
@@ -47,7 +49,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/uploads/voice", express.static("server/uploads/voice"));
+app.use("/uploads/voice", express.static(voiceUploadDir));
 
 // 🔔 Service Worker
 app.get("/service-worker.js", (req, res) => {

@@ -10689,7 +10689,6 @@ async function subscribeToPushNotifications(){
 }
 
 async function login(){
-alert("LOGIN FUNCTION STARTED");
     let user = document.getElementById("username").value.trim();
     let password = document.getElementById("password").value;
 
@@ -14597,4 +14596,66 @@ setInterval(function(){
     }
 
 }, 1000);
+</script>
+
+<script>
+// 🔐 Restore saved login session
+document.addEventListener("DOMContentLoaded", function () {
+
+    if (!currentUser) {
+        return;
+    }
+
+    const savedUsers =
+        JSON.parse(localStorage.getItem("users")) || [];
+
+    const savedUser =
+        savedUsers.find(u => u.username === currentUser);
+
+    if (!savedUser) {
+        console.log("Saved user not found:", currentUser);
+        return;
+    }
+
+    const loginBox = document.getElementById("loginBox");
+    const chatBox = document.getElementById("chatBox");
+
+    if (loginBox) {
+        loginBox.style.display = "none";
+    }
+
+    if (chatBox) {
+        chatBox.style.display = "block";
+    }
+
+    document.getElementById("status").innerHTML =
+        currentUser + " is Online 🟢";
+
+    document.getElementById("userName").innerHTML =
+        "User: " +
+        (savedUser.profileName || currentUser);
+
+    if (savedUser.photo) {
+        document.getElementById("profile").src =
+            savedUser.photo;
+    }
+
+    console.log("✅ Login session restored:", currentUser);
+
+    if (typeof loadFriends === "function") {
+        loadFriends();
+    }
+
+    if (typeof loadMessages === "function") {
+        loadMessages();
+    }
+
+    if (typeof loadRequests === "function") {
+        loadRequests();
+    }
+
+    if (typeof startStatusHeartbeat === "function") {
+        startStatusHeartbeat();
+    }
+});
 </script>

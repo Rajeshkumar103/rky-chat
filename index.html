@@ -173,6 +173,172 @@ font-size:16px;
 }
 
   </style>    
+
+<style id="rkyFinalLayoutStyle">
+#rkyMoreButton{
+    position:absolute;
+    top:12px;
+    right:12px;
+    z-index:9999;
+    background:#333;
+    color:white;
+    border:none;
+    border-radius:50%;
+    width:42px;
+    height:42px;
+    font-size:22px;
+    cursor:pointer;
+}
+
+#rkyMoreMenu{
+    display:none;
+    position:absolute;
+    top:58px;
+    right:10px;
+    z-index:10000;
+    background:white;
+    border:1px solid #ddd;
+    border-radius:12px;
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+    min-width:210px;
+    padding:8px;
+}
+
+#rkyMoreMenu button{
+    display:block;
+    width:100%;
+    margin:3px 0;
+    text-align:left;
+    background:white;
+    color:#222;
+    border:none;
+    border-radius:8px;
+    padding:10px 12px;
+    cursor:pointer;
+}
+
+#rkyMoreMenu button:hover{
+    background:#f1f1f1;
+}
+
+#chatBox{
+    position:relative;
+}
+</style>
+
+<script id="rkyFinalLayoutScript">
+function toggleRkyMoreMenu(){
+    const menu = document.getElementById("rkyMoreMenu");
+    if(!menu) return;
+
+    menu.style.display =
+        menu.style.display === "block" ? "none" : "block";
+}
+
+function closeRkyMoreMenu(){
+    const menu = document.getElementById("rkyMoreMenu");
+    if(menu) menu.style.display = "none";
+}
+
+function rkyMoreAction(action){
+    closeRkyMoreMenu();
+
+    if(action === "profile"){
+        if(typeof openProfileSettings === "function")
+            openProfileSettings();
+    }
+
+    if(action === "requests"){
+        if(typeof loadRequests === "function")
+            loadRequests();
+    }
+
+    if(action === "callHistory"){
+        const panel = document.getElementById("callHistoryPanel");
+        if(panel){
+            panel.style.display =
+                panel.style.display === "none" ? "block" : "none";
+        }
+    }
+
+    if(action === "search"){
+        const input = document.getElementById("searchMessage");
+        if(input){
+            input.focus();
+            input.scrollIntoView({behavior:"smooth", block:"center"});
+        }
+    }
+
+    if(action === "starred"){
+        if(typeof showStarredMessages === "function")
+            showStarredMessages();
+    }
+
+    if(action === "clear"){
+        if(typeof clearCurrentChat === "function")
+            clearCurrentChat();
+    }
+
+    if(action === "logout"){
+        if(typeof logout === "function")
+            logout();
+    }
+}
+
+document.addEventListener("click", function(e){
+    const menu = document.getElementById("rkyMoreMenu");
+    const button = document.getElementById("rkyMoreButton");
+
+    if(menu && button &&
+       !menu.contains(e.target) &&
+       !button.contains(e.target)){
+        menu.style.display = "none";
+    }
+});
+</script>
+
+
+<style id="rkyHideOldControls">
+
+/* Hide duplicate controls now available inside ⋮ More */
+#chatBox > button[onclick="openProfileSettings()"]{
+    display:none !important;
+}
+
+#chatBox #callHistoryPanel{
+    display:none !important;
+}
+
+#chatBox > h3 + div#requestList{
+    display:none !important;
+}
+
+/* Keep friend-request heading/input area from appearing separately */
+#chatBox > h3{
+}
+
+/* Hide standalone message search */
+#chatBox #searchMessage{
+    display:none !important;
+}
+
+/* Hide standalone Starred button */
+#chatBox > button[onclick="showStarredMessages()"]{
+    display:none !important;
+}
+
+/* Hide standalone Clear Chat wrapper */
+#chatBox > div > button[onclick="clearCurrentChat()"]{
+    display:none !important;
+}
+
+/* Hide standalone Logout */
+#chatBox > button[onclick="logout()"]{
+    display:none !important;
+}
+
+</style>
+
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -186,6 +352,51 @@ Clear Data
  </div> 
 <button onclick="register()">Register</button>
 <div id="chatBox" style="display:none;">
+<div id="rkyMoreMenu">
+
+    <button type="button"
+        onclick="rkyMoreAction('profile')">
+        👤 Profile Settings
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('requests')">
+        👥 Friend Requests
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('callHistory')">
+        📋 Call History
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('search')">
+        🔍 Search Messages
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('starred')">
+        ⭐ Starred Messages
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('clear')">
+        🗑️ Clear Chat
+    </button>
+
+    <button type="button"
+        onclick="rkyMoreAction('logout')">
+        🚪 Logout
+    </button>
+
+</div>
+
+<button id="rkyMoreButton"
+    type="button"
+    onclick="toggleRkyMoreMenu()">
+    ⋮
+</button>
+
 <h2>Rky Chat</h2>
 <button onclick="requestNotificationPermission()">
 🔔 Enable Notifications
@@ -10504,7 +10715,7 @@ async function loadFriends(){
 }
 
    
-function selectFriend(name){
+ async  function selectFriend(name){
 
 selectedFriend = name;
 
@@ -10625,8 +10836,11 @@ document.getElementById("friendProfile").innerHTML =
 
 "</div>";
 
-loadMessages();
-loadFriends();
+  await loadMessages();
+
+
+alert("✅ Chat cleared successfully");
+  await loadFriends();
 
 }
 
@@ -11185,30 +11399,9 @@ console.log("CALLING SEEN API");
     }
 }
 
-    // Server data लाई local cache मा पनि राख्ने
-    let allChats =
-        JSON.parse(localStorage.getItem("chats")) || [];
-
-    // यही current chat को पुरानो cache हटाउने
-    allChats = allChats.filter(function(chat){
-
-        return !(
-            (chat.from == currentUser &&
-             chat.to == selectedFriend) ||
-
-            (chat.from == selectedFriend &&
-             chat.to == currentUser)
-        );
-
-    });
-
-    // Server बाट आएको current chat राख्ने
-    allChats = allChats.concat(chats);
-
-    localStorage.setItem(
-        "chats",
-        JSON.stringify(allChats)
-    );
+    // Server is the source of truth for the current chat.
+    // Do not merge the current conversation into shared localStorage.
+    // Clear-chat state is handled per-user by the server's deleted_for table.
 
 } catch(error) {
 
@@ -13422,9 +13615,11 @@ async function clearCurrentChat(){
     }
 
     const confirmed = confirm(
-        "🗑️ Clear entire chat with " +
+        "🗑️ Clear chat with " +
         selectedFriend +
-        "?\n\nThis will remove all messages between both of you."
+        "?\n\nThis will clear the chat for you only. " +
+        selectedFriend +
+        " will still have their messages."
     );
 
     if(!confirmed){
@@ -13450,33 +13645,24 @@ async function clearCurrentChat(){
         const data = await response.json();
 
         if(!response.ok || !data.success){
+
             alert(
                 data.message ||
                 "Failed to clear chat"
             );
+
             return;
         }
 
-        chats = chats.filter(function(msg){
-            return !(
-                (msg.from === currentUser &&
-                 msg.to === selectedFriend) ||
-                (msg.from === selectedFriend &&
-                 msg.to === currentUser)
-            );
-        });
+        /*
+         * IMPORTANT:
+         * Do NOT delete anything from localStorage "chats".
+         *
+         * Server's deleted_for table controls
+         * which user can see which messages.
+         */
 
-        localStorage.setItem(
-            "chats",
-            JSON.stringify(chats)
-        );
-
-        const box =
-            document.getElementById("messages");
-
-        if(box){
-            box.innerHTML = "";
-        }
+        await loadMessages();
 
         alert("✅ Chat cleared successfully");
 
@@ -13487,11 +13673,12 @@ async function clearCurrentChat(){
             error
         );
 
-        alert(
-            "❌ Server connection failed"
-        );
+        alert("❌ Server connection failed");
     }
 }
+
+
+
 
 async function pinMessage(id){
 

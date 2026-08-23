@@ -16,6 +16,16 @@ fs.mkdirSync(videoUploadDir, { recursive: true });
 fs.mkdirSync(voiceUploadDir, { recursive: true });
 const webpush = require("web-push");
 const db = require("./database");
+// Per-user chat clear state
+db.prepare(`
+    CREATE TABLE IF NOT EXISTS chat_clear_state (
+        username TEXT NOT NULL,
+        friend TEXT NOT NULL,
+        cleared_at TEXT NOT NULL,
+        PRIMARY KEY (username, friend)
+    )
+`).run();
+
 
 if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
     webpush.setVapidDetails(
@@ -705,8 +715,23 @@ app.get("/api/messages/:username/:friend", (req, res) => {
                 WHERE deleted_for.message_id = messages.id
                   AND deleted_for.username = ?
             )
+            AND NOT EXISTS (
+                SELECT 1
+                FROM chat_clear_state ccs
+                WHERE ccs.username = ?
+                  AND ccs.friend = ?
+                  AND messages.time <= ccs.cleared_at
+            )
         ORDER BY id ASC
-    `).all(username, friend, friend, username, username);
+    `).all(
+        username,
+        friend,
+        friend,
+        username,
+        username,
+        username,
+        friend
+    );
 
     // Add individual reactions for every message
     for (const msg of messages) {
@@ -718,15 +743,6 @@ app.get("/api/messages/:username/:friend", (req, res) => {
         `).all(msg.id);
     }
 
-    // Add individual reactions for every message
-    for (const msg of messages) {
-        msg.reactions = db.prepare(`
-            SELECT username, reaction
-            FROM message_reactions
-            WHERE message_id = ?
-            ORDER BY id ASC
-        `).all(msg.id);
-    }
 
     res.json({
         success: true,
@@ -1322,63 +1338,59 @@ app.get("/pin-test", (req, res) => {
         </form>
     `);
 });
-// Clear entire chat between two users
+// Clear entire chat for current user only
 app.post("/api/messages/clear-chat", (req, res) => {
     const { username, friend } = req.body;
 
-    if (!username || !friend) {
+    if (!username || !friend || username === friend) {
         return res.status(400).json({
             success: false,
-            message: "username and friend are required"
+            message: "Valid username and friend are required"
         });
     }
 
     try {
-        const messages = db.prepare(`
+        const message = db.prepare(`
             SELECT id
             FROM messages
             WHERE
                 (sender = ? AND receiver = ?)
                 OR
                 (sender = ? AND receiver = ?)
-        `).all(username, friend, friend, username);
+            LIMIT 1
+        `).get(username, friend, friend, username);
 
-        const ids = messages.map(row => row.id);
-
-        db.exec("BEGIN");
-
-        if (ids.length > 0) {
-            const placeholders = ids.map(() => "?").join(",");
-
-            db.prepare(`
-                DELETE FROM message_reactions
-                WHERE message_id IN (${placeholders})
-            `).run(...ids);
-
-            db.prepare(`
-                DELETE FROM deleted_for
-                WHERE message_id IN (${placeholders})
-            `).run(...ids);
-
-            db.prepare(`
-                DELETE FROM messages
-                WHERE id IN (${placeholders})
-            `).run(...ids);
+        if (!message) {
+            return res.json({
+                success: true,
+                message: "No messages to clear"
+            });
         }
 
-        db.exec("COMMIT");
+        const clearedAt = new Date().toISOString();
+
+        db.prepare(`
+            INSERT INTO chat_clear_state
+                (username, friend, cleared_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(username, friend)
+            DO UPDATE SET cleared_at = excluded.cleared_at
+        `).run(username, friend, clearedAt);
+
+        console.log(
+            "🧹 Chat cleared for ONE USER ONLY:",
+            username,
+            "↔",
+            friend,
+            clearedAt
+        );
 
         res.json({
             success: true,
-            message: "Chat cleared successfully",
-            deletedCount: ids.length
+            message: "Chat cleared for you only"
         });
 
     } catch (error) {
-        try {
-            db.exec("ROLLBACK");
-        } catch (_) {}
-
         console.error("Clear chat error:", error);
 
         res.status(500).json({
@@ -1389,6 +1401,7 @@ app.post("/api/messages/clear-chat", (req, res) => {
 });
 
 // Delete message
+
 app.post("/api/messages/delete", (req, res) => {
     const { message_id, username } = req.body;
 

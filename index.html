@@ -309,9 +309,6 @@ document.addEventListener("click", function(e){
     display:none !important;
 }
 
-#chatBox > h3 + div#requestList{
-    display:none !important;
-}
 
 /* Keep friend-request heading/input area from appearing separately */
 #chatBox > h3{
@@ -12489,60 +12486,143 @@ async function sendFriendRequest(){
         alert("Server connection failed");
     }
 }
+
+function updateFriendRequestBadge(count){
+    const headings = document.querySelectorAll("h3");
+
+    headings.forEach(function(h){
+        if(h.textContent.trim() === "Friend Requests"){
+            h.innerHTML =
+                'Friend Requests' +
+                (count > 0
+                    ? ' <span style="display:inline-block;background:#e53935;color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:6px;">' +
+                      count +
+                      '</span>'
+                    : '');
+        }
+    });
+}
+
 async function loadRequests(){
-console.log("🔥 LOAD REQUESTS RUNNING:", currentUser);
+    console.log("🔥 LOAD REQUESTS RUNNING:", currentUser);
+
     const list = document.getElementById("requestList");
 
-    if(!list || !currentUser) return;
+    if(!list || !currentUser){
+        console.log("❌ requestList/currentUser missing");
+        return;
+    }
+
+    list.innerHTML =
+        '<p style="text-align:center;color:#888;">Loading friend requests...</p>';
 
     try{
-        const response = await fetch(
+        const url =
             "/api/friend-requests/" +
             encodeURIComponent(currentUser) +
-            "?t=" + Date.now()
-        );
+            "?t=" + Date.now();
+
+        console.log("📨 Request URL:", url);
+
+        const response = await fetch(url, {
+            method: "GET",
+            cache: "no-store"
+        });
+
+        console.log("📨 Request HTTP:", response.status);
 
         const data = await response.json();
 
-        if(!data.success){
-            list.innerHTML = "<p>Could not load requests.</p>";
-            return;
+        console.log("📨 Request DATA:", data);
+
+        if(!response.ok || !data || data.success !== true){
+            throw new Error(
+                data && data.message
+                    ? data.message
+                    : "Could not load requests"
+            );
         }
+
+        const requests =
+            Array.isArray(data.requests)
+                ? data.requests
+                : [];
+
+        updateFriendRequestBadge(requests.length);
 
         list.innerHTML = "";
 
-        if(data.requests.length === 0){
-            list.innerHTML = "<p>No friend requests.</p>";
+        if(requests.length === 0){
+            list.innerHTML =
+                '<p style="text-align:center;color:#888;">' +
+                'No friend requests.' +
+                '</p>';
             return;
         }
 
-        data.requests.forEach(function(request){
+        requests.forEach(function(request){
 
-            const p = document.createElement("p");
+            const card = document.createElement("div");
 
-            p.innerHTML =
-                escapeHTML(request.username) +
-                " sent you a request ";
+            card.style.cssText =
+                "display:flex;" +
+                "align-items:center;" +
+                "gap:10px;" +
+                "padding:12px;" +
+                "margin:7px 0;" +
+                "border:1px solid #ddd;" +
+                "border-radius:12px;" +
+                "background:#fff;";
 
-            const button = document.createElement("button");
+            const text = document.createElement("div");
 
-            button.innerText = "Accept";
+            text.style.cssText =
+                "flex:1;font-size:14px;color:#222;";
 
-            button.onclick = function(){
-                acceptRequest(request.id);
+            text.textContent =
+                (request.username || "Someone") +
+                " sent you a friend request";
+
+            const accept = document.createElement("button");
+
+            accept.type = "button";
+            accept.textContent = "Accept";
+
+            accept.style.cssText =
+                "padding:8px 12px;" +
+                "border:0;" +
+                "border-radius:8px;" +
+                "cursor:pointer;";
+
+            accept.onclick = async function(){
+                accept.disabled = true;
+                accept.textContent = "Accepting...";
+
+                await acceptRequest(request.id);
             };
 
-            p.appendChild(button);
-            list.appendChild(p);
+            card.appendChild(text);
+            card.appendChild(accept);
+
+            list.appendChild(card);
         });
 
     }catch(error){
-        console.error("Request loading error:", error);
+
+        console.error("❌ Request loading error:", error);
+
+        updateFriendRequestBadge(0);
+
         list.innerHTML =
-            "<p>Request load error: " + String(error) + "</p>";
+            '<p style="color:#d33;text-align:center;">' +
+            'Could not load friend requests.<br>' +
+            '<button type="button" onclick="loadRequests()" ' +
+            'style="margin-top:8px;padding:8px 12px;">' +
+            '↻ Try Again' +
+            '</button>' +
+            '</p>';
     }
 }
-
 
 async function acceptRequest(requestId){
 

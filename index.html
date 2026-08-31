@@ -465,6 +465,18 @@ document.addEventListener("click", function(e){
   }
 </style>
 
+
+<style id="wa-final-override-v2">
+  .wa-bottom-bar {
+  }
+  .wa-bottom-bar input#message {
+  }
+  .wa-bottom-bar button {
+  }
+  .wa-bottom-bar button[onclick*="addEmoji"] {
+  }
+</style>
+
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -1094,7 +1106,7 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
   <span id="replyText"></span>
   <button onclick="cancelReply()">✖</button>
 </div>
-  <input id="message" type="text" placeholder="Type a message" oninput="typing()" 
+  <div class="wa-bottom-bar"><input id="message" type="text" placeholder="Type a message" oninput="typing()" 
   onkeydown="checkEnter(event)">    
   <button onclick="addEmoji('😀')">😀</button>    
 <button onclick="addEmoji('😍')">😍</button>    

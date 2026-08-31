@@ -410,7 +410,7 @@ document.addEventListener("click", function(e){
   }
 
   /* WhatsApp Bottom Message Input Container */
-  #message/.., div:has(> #message), div:has(> input[id="message"]) {
+  .wa-bottom-bar {
   }
 
   /* Message Input Field */
@@ -1106,7 +1106,7 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
   <span id="replyText"></span>
   <button onclick="cancelReply()">✖</button>
 </div>
-  <div class="wa-bottom-bar"><input id="message" type="text" placeholder="Type a message" oninput="typing()" 
+  <div style="display:flex;align-items:center;background:#f0f0f0;padding:8px;border-radius:25px;margin:10px 0;gap:4px;box-sizing:border-box;"><input id="message" type="text" placeholder="Type a message" oninput="typing()" style="flex:1;border:none;outline:none;padding:10px 14px;border-radius:20px;background:#fff;font-size:14px;" 
   onkeydown="checkEnter(event)">    
   <button onclick="addEmoji('😀')">😀</button>    
 <button onclick="addEmoji('😍')">😍</button>    

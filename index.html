@@ -227,6 +227,32 @@ font-size:16px;
 </style>
 
 <script id="rkyFinalLayoutScript">
+
+function toggleRkyCircleRequests(){
+    const content = document.getElementById("rkyCircleRequestsContent");
+    const arrow = document.getElementById("rkyCircleRequestsArrow");
+
+    if(!content) return;
+
+    const hidden = content.style.display === "none" ||
+                   getComputedStyle(content).display === "none";
+
+    content.style.display = hidden ? "block" : "none";
+
+    if(arrow){
+        arrow.textContent = hidden ? "⌄" : "›";
+    }
+
+    if(hidden){
+        if(typeof loadRequests === "function"){
+            loadRequests();
+        }
+        if(typeof loadSentFriendRequests === "function"){
+            loadSentFriendRequests();
+        }
+    }
+}
+
 function toggleRkyMoreMenu(){
     const menu = document.getElementById("rkyMoreMenu");
     if(!menu) return;
@@ -249,8 +275,57 @@ function rkyMoreAction(action){
     }
 
     if(action === "requests"){
-        if(typeof loadRequests === "function")
+        const requestHeading = Array.from(
+            document.querySelectorAll("#chatBox h3")
+        ).find(el => el.textContent.trim() === "Friend Requests");
+
+        const requestList = document.getElementById("requestList");
+        const connectHeader = document.getElementById("rkyConnectHeader");
+        const connectionsSection = document.getElementById("rkyConnectionsSection");
+
+
+        if(connectionsSection){
+            connectionsSection.style.display = "block";
+            if(typeof loadRkyConnections === "function"){
+                loadRkyConnections();
+            }
+        }
+
+
+        if(connectHeader){
+            connectHeader.style.display = "block";
+            connectHeader.scrollIntoView({
+                behavior: "smooth",
+                block: "start"
+            });
+        }
+
+        if(requestHeading){
+            requestHeading.style.display = "block";
+            requestHeading.scrollIntoView({
+                behavior: "smooth",
+                block: "center"
+            });
+        }
+
+        if(requestList){
+            requestList.style.display = "block";
+        }
+
+        if(typeof loadRequests === "function"){
             loadRequests();
+        }
+
+        const sentRequestsSection =
+            document.getElementById("rkySentRequestsSection");
+
+        if(sentRequestsSection){
+            sentRequestsSection.style.display = "block";
+        }
+
+        if(typeof loadSentFriendRequests === "function"){
+            loadSentFriendRequests();
+        }
     }
 
     if(action === "callHistory"){
@@ -298,42 +373,84 @@ document.addEventListener("click", function(e){
 </script>
 
 
-<style id="rkyHideOldControls">
-
-/* Hide duplicate controls now available inside ⋮ More */
-#chatBox > button[onclick="openProfileSettings()"]{
-    display:none !important;
-}
-
-#chatBox #callHistoryPanel{
-    display:none !important;
-}
 
 
-/* Keep friend-request heading/input area from appearing separately */
-#chatBox > h3{
-}
 
-/* Hide standalone message search */
-#chatBox #searchMessage{
-    display:none !important;
-}
+<style id="whatsapp-custom-style">
+  :root {
+    --wa-header: #075e54;
+    --wa-bg: #efeae2;
+    --wa-input-bg: #f0f0f0;
+    --wa-green: #00a884;
+    --wa-my-msg: #d9fdd3;
+    --wa-other-msg: #ffffff;
+  }
+  body, html { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+</style>
 
-/* Hide standalone Starred button */
-#chatBox > button[onclick="showStarredMessages()"]{
-    display:none !important;
-}
 
-/* Hide standalone Clear Chat wrapper */
-#chatBox > div > button[onclick="clearCurrentChat()"]{
-    display:none !important;
-}
+<style>
+  /* WhatsApp Bottom Bar Container */
+  .chat-input-bar, .message-input-container, #inputBar {
+  }
 
-/* Hide standalone Logout */
-#chatBox > button[onclick="logout()"]{
-    display:none !important;
-}
+  /* Input Field */
+  .chat-input-bar input, #messageInput {
+  }
 
+  /* Round Green Send Button */
+  #sendBtn, .send-button {
+  }
+</style>
+
+
+<style id="whatsapp-exact-layout">
+  /* Chat main wrapper offset */
+  #chatBox {
+  }
+
+  /* WhatsApp Bottom Message Input Container */
+  #message/.., div:has(> #message), div:has(> input[id="message"]) {
+  }
+
+  /* Message Input Field */
+  #message {
+  }
+
+  /* Input bar inside Buttons (Emoji, Attach, Camera) */
+  div:has(> #message) button, #chatBox > button {
+  }
+
+  /* WhatsApp Send Button (Round Green Button) */
+  button[onclick*="sendMessage"], button[onclick*="sendMsg"], #sendBtn {
+  }
+</style>
+
+
+<style id="whatsapp-exact-bar">
+  /* Chat UI Box Layout */
+  #chatBox {
+  }
+
+  /* Chat Messages Box */
+  #chatBox > div[style*="border"] {
+  }
+
+  /* Message Input Bar Fix (WhatsApp Layout) */
+  #message, input[placeholder*="Type a message"] {
+  }
+
+  /* Group Input and Buttons into Single Line */
+  div:has(> #message), div:has(> input[placeholder*="Type a message"]) {
+  }
+
+  /* Style All Action Buttons inside Input Bar */
+  div:has(> #message) button {
+  }
+
+  /* Specific Emoji/Icon Button Override */
+  div:has(> #message) button[onclick*="addEmoji"] {
+  }
 </style>
 
 </head>  
@@ -724,23 +841,216 @@ style="display:none; margin:10px 0; position:relative;">
 
 </div>
 
-<h3>Add Friend</h3>
-
-<input id="friendUsername" placeholder="Friend username">
-
-<button onclick="sendFriendRequest()">
-Send Request
-</button>
-
-<h3>Friend Requests</h3>
-
-<div id="requestList">
-    <p>Loading friend requests...</p>
+<!-- ✨ Rky Connect -->
+<div id="rkyConnectHeader"
+style="
+display:none;
+margin:10px 0 8px;
+padding:16px;
+border-radius:16px;
+background:linear-gradient(135deg,#f7f7ff,#ffffff);
+border:1px solid #ddd;
+box-shadow:0 3px 12px rgba(0,0,0,.08);
+">
+    <div style="font-size:21px;font-weight:700;">
+        ✨ Rky Connect
+    </div>
+    <div style="font-size:13px;color:#777;margin-top:4px;">
+        Build your own Rky Circle
+    </div>
 </div>
 
-<button onclick="loadRequests()" type="button">
-    🔄 Refresh Requests
+
+
+
+<button
+  id="rkyCircleRequestsToggle"
+  type="button"
+  onclick="toggleRkyCircleRequests()"
+  style="
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:12px 0 8px;
+  padding:12px 14px;
+  border:1px solid #e5e5ee;
+  border-radius:14px;
+  background:linear-gradient(135deg,#ffffff,#f8f7ff);
+  cursor:pointer;
+  font-size:15px;
+  font-weight:700;
+  text-align:left;
+  box-sizing:border-box;
+  ">
+  <span style="display:flex;align-items:center;gap:8px;">
+    <span>📨 Rky Circle Requests</span>
+    <span
+      id="friendRequestBadge"
+      style="
+        display:none;
+        min-width:20px;
+        height:20px;
+        padding:0 6px;
+        border-radius:10px;
+        background:#e53935;
+        color:#fff;
+        font-size:11px;
+        font-weight:700;
+        line-height:20px;
+        text-align:center;
+        box-sizing:border-box;
+      "
+    ></span>
+  </span>
+  <span id="rkyCircleRequestsArrow">›</span>
 </button>
+
+<div id="rkyCircleRequestsContent" style="display:none;">
+
+<div style="display:flex;gap:7px;margin-bottom:10px;">
+    <input
+        id="friendUsername"
+        type="text"
+        placeholder="Friend username"
+        style="flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:10px;box-sizing:border-box;"
+    >
+    <button
+        type="button"
+        onclick="sendFriendRequest()"
+        style="padding:10px 13px;border:none;border-radius:10px;cursor:pointer;font-weight:600;"
+    >✨ Send</button>
+</div>
+
+<div id="requestList">
+    <p style="font-size:13px;color:#888;">
+        No new connection requests.
+    </p>
+</div>
+
+</div>
+
+<button
+  onclick="loadRequests()"
+  type="button"
+  style="
+  margin-top:8px;
+  padding:8px 12px;
+  border:1px solid #ddd;
+  border-radius:10px;
+  background:#fff;
+  cursor:pointer;
+  ">
+  🔄 Refresh
+</button>
+
+<!-- 📤 Sent Rky Circle Requests -->
+<div id="rkySentRequestsSection"
+style="
+margin:14px 0 10px;
+padding:14px;
+border:1px solid #e5e5ee;
+border-radius:16px;
+background:linear-gradient(135deg,#ffffff,#faf9ff);
+box-shadow:0 3px 10px rgba(0,0,0,.06);
+">
+
+    <div style="
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        margin-bottom:10px;
+    ">
+        <div>
+            <div style="font-size:16px;font-weight:700;">
+                📤 Sent Requests
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:3px;">
+                Requests you have sent
+            </div>
+        </div>
+
+        <button
+          type="button"
+          onclick="loadSentFriendRequests()"
+          style="
+          padding:7px 9px;
+          border:1px solid #ddd;
+          border-radius:10px;
+          background:#fff;
+          cursor:pointer;
+          ">
+          ↻
+        </button>
+    </div>
+
+    <div id="sentRequestList">
+        <div style="
+            font-size:13px;
+            color:#999;
+            text-align:center;
+            padding:10px;
+        ">
+            No pending sent requests.
+        </div>
+    </div>
+
+</div>
+
+<!-- 👥 Your Rky Connections -->
+<div id="rkyConnectionsSection"
+style="
+margin:14px 0 10px;
+padding:14px;
+border:1px solid #e5e5ee;
+border-radius:16px;
+background:linear-gradient(135deg,#ffffff,#faf9ff);
+box-shadow:0 3px 10px rgba(0,0,0,.06);
+">
+
+    <div style="
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+    ">
+        <div>
+            <div style="font-size:16px;font-weight:700;">
+                👥 Your Rky Connections
+            </div>
+            <div style="font-size:12px;color:#888;margin-top:3px;">
+                People in your Rky Circle
+            </div>
+        </div>
+
+        <button
+          type="button"
+          onclick="loadRkyConnections()"
+          style="
+          padding:7px 9px;
+          border:1px solid #ddd;
+          border-radius:10px;
+          background:#fff;
+          cursor:pointer;
+          ">
+          ↻
+        </button>
+    </div>
+
+    <div id="rkyConnectionsList">
+        <div style="font-size:13px;color:#999;text-align:center;padding:10px;">
+            Loading your Rky Circle...
+        </div>
+    </div>
+
+
+
+
+
+
+</div>
+
+
 <input id="searchMessage"
 type="text"
 placeholder="🔍 Search message"
@@ -10603,9 +10913,136 @@ return users[0] + "_" + users[1];
     reader.readAsDataURL(file);
 }
 
+async function loadRkyConnections(){
+
+    const list = document.getElementById("rkyConnectionsList");
+
+    if(!list || !currentUser){
+        return;
+    }
+
+    list.innerHTML =
+        '<div style="font-size:13px;color:#999;text-align:center;padding:10px;">Loading...</div>';
+
+    try{
+        const response = await fetch(
+            "/api/friends/" +
+            encodeURIComponent(currentUser) +
+            "?t=" + Date.now()
+        );
+
+        if(!response.ok){
+            throw new Error("HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        if(!data.success){
+            throw new Error(data.message || "Could not load connections");
+        }
+
+        const friends = Array.isArray(data.friends)
+            ? data.friends
+            : [];
+
+        if(friends.length === 0){
+            list.innerHTML =
+                '<div style="font-size:13px;color:#999;text-align:center;padding:10px;">' +
+                'No people in your Rky Circle yet.' +
+                '</div>';
+            return;
+        }
+
+        list.innerHTML = "";
+
+        friends.forEach(function(friend){
+
+            const button = document.createElement("button");
+            button.type = "button";
+
+            const profileName =
+                friend.profileName || friend.username;
+
+            const photo =
+                friend.photo ||
+                "https://via.placeholder.com/50";
+
+            let statusHTML = "";
+
+            if(friend.status === "Online"){
+                statusHTML =
+                    "<span style='color:green;'>🟢 Online</span>";
+            }else{
+                statusHTML =
+                    "<span style='color:red;'>🔴 Offline</span>";
+
+                if(friend.lastSeen){
+                    statusHTML +=
+                        "<br><small>Last Seen: " +
+                        escapeHTML(friend.lastSeen) +
+                        "</small>";
+                }
+            }
+
+            button.innerHTML =
+                "<div style='display:flex;align-items:center;gap:10px;text-align:left;'>" +
+
+                "<img src='" +
+                escapeHTML(photo) +
+                "' width='50' height='50' " +
+                "style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
+
+                "<div style='min-width:0;'>" +
+
+                "<div style='font-weight:700;font-size:16px;'>" +
+                escapeHTML(profileName) +
+                "</div>" +
+
+                "<div style='font-size:12px;margin-top:3px;'>" +
+                statusHTML +
+                "</div>" +
+
+                "</div>" +
+
+                "</div>";
+
+            button.style.display = "block";
+            button.style.width = "100%";
+            button.style.margin = "5px 0";
+            button.style.padding = "10px";
+            button.style.border = "1px solid #ddd";
+            button.style.borderRadius = "12px";
+            button.style.background = "#fff";
+            button.style.cursor = "pointer";
+            button.style.boxSizing = "border-box";
+
+            button.onclick = function(){
+                selectFriend(friend.username);
+            };
+
+            list.appendChild(button);
+        });
+
+    }catch(error){
+
+        console.error(
+            "loadRkyConnections error:",
+            error
+        );
+
+        list.innerHTML =
+            '<div style="font-size:13px;color:#d33;text-align:center;padding:10px;">' +
+            'Could not load your Rky Circle.' +
+            '</div>';
+    }
+}
+
+
 async function loadFriends(){
 
     const list = document.getElementById("friendList");
+
+
 
     if(!list || !currentUser){
         return;

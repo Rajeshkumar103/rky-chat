@@ -15339,7 +15339,25 @@ if(typeof connectVoiceCallSocket === "function"){
     console.log("📞 Voice Call system ready");
 }
 </script>
-\n</body>
+\n
+<script id="wa-layout-fixer">
+document.addEventListener("DOMContentLoaded", function() {
+  function fixWA() {
+    const msgInput = document.getElementById("message");
+    
+    let parent = msgInput.parentElement;
+      parent.classList.add("wa-fixed-bar");
+      
+      const buttons = parent.querySelectorAll("button");
+      buttons.forEach(btn => {
+      });
+    }
+  }
+  setInterval(fixWA, 1000);
+});
+</script>
+
+</body>
 </html>
 
 <script>

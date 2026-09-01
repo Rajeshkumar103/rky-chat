@@ -454,16 +454,7 @@ document.addEventListener("click", function(e){
 </style>
 
 
-<style id="wa-layout-final">
-  /* Single line Horizontal Input Bar */
-  #message {
-  }
-  
-  /* Make bottom control buttons fit inline */
-  #chatBox input[placeholder*="Type a message"] ~ button,
-  #chatBox input[id="message"] ~ button {
-  }
-</style>
+
 
 
 <style id="wa-final-override-v2">
@@ -475,6 +466,235 @@ document.addEventListener("click", function(e){
   }
   .wa-bottom-bar button[onclick*="addEmoji"] {
   }
+</style>
+
+
+<style id="rkyMobileFix">
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    width:100%;
+    max-width:100%;
+    overflow-x:hidden;
+}
+
+#chatBox{
+    width:min(90%, 600px);
+    max-width:100%;
+    margin:10px auto;
+    padding:10px;
+    overflow-x:hidden;
+}
+
+#chatBox input,
+#chatBox textarea,
+#chatBox select,
+#chatBox button{
+    max-width:100%;
+}
+
+#chatBox img,
+#chatBox video{
+    max-width:100%;
+}
+
+#rkyMoreMenu{
+    max-width:calc(100vw - 20px);
+}
+
+@media(max-width:500px){
+    #chatBox{
+        width:calc(100% - 20px);
+        margin:10px;
+        padding:10px;
+    }
+
+    #rkyMoreMenu{
+        right:5px;
+        min-width:0;
+        width:min(210px, calc(100vw - 20px));
+    }
+
+    #rkyCircleRequestsToggle{
+        width:100%;
+    }
+
+    #rkyCircleRequestsContent{
+        width:100%;
+        max-width:100%;
+    }
+
+    #rkyCircleRequestsContent > div{
+        max-width:100%;
+    }
+
+    #rkyCircleRequestsContent input{
+        min-width:0;
+        width:100%;
+    }
+
+    #rkyCircleRequestsContent button{
+        flex-shrink:0;
+    }
+}
+</style>
+
+
+
+<style id="rky-whatsapp-single-final">
+.wa-bottom-bar{
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:4px !important;
+  padding:5px !important;
+  margin:10px 0 !important;
+  background:#f0f0f0 !important;
+  border-radius:24px !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+.wa-bottom-bar #message{
+  order:2 !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  width:1px !important;
+  max-width:none !important;
+  height:40px !important;
+  padding:8px 12px !important;
+  border:1px solid #ddd !important;
+  outline:none !important;
+  border-radius:20px !important;
+  background:#fff !important;
+  font-size:15px !important;
+  box-sizing:border-box !important;
+}
+
+.wa-bottom-bar .wa-emoji-btn{
+  order:1 !important;
+}
+
+.wa-bottom-bar .wa-photo-btn{
+  order:3 !important;
+}
+
+.wa-bottom-bar .wa-voice-btn{
+  order:4 !important;
+}
+
+.wa-bottom-bar button{
+  flex:0 0 40px !important;
+  width:40px !important;
+  min-width:40px !important;
+  max-width:40px !important;
+  height:40px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:transparent !important;
+  font-size:20px !important;
+  line-height:40px !important;
+  cursor:pointer !important;
+}
+
+@media(max-width:500px){
+  .wa-bottom-bar{
+    gap:2px !important;
+    padding:4px !important;
+  }
+
+  .wa-bottom-bar button{
+    flex-basis:38px !important;
+    width:38px !important;
+    min-width:38px !important;
+    max-width:38px !important;
+    height:38px !important;
+    line-height:38px !important;
+    font-size:19px !important;
+  }
+
+  .wa-bottom-bar #message{
+    height:38px !important;
+    font-size:16px !important;
+  }
+}
+</style>
+
+
+<style id="rky-composer-clean">
+.wa-bottom-bar{
+  display:flex !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  gap:6px !important;
+  padding:6px !important;
+  margin:10px 0 !important;
+  background:#f0f0f0 !important;
+  border-radius:24px !important;
+  box-sizing:border-box !important;
+}
+
+.wa-bottom-bar #message{
+  flex:1 1 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  height:42px !important;
+  padding:8px 12px !important;
+  border:1px solid #ddd !important;
+  border-radius:20px !important;
+  background:#fff !important;
+  outline:none !important;
+  font-size:15px !important;
+  box-sizing:border-box !important;
+}
+
+.wa-bottom-bar button{
+  flex:0 0 40px !important;
+  width:40px !important;
+  min-width:40px !important;
+  max-width:40px !important;
+  height:40px !important;
+  padding:0 !important;
+  margin:0 !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:transparent !important;
+  font-size:20px !important;
+}
+
+.wa-extra-actions{
+  display:none !important;
+}
+
+@media(max-width:500px){
+  .wa-bottom-bar{
+    gap:2px !important;
+    padding:4px !important;
+  }
+
+  .wa-bottom-bar button{
+    flex-basis:36px !important;
+    width:36px !important;
+    min-width:36px !important;
+    max-width:36px !important;
+    height:36px !important;
+    font-size:18px !important;
+  }
+
+  .wa-bottom-bar #message{
+    height:36px !important;
+    font-size:16px !important;
+    padding:7px 10px !important;
+  }
+}
 </style>
 
 </head>  
@@ -1106,40 +1326,45 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
   <span id="replyText"></span>
   <button onclick="cancelReply()">✖</button>
 </div>
-  <div style="display:flex;align-items:center;background:#f0f0f0;padding:8px;border-radius:25px;margin:10px 0;gap:4px;box-sizing:border-box;"><input id="message" type="text" placeholder="Type a message" oninput="typing()" style="flex:1;border:none;outline:none;padding:10px 14px;border-radius:20px;background:#fff;font-size:14px;" 
-  onkeydown="checkEnter(event)">    
-  <button onclick="addEmoji('😀')">😀</button>    
-<button onclick="addEmoji('😍')">😍</button>    
-<button onclick="addEmoji('❤️')">❤️</button>    
-<button onclick="addEmoji('👌')">👌</button>    
-  <button onclick="sendmessage()">Send    
-  </button>
-<button onclick="startVoiceRecording()">🎤 Voice</button>  
-  <input type="file"
-id="photoMessage"
-accept="image/*"
-multiple
-style="display:none;"
-onchange="sendPhotoMessage()">
+  <div class="wa-bottom-bar">
 
-<button onclick="document.getElementById('photoMessage').click()">
-📷 Photo
-</button>
-<input
-  type="file"
-  id="videoMessage"
-  accept="video/*"
-  style="display:none;"
-  onchange="sendVideoMessage()"
->
+  <button type="button"
+    class="wa-emoji-btn"
+    onclick="addEmoji('😀')">😀</button>
 
-<button onclick="document.getElementById('videoMessage').click()">
-🎥 Video
-</button>
-  <button onclick="deletemessage()">delete</button>
-  <button onclick="logout()">Logout</button>
- 
-  </div>  
+  <input
+    id="message"
+    type="text"
+    placeholder="Type a message"
+    oninput="typing()"
+    onkeydown="checkEnter(event)"
+  >
+
+  <button type="button"
+    class="wa-photo-btn"
+    onclick="document.getElementById('photoMessage').click()">📷</button>
+
+  <button type="button"
+    class="wa-voice-btn"
+    onclick="startVoiceRecording()">🎤</button>
+
+  <input
+    type="file"
+    id="photoMessage"
+    accept="image/*"
+    multiple
+    style="display:none;"
+    onchange="sendPhotoMessage()">
+
+  <input
+    type="file"
+    id="videoMessage"
+    accept="video/*"
+    style="display:none;"
+    onchange="sendVideoMessage()">
+
+</div>
+
   <script>   
   let currentUser =
 localStorage.getItem("currentUser") || "";

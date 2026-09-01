@@ -680,7 +680,7 @@ html,body{
 }
 
 .wa-send-btn{
-  display:block;
+  display:none !important;
   background:#2196f3 !important;
   color:#fff !important;
   font-size:24px !important;
@@ -15598,140 +15598,60 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-<script id="rky-composer-real-final-js">
 
+
+
+
+
+
+<script id="rky-composer-single-final">
 function updateComposerButtons(){
-
   const input = document.getElementById("message");
   const photo = document.querySelector(".wa-photo-btn");
   const camera = document.querySelector(".wa-camera-btn");
   const voice = document.querySelector(".wa-voice-btn");
   const send = document.querySelector(".wa-send-btn");
 
-  if(!input){
-    return;
+  if(!input) return;
+
+  const hasText = input.value.trim().length > 0;
+
+  /* Photo सधैं देखिने */
+  if(photo){
+    photo.style.setProperty("display","block","important");
   }
 
-  const hasText = input.value.trim() !== "";
-
   if(hasText){
-
-    if(photo)
-      photo.style.display = "block";
-
+    /* Message लेख्दा */
     if(camera)
-      camera.style.display = "none";
+      camera.style.setProperty("display","none","important");
 
     if(voice)
-      voice.style.display = "none";
+      voice.style.setProperty("display","none","important");
 
     if(send)
-      send.style.display = "block";
+      send.style.setProperty("display","block","important");
 
   }else{
-
-    if(photo)
-      photo.style.display = "block";
-
+    /* Message खाली हुँदा */
     if(camera)
-      camera.style.display = "block";
+      camera.style.setProperty("display","block","important");
 
     if(voice)
-      voice.style.display = "block";
+      voice.style.setProperty("display","block","important");
 
     if(send)
-      send.style.display = "none";
+      send.style.setProperty("display","none","important");
   }
 }
 
 document.addEventListener("DOMContentLoaded", function(){
-
   const input = document.getElementById("message");
 
   if(input){
     input.addEventListener("input", updateComposerButtons);
+    updateComposerButtons();
   }
-
-  updateComposerButtons();
-});
-
-</script>
-
-
-<script id="rky-dynamic-composer-js">
-function updateComposerButtons(){
-
-    const input = document.getElementById("message");
-
-    if(!input){
-        return;
-    }
-
-    const photo = document.querySelector(".wa-photo-btn");
-    const camera = document.querySelector(".wa-camera-btn");
-    const voice = document.querySelector(".wa-voice-btn");
-    const send = document.querySelector(".wa-send-btn");
-
-    const hasText = input.value.trim().length > 0;
-
-    /*
-      खाली हुँदा:
-      😀  Message  📷
-                    🎥
-                    🎤
-
-      लेख्दा:
-      😀  Message  📷  ➤
-    */
-
-    if(photo){
-        photo.style.setProperty("display","block","important");
-    }
-
-    if(hasText){
-
-        if(camera){
-            camera.style.setProperty("display","none","important");
-        }
-
-        if(voice){
-            voice.style.setProperty("display","none","important");
-        }
-
-        if(send){
-            send.style.setProperty("display","block","important");
-        }
-
-    }else{
-
-        if(camera){
-            camera.style.setProperty("display","block","important");
-        }
-
-        if(voice){
-            voice.style.setProperty("display","block","important");
-        }
-
-        if(send){
-            send.style.setProperty("display","none","important");
-        }
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function(){
-
-    const input = document.getElementById("message");
-
-    if(input){
-
-        input.addEventListener(
-            "input",
-            updateComposerButtons
-        );
-
-        updateComposerButtons();
-    }
-
 });
 </script>
 

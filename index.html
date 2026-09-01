@@ -627,15 +627,22 @@ html,body{
 </style>
 
 
-<style id="rky-composer-clean">
+
+
+
+
+
+
+<style id="rky-composer-real-final">
+
 .wa-bottom-bar{
   display:flex !important;
   align-items:center !important;
   width:100% !important;
   max-width:100% !important;
   min-width:0 !important;
-  gap:6px !important;
-  padding:6px !important;
+  gap:4px !important;
+  padding:5px !important;
   margin:10px 0 !important;
   background:#f0f0f0 !important;
   border-radius:24px !important;
@@ -644,9 +651,10 @@ html,body{
 
 .wa-bottom-bar #message{
   flex:1 1 auto !important;
-  width:auto !important;
   min-width:0 !important;
-  height:42px !important;
+  width:1px !important;
+  max-width:none !important;
+  height:40px !important;
   padding:8px 12px !important;
   border:1px solid #ddd !important;
   border-radius:20px !important;
@@ -668,13 +676,18 @@ html,body{
   border-radius:50% !important;
   background:transparent !important;
   font-size:20px !important;
+  cursor:pointer !important;
 }
 
-.wa-extra-actions{
+.wa-send-btn{
   display:none !important;
+  background:#2196f3 !important;
+  color:#fff !important;
+  font-size:24px !important;
 }
 
 @media(max-width:500px){
+
   .wa-bottom-bar{
     gap:2px !important;
     padding:4px !important;
@@ -695,6 +708,7 @@ html,body{
     padding:7px 10px !important;
   }
 }
+
 </style>
 
 </head>  
@@ -1336,7 +1350,7 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
     id="message"
     type="text"
     placeholder="Type a message"
-    oninput="typing()"
+    oninput="typing(); updateComposerButtons();"
     onkeydown="checkEnter(event)"
   >
 
@@ -1345,8 +1359,16 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
     onclick="document.getElementById('photoMessage').click()">📷</button>
 
   <button type="button"
+    class="wa-camera-btn"
+    onclick="document.getElementById('videoMessage').click()">🎥</button>
+
+  <button type="button"
     class="wa-voice-btn"
     onclick="startVoiceRecording()">🎤</button>
+
+  <button type="button"
+    class="wa-send-btn"
+    onclick="sendmessage()">➤</button>
 
   <input
     type="file"
@@ -12672,6 +12694,7 @@ async function sendmessage(){
         );
 
         input.value = "";
+        updateComposerButtons();
 
         replyMessageId = null;
 
@@ -15567,18 +15590,148 @@ if(typeof connectVoiceCallSocket === "function"){
 \n
 <script id="wa-layout-fixer">
 document.addEventListener("DOMContentLoaded", function() {
-  function fixWA() {
-    const msgInput = document.getElementById("message");
-    
-    let parent = msgInput.parentElement;
-      parent.classList.add("wa-fixed-bar");
-      
-      const buttons = parent.querySelectorAll("button");
-      buttons.forEach(btn => {
-      });
-    }
+  
+});
+</script>
+
+
+
+
+
+<script id="rky-composer-real-final-js">
+
+function updateComposerButtons(){
+
+  const input = document.getElementById("message");
+  const photo = document.querySelector(".wa-photo-btn");
+  const camera = document.querySelector(".wa-camera-btn");
+  const voice = document.querySelector(".wa-voice-btn");
+  const send = document.querySelector(".wa-send-btn");
+
+  if(!input){
+    return;
   }
-  setInterval(fixWA, 1000);
+
+  const hasText = input.value.trim() !== "";
+
+  if(hasText){
+
+    if(photo)
+      photo.style.display = "block";
+
+    if(camera)
+      camera.style.display = "none";
+
+    if(voice)
+      voice.style.display = "none";
+
+    if(send)
+      send.style.display = "block";
+
+  }else{
+
+    if(photo)
+      photo.style.display = "block";
+
+    if(camera)
+      camera.style.display = "block";
+
+    if(voice)
+      voice.style.display = "block";
+
+    if(send)
+      send.style.display = "none";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+  const input = document.getElementById("message");
+
+  if(input){
+    input.addEventListener("input", updateComposerButtons);
+  }
+
+  updateComposerButtons();
+});
+
+</script>
+
+
+<script id="rky-dynamic-composer-js">
+function updateComposerButtons(){
+
+    const input = document.getElementById("message");
+
+    if(!input){
+        return;
+    }
+
+    const photo = document.querySelector(".wa-photo-btn");
+    const camera = document.querySelector(".wa-camera-btn");
+    const voice = document.querySelector(".wa-voice-btn");
+    const send = document.querySelector(".wa-send-btn");
+
+    const hasText = input.value.trim().length > 0;
+
+    /*
+      खाली हुँदा:
+      😀  Message  📷
+                    🎥
+                    🎤
+
+      लेख्दा:
+      😀  Message  📷  ➤
+    */
+
+    if(photo){
+        photo.style.setProperty("display","block","important");
+    }
+
+    if(hasText){
+
+        if(camera){
+            camera.style.setProperty("display","none","important");
+        }
+
+        if(voice){
+            voice.style.setProperty("display","none","important");
+        }
+
+        if(send){
+            send.style.setProperty("display","block","important");
+        }
+
+    }else{
+
+        if(camera){
+            camera.style.setProperty("display","block","important");
+        }
+
+        if(voice){
+            voice.style.setProperty("display","block","important");
+        }
+
+        if(send){
+            send.style.setProperty("display","none","important");
+        }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function(){
+
+    const input = document.getElementById("message");
+
+    if(input){
+
+        input.addEventListener(
+            "input",
+            updateComposerButtons
+        );
+
+        updateComposerButtons();
+    }
+
 });
 </script>
 

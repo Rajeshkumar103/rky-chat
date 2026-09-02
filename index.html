@@ -671,6 +671,7 @@ html,body{
 }
 </style>
 
+<link rel="stylesheet" href="whatsapp.css">
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -799,7 +800,7 @@ Cancel
 
 <!-- 📋 Rky Chat Call History v1 -->
 <div id="callHistoryPanel"
-style="margin:10px 0; padding:12px; background:#f2f2f2; border-radius:10px;">
+style="display:none; margin:10px 0; padding:12px; background:#f2f2f2; border-radius:10px;">
 
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <strong>📋 Call History</strong>
@@ -819,7 +820,7 @@ style="margin:10px 0; padding:12px; background:#f2f2f2; border-radius:10px;">
 </div>
 
 <div id="voiceCallControls"
-style="display:block; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
+style="display:none; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
 
     <button
         id="startVoiceCallButton"
@@ -15828,6 +15829,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (typeof loadRequests === "function") {
         loadRequests();
+    }
+
+    // 🧹 Keep main screen clean after login
+    selectedFriend = "";
+
+    const friendProfile = document.getElementById("friendProfile");
+    const callHistoryPanel = document.getElementById("callHistoryPanel");
+    const voiceCallControls = document.getElementById("voiceCallControls");
+    const videoCallControls = document.getElementById("videoCallControls");
+
+    if (friendProfile) {
+        friendProfile.innerHTML = "";
+    }
+
+    if (videoCallControls) {
+        videoCallControls.style.display = "none";
+    }
+
+    if (callHistoryPanel) {
+        callHistoryPanel.style.display = "none";
+    }
+
+    if (voiceCallControls) {
+        voiceCallControls.style.display = "none";
     }
 
     if (typeof startStatusHeartbeat === "function") {

@@ -543,172 +543,132 @@ html,body{
 
 
 
-<style id="rky-whatsapp-single-final">
+
+
+
+
+
+
+
+
+
+
+
+
+<style id="rky-composer-one-clean">
+
 .wa-bottom-bar{
-  width:100% !important;
-  max-width:100% !important;
-  min-width:0 !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:4px !important;
-  padding:5px !important;
-  margin:10px 0 !important;
-  background:#f0f0f0 !important;
-  border-radius:24px !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
+    display:flex !important;
+    align-items:center !important;
+    width:100% !important;
+    max-width:100% !important;
+    gap:4px !important;
+    padding:4px !important;
+    box-sizing:border-box !important;
+    overflow:hidden !important;
 }
 
 .wa-bottom-bar #message{
-  order:2 !important;
-  flex:1 1 auto !important;
-  min-width:0 !important;
-  width:1px !important;
-  max-width:none !important;
-  height:40px !important;
-  padding:8px 12px !important;
-  border:1px solid #ddd !important;
-  outline:none !important;
-  border-radius:20px !important;
-  background:#fff !important;
-  font-size:15px !important;
-  box-sizing:border-box !important;
+    order:2 !important;
+    flex:1 1 auto !important;
+    min-width:0 !important;
+    width:auto !important;
+    height:40px !important;
+    padding:8px 12px !important;
+    border:1px solid #ddd !important;
+    border-radius:20px !important;
+    background:#fff !important;
+    outline:none !important;
+    font-size:15px !important;
+    box-sizing:border-box !important;
 }
 
 .wa-bottom-bar .wa-emoji-btn{
-  order:1 !important;
+    order:1 !important;
 }
 
 .wa-bottom-bar .wa-photo-btn{
-  order:3 !important;
+    order:3 !important;
+}
+
+.wa-bottom-bar .wa-camera-btn{
+    order:4 !important;
 }
 
 .wa-bottom-bar .wa-voice-btn{
-  order:4 !important;
+    order:5 !important;
+}
+
+.wa-bottom-bar .wa-send-btn{
+    order:4 !important;
+    display:none !important;
+    background:#2196f3 !important;
+    color:#fff !important;
+    font-size:24px !important;
 }
 
 .wa-bottom-bar button{
-  flex:0 0 40px !important;
-  width:40px !important;
-  min-width:40px !important;
-  max-width:40px !important;
-  height:40px !important;
-  padding:0 !important;
-  margin:0 !important;
-  border:0 !important;
-  border-radius:50% !important;
-  background:transparent !important;
-  font-size:20px !important;
-  line-height:40px !important;
-  cursor:pointer !important;
+    flex:0 0 40px !important;
+    width:40px !important;
+    min-width:40px !important;
+    max-width:40px !important;
+    height:40px !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+    border-radius:50% !important;
+    background:transparent !important;
+    font-size:20px !important;
+    cursor:pointer !important;
 }
 
 @media(max-width:500px){
-  .wa-bottom-bar{
-    gap:2px !important;
-    padding:4px !important;
-  }
 
-  .wa-bottom-bar button{
-    flex-basis:38px !important;
-    width:38px !important;
-    min-width:38px !important;
-    max-width:38px !important;
-    height:38px !important;
-    line-height:38px !important;
-    font-size:19px !important;
-  }
+    .wa-bottom-bar{
+        gap:2px !important;
+        padding:4px !important;
+    }
 
-  .wa-bottom-bar #message{
-    height:38px !important;
-    font-size:16px !important;
-  }
+    .wa-bottom-bar button{
+        flex-basis:36px !important;
+        width:36px !important;
+        min-width:36px !important;
+        max-width:36px !important;
+        height:36px !important;
+        font-size:18px !important;
+    }
+
+    .wa-bottom-bar #message{
+        height:36px !important;
+        font-size:16px !important;
+        padding:7px 10px !important;
+    }
 }
+
 </style>
 
 
-
-
-
-
-
-
-<style id="rky-composer-real-final">
-
-.wa-bottom-bar{
-  display:flex !important;
-  align-items:center !important;
-  width:100% !important;
-  max-width:100% !important;
-  min-width:0 !important;
-  gap:4px !important;
-  padding:5px !important;
-  margin:10px 0 !important;
-  background:#f0f0f0 !important;
-  border-radius:24px !important;
-  box-sizing:border-box !important;
-}
-
-.wa-bottom-bar #message{
-  flex:1 1 auto !important;
-  min-width:0 !important;
-  width:1px !important;
-  max-width:none !important;
-  height:40px !important;
-  padding:8px 12px !important;
-  border:1px solid #ddd !important;
-  border-radius:20px !important;
-  background:#fff !important;
-  outline:none !important;
-  font-size:15px !important;
-  box-sizing:border-box !important;
-}
-
-.wa-bottom-bar button{
-  flex:0 0 40px !important;
-  width:40px !important;
-  min-width:40px !important;
-  max-width:40px !important;
-  height:40px !important;
+<style id="rky-send-final-fix">
+.wa-bottom-bar .wa-send-btn{
+  display:none !important;
+  flex:0 0 38px !important;
+  width:38px !important;
+  min-width:38px !important;
+  max-width:38px !important;
+  height:38px !important;
+  border-radius:50% !important;
+  background:#2196f3 !important;
+  color:white !important;
+  font-size:22px !important;
+  line-height:38px !important;
+  text-align:center !important;
   padding:0 !important;
   margin:0 !important;
-  border:0 !important;
-  border-radius:50% !important;
-  background:transparent !important;
-  font-size:20px !important;
-  cursor:pointer !important;
 }
 
-.wa-send-btn{
-  display:none !important;
-  background:#2196f3 !important;
-  color:#fff !important;
-  font-size:24px !important;
+.wa-bottom-bar .wa-send-btn.rky-show-send{
+  display:block !important;
 }
-
-@media(max-width:500px){
-
-  .wa-bottom-bar{
-    gap:2px !important;
-    padding:4px !important;
-  }
-
-  .wa-bottom-bar button{
-    flex-basis:36px !important;
-    width:36px !important;
-    min-width:36px !important;
-    max-width:36px !important;
-    height:36px !important;
-    font-size:18px !important;
-  }
-
-  .wa-bottom-bar #message{
-    height:36px !important;
-    font-size:16px !important;
-    padding:7px 10px !important;
-  }
-}
-
 </style>
 
 </head>  
@@ -15604,55 +15564,132 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-<script id="rky-composer-single-final">
+
+
+
+
+
+
+<script id="rky-composer-final-clean">
+(function(){
+
 function updateComposerButtons(){
+
+    const input = document.getElementById("message");
+    const photo = document.querySelector(".wa-photo-btn");
+    const camera = document.querySelector(".wa-camera-btn");
+    const voice = document.querySelector(".wa-voice-btn");
+    const send = document.querySelector(".wa-send-btn");
+
+    if(!input) return;
+
+    const hasText = input.value.trim().length > 0;
+
+    /* Photo सधैं देखिने */
+    if(photo){
+        photo.style.setProperty("display","block","important");
+    }
+
+    if(hasText){
+
+        /* लेख्दा:
+           😀 Message 📷 ➤
+        */
+
+        if(camera){
+            camera.style.setProperty("display","none","important");
+        }
+
+        if(voice){
+            voice.style.setProperty("display","none","important");
+        }
+
+        if(send){
+            send.style.setProperty("display","block","important");
+        }
+
+    }else{
+
+        /* खाली हुँदा:
+           😀 Message 📷 🎥
+                         🎤
+        */
+
+        if(camera){
+            camera.style.setProperty("display","block","important");
+        }
+
+        if(voice){
+            voice.style.setProperty("display","block","important");
+        }
+
+        if(send){
+            send.style.setProperty("display","none","important");
+        }
+    }
+}
+
+/* Typing गर्दा */
+document.addEventListener("input", function(e){
+    if(e.target && e.target.id === "message"){
+        updateComposerButtons();
+    }
+});
+
+/* Page load */
+document.addEventListener("DOMContentLoaded", function(){
+    updateComposerButtons();
+});
+
+/* Send भएपछि तुरुन्त फेरि buttons update */
+const originalSend = window.sendmessage;
+
+if(typeof originalSend === "function"){
+
+    window.sendmessage = async function(){
+
+        await originalSend();
+
+        const input = document.getElementById("message");
+
+        if(input){
+            input.value = "";
+        }
+
+        updateComposerButtons();
+    };
+}
+
+})();
+</script>
+
+
+<script id="rky-send-final-js">
+(function(){
+
+function rkyUpdateSendButton(){
+
   const input = document.getElementById("message");
-  const photo = document.querySelector(".wa-photo-btn");
-  const camera = document.querySelector(".wa-camera-btn");
-  const voice = document.querySelector(".wa-voice-btn");
   const send = document.querySelector(".wa-send-btn");
 
-  if(!input) return;
+  if(!input || !send) return;
 
-  const hasText = input.value.trim().length > 0;
-
-  /* Photo सधैं देखिने */
-  if(photo){
-    photo.style.setProperty("display","block","important");
-  }
-
-  if(hasText){
-    /* Message लेख्दा */
-    if(camera)
-      camera.style.setProperty("display","none","important");
-
-    if(voice)
-      voice.style.setProperty("display","none","important");
-
-    if(send)
-      send.style.setProperty("display","block","important");
-
+  if(input.value.trim().length > 0){
+    send.classList.add("rky-show-send");
   }else{
-    /* Message खाली हुँदा */
-    if(camera)
-      camera.style.setProperty("display","block","important");
-
-    if(voice)
-      voice.style.setProperty("display","block","important");
-
-    if(send)
-      send.style.setProperty("display","none","important");
+    send.classList.remove("rky-show-send");
   }
 }
 
-document.addEventListener("DOMContentLoaded", function(){
-  const input = document.getElementById("message");
+document.addEventListener("DOMContentLoaded", rkyUpdateSendButton);
 
-  if(input){
-    input.addEventListener("input", updateComposerButtons);
-    updateComposerButtons();
+document.addEventListener("input", function(e){
+  if(e.target && e.target.id === "message"){
+    rkyUpdateSendButton();
   }
 });
+
+})();
 </script>
 
 </body>

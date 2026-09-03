@@ -11581,7 +11581,7 @@ async function login(){
             JSON.stringify(savedUsers)
         );
 
-        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("loginBox").style.setProperty("display", "none", "important");
         document.getElementById("chatBox").style.display = "block";
         const w1 = document.querySelector("body > h1");
         const r1 = document.querySelector("body > #loginBox + button");

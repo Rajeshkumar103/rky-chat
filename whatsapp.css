@@ -389,22 +389,6 @@ body > h1 {
   display: none !important;
 }
 
-/* Login screen */
-#loginBox {
-  width: min(92%, 360px) !important;
-  margin: 80px auto 10px !important;
-  padding: 25px !important;
-  box-sizing: border-box !important;
-  border: none !important;
-  border-radius: 12px !important;
-  background: #fff !important;
-}
-
-/* Register button */
-body > button[onclick="register()"] {
-  display: block !important;
-  margin: 10px auto !important;
-}
 
 /* Main chat */
 #chatBox {
@@ -833,289 +817,57 @@ body > #loginBox + button {
   min-height: 46px !important;
 }
 
-/* ===== FINAL WHATSAPP MOBILE CHAT FIX ===== */
-
-/* Login/Register हटेपछि ChatBox मात्र मुख्य screen */
-body:has(#chatBox[style*="display: block"]) {
+/* Username alignment fix */
+#loginBox {
   display: flex !important;
-  justify-content: center !important;
+  flex-direction: column !important;
   align-items: stretch !important;
-  overflow: hidden !important;
 }
 
-/* Login सफल भएपछि Register button पनि screen बाट हटाउने */
-body:has(#chatBox[style*="display: block"]) > #loginBox {
-  display: none !important;
-}
-
-body:has(#chatBox[style*="display: block"]) > #loginBox + button {
-  display: none !important;
-}
-
-/* Main Chat screen */
-#chatBox {
-  position: relative !important;
-  width: 100% !important;
-  max-width: 480px !important;
-  height: 100dvh !important;
-  min-height: 100dvh !important;
-  max-height: 100dvh !important;
-  margin: 0 auto !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  background: #efeae2 !important;
-}
-
-/* WhatsApp Header */
-#chatBox > h2 {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  height: 56px !important;
-  margin: 0 !important;
-  padding: 0 50px 0 58px !important;
-  box-sizing: border-box !important;
-  display: flex !important;
-  align-items: center !important;
-  z-index: 100 !important;
-}
-
-/* Profile/name/status header area */
-#chatBox > #profile,
-#chatBox > #userName,
-#chatBox > #status {
-  z-index: 110 !important;
-}
-
-/* Main message area must cover old Friends/Search panels */
-#messages {
-  position: absolute !important;
-  top: 56px !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 56px !important;
-  width: 100% !important;
-  height: auto !important;
-  margin: 0 !important;
-  padding: 10px 8px !important;
-  box-sizing: border-box !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  background: #efeae2 !important;
-  border: none !important;
-  z-index: 50 !important;
-}
-
-/* Typing text */
-#typing {
-  position: absolute !important;
-  left: 10px !important;
-  right: 10px !important;
-  bottom: 58px !important;
-  z-index: 70 !important;
-  margin: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Reply box */
-#replyBox {
-  position: absolute !important;
-  left: 5px !important;
-  right: 5px !important;
-  bottom: 58px !important;
-  z-index: 80 !important;
-  margin: 0 !important;
-}
-
-/* Bottom WhatsApp composer */
-.wa-bottom-bar {
-  position: absolute !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100% !important;
-  height: 56px !important;
-  min-height: 56px !important;
-  max-height: 56px !important;
-  box-sizing: border-box !important;
-  z-index: 200 !important;
-}
-
-/* Message input */
-.wa-bottom-bar #message {
-  min-width: 0 !important;
-  flex: 1 1 auto !important;
-  height: 40px !important;
-  max-height: 40px !important;
-  box-sizing: border-box !important;
-}
-
-/* Composer buttons */
-.wa-bottom-bar button {
-  flex: 0 0 34px !important;
-  width: 34px !important;
-  min-width: 34px !important;
-  height: 34px !important;
-  max-height: 34px !important;
-}
-
-/* More menu stays above everything */
-#rkyMoreMenu {
-  z-index: 1000 !important;
-}
-
-/* Incoming calls stay above chat */
-#incomingVoiceCall {
-  z-index: 100000 !important;
-}
-
-/* Desktop */
-@media (min-width: 481px) {
-  #chatBox {
-    max-width: 480px !important;
-    box-shadow: 0 0 18px rgba(0,0,0,.18) !important;
-  }
-}
-
-/* ===== LOGIN -> CHAT FINAL DISPLAY FIX ===== */
-
-/* When ChatBox is visible, use ChatBox as the only main screen */
-body:has(#chatBox[style*="display: block"]) {
+#loginBox #username {
   display: block !important;
   width: 100% !important;
-  height: 100% !important;
-  min-height: 100dvh !important;
-  overflow: hidden !important;
-}
-
-/* Hide login and Register after successful login */
-body:has(#chatBox[style*="display: block"]) > #loginBox {
-  display: none !important;
-}
-
-body:has(#chatBox[style*="display: block"]) > button[onclick="register()"] {
-  display: none !important;
-}
-
-/* Keep ChatBox centered and full mobile screen */
-body:has(#chatBox[style*="display: block"]) > #chatBox {
-  display: block !important;
-  width: 100% !important;
-  max-width: 480px !important;
-  height: 100dvh !important;
-  min-height: 100dvh !important;
-  max-height: 100dvh !important;
-  margin: 0 auto !important;
-}
-
-/* ===== MOBILE KEYBOARD / MESSAGE BOX FIX ===== */
-
-.wa-bottom-bar {
-  bottom: 0 !important;
-  padding-bottom: max(5px, env(safe-area-inset-bottom)) !important;
+  margin: 7px 0 !important;
   box-sizing: border-box !important;
 }
 
-/* Keep message input comfortably above the bottom edge */
-.wa-bottom-bar #message {
-  margin-bottom: 4px !important;
-}
-
-/* Android mobile */
+/* FINAL MOBILE LOGIN BOX SIZE */
 @media (max-width: 480px) {
-  .wa-bottom-bar {
-    height: 62px !important;
-    min-height: 62px !important;
-    max-height: 62px !important;
-    padding: 6px 5px !important;
+  #loginBox {
+    width: calc(100vw - 32px) !important;
+    max-width: 400px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
   }
 
-  #messages {
-    bottom: 62px !important;
-  }
-
-  .wa-bottom-bar #message {
-    height: 42px !important;
-    max-height: 42px !important;
-    margin-bottom: 5px !important;
-  }
-
-  .wa-bottom-bar button {
-    margin-bottom: 5px !important;
+  #loginBox input,
+  #loginBox button {
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
 }
 
-/* ===== FINAL MOBILE LOGIN SCREEN ===== */
 
+/* ===== LOGIN CARD SMALL SIZE ===== */
 @media (max-width: 480px) {
-
-  /* Login अवस्था */
-  body:has(#loginBox:not([style*="display: none"])) {
-    display: block !important;
-    position: relative !important;
-    width: 100vw !important;
-    min-width: 100vw !important;
-    max-width: 100vw !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
+  #loginBox {
+    width: 300px !important;
+    max-width: calc(100vw - 40px) !important;
+    margin: 20px auto 10px !important;
+    padding: 15px !important;
     box-sizing: border-box !important;
-    background: #f0f2f5 !important;
   }
+}
 
-  /* Login heading */
-  body:has(#loginBox:not([style*="display: none"])) > h1 {
-    display: block !important;
+/* ===== USERNAME INPUT FIT ===== */
+@media (max-width: 480px) {
+  #loginBox #username {
     width: 100% !important;
-    box-sizing: border-box !important;
-    margin: 0 !important;
-    padding: 45px 20px 20px !important;
-    text-align: center !important;
-    font-size: 28px !important;
-  }
-
-  /* Login card */
-  body:has(#loginBox:not([style*="display: none"])) > #loginBox {
-    display: flex !important;
-    width: calc(100vw - 32px) !important;
-    max-width: 400px !important;
-    margin: 20px auto 12px !important;
-    padding: 22px !important;
-    box-sizing: border-box !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    border-radius: 14px !important;
-  }
-
-  /* Inputs */
-  body:has(#loginBox:not([style*="display: none"])) > #loginBox input {
-    width: 100% !important;
-    height: 48px !important;
-    min-height: 48px !important;
-    box-sizing: border-box !important;
-    font-size: 16px !important;
-  }
-
-  /* Login buttons */
-  body:has(#loginBox:not([style*="display: none"])) > #loginBox button {
-    width: 100% !important;
-    min-height: 46px !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Register button */
-  body:has(#loginBox:not([style*="display: none"])) > button[onclick="register()"] {
+    max-width: 100% !important;
+    min-width: 0 !important;
     display: block !important;
-    width: calc(100vw - 32px) !important;
-    max-width: 400px !important;
-    min-height: 46px !important;
-    margin: 10px auto !important;
     box-sizing: border-box !important;
   }
 }

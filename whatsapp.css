@@ -389,6 +389,22 @@ body > h1 {
   display: none !important;
 }
 
+/* Login screen */
+#loginBox {
+  width: min(92%, 360px) !important;
+  margin: 80px auto 10px !important;
+  padding: 25px !important;
+  box-sizing: border-box !important;
+  border: none !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+}
+
+/* Register button */
+body > button[onclick="register()"] {
+  display: block !important;
+  margin: 10px auto !important;
+}
 
 /* Main chat */
 #chatBox {
@@ -817,57 +833,13 @@ body > #loginBox + button {
   min-height: 46px !important;
 }
 
-/* Username alignment fix */
-#loginBox {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-}
-
+/* ===== USERNAME ONLY FIX ===== */
 #loginBox #username {
+  position: static !important;
+  float: none !important;
   display: block !important;
   width: 100% !important;
-  margin: 7px 0 !important;
+  max-width: 100% !important;
+  margin: 8px 0 !important;
   box-sizing: border-box !important;
-}
-
-/* FINAL MOBILE LOGIN BOX SIZE */
-@media (max-width: 480px) {
-  #loginBox {
-    width: calc(100vw - 32px) !important;
-    max-width: 400px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    padding: 20px !important;
-    box-sizing: border-box !important;
-  }
-
-  #loginBox input,
-  #loginBox button {
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
-}
-
-
-/* ===== LOGIN CARD SMALL SIZE ===== */
-@media (max-width: 480px) {
-  #loginBox {
-    width: 300px !important;
-    max-width: calc(100vw - 40px) !important;
-    margin: 20px auto 10px !important;
-    padding: 15px !important;
-    box-sizing: border-box !important;
-  }
-}
-
-/* ===== USERNAME INPUT FIT ===== */
-@media (max-width: 480px) {
-  #loginBox #username {
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    display: block !important;
-    box-sizing: border-box !important;
-  }
 }

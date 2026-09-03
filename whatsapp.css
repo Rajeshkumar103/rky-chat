@@ -1010,3 +1010,40 @@ body:has(#chatBox[style*="display: block"]) > #chatBox {
   max-height: 100dvh !important;
   margin: 0 auto !important;
 }
+
+/* ===== MOBILE KEYBOARD / MESSAGE BOX FIX ===== */
+
+.wa-bottom-bar {
+  bottom: 0 !important;
+  padding-bottom: max(5px, env(safe-area-inset-bottom)) !important;
+  box-sizing: border-box !important;
+}
+
+/* Keep message input comfortably above the bottom edge */
+.wa-bottom-bar #message {
+  margin-bottom: 4px !important;
+}
+
+/* Android mobile */
+@media (max-width: 480px) {
+  .wa-bottom-bar {
+    height: 62px !important;
+    min-height: 62px !important;
+    max-height: 62px !important;
+    padding: 6px 5px !important;
+  }
+
+  #messages {
+    bottom: 62px !important;
+  }
+
+  .wa-bottom-bar #message {
+    height: 42px !important;
+    max-height: 42px !important;
+    margin-bottom: 5px !important;
+  }
+
+  .wa-bottom-bar button {
+    margin-bottom: 5px !important;
+  }
+}

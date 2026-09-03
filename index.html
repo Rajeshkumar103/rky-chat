@@ -11583,6 +11583,19 @@ async function login(){
 
         document.getElementById("loginBox").style.display = "none";
         document.getElementById("chatBox").style.display = "block";
+        const w1 = document.querySelector("body > h1");
+        const r1 = document.querySelector("body > #loginBox + button");
+        if (w1) w1.style.display = "none";
+        if (r1) r1.style.display = "none";
+
+        document.querySelector("body > h1").style.display = "none";
+        document.querySelector("body > #loginBox + button").style.display = "none";
+
+        const loginWelcome = document.querySelector("body > h1");
+        const registerButton = document.querySelector("body > #loginBox + button");
+
+        if (loginWelcome) loginWelcome.style.display = "none";
+        if (registerButton) registerButton.style.display = "none";
 
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
@@ -15787,3 +15800,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+
+

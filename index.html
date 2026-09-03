@@ -1,4 +1,4 @@
-f<!DOCTYPE html>  
+<!DOCTYPE html>  
 <html>  
 <meta charset="UTF-8">
 <head>    
@@ -603,14 +603,14 @@ html,body{
 <body>  
 <h1>Welcome to Rky Chat</h1>  
 <div id="loginBox">    
-<input id="username" type="text" placeholder="username">    
+<input id="username" type="text" placeholder="username" style="color:#000 !important; -webkit-text-fill-color:#000 !important; background:#fff !important;">    
 <input id="password" type="password" placeholder="password">  
 <button onclick="login()">Login</button>
 <button class="clearBtn" onclick="clearData()">
 Clear Data
 </button>
  </div> 
-<button onclick="register()">Register</button>
+<button id="registerButton" onclick="register()">Register</button>
 <div id="chatBox" style="display:none;">
 <div id="rkyMoreMenu">
 
@@ -11584,7 +11584,7 @@ async function login(){
         document.getElementById("loginBox").style.setProperty("display", "none", "important");
         document.getElementById("chatBox").style.display = "block";
         const w1 = document.querySelector("body > h1");
-        const r1 = document.querySelector("body > #loginBox + button");
+        const r1 = document.getElementById("registerButton");
         if (w1) w1.style.setProperty("display", "none", "important");
         if (r1) r1.style.setProperty("display", "none", "important");
 
@@ -11592,7 +11592,7 @@ async function login(){
         document.querySelector("body > #loginBox + button").style.display = "none";
 
         const loginWelcome = document.querySelector("body > h1");
-        const registerButton = document.querySelector("body > #loginBox + button");
+        const registerButton = document.getElementById("registerButton");
 
         if (loginWelcome) loginWelcome.style.setProperty("display", "none", "important");
         if (registerButton) registerButton.style.setProperty("display", "none", "important");

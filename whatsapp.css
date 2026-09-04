@@ -975,3 +975,44 @@ body:has(#loginBox) {
 #chatBox > h3 {
   display: none !important;
 }
+
+/* ===== RKY CLEAN CHAT HEADER ===== */
+
+/* Profile name + online status */
+#chatBox #userName,
+#chatBox #status {
+  color: #111 !important;
+  text-shadow: none !important;
+}
+
+/* Three-dot button */
+#rkyMoreButton {
+  color: #111 !important;
+  background: transparent !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  z-index: 10000 !important;
+}
+
+/* Hide visible Profile Settings button only */
+#chatBox > button[onclick="openProfileSettings()"] {
+  display: none !important;
+}
+
+/* Keep message composer at bottom */
+#messageInput,
+#messageBox,
+#chatInput,
+#inputArea {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: auto !important;
+}
+
+/* Don't let chat content hide behind composer */
+#chatBox {
+  padding-bottom: 70px !important;
+}
+

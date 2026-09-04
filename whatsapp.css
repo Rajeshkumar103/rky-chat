@@ -784,7 +784,7 @@ body {
   }
 }
 
-/* ===== LOGIN SCREEN MOBILE FIX ===== */
+/* ===== FINAL LOGIN SCREEN FIX ===== */
 
 body:has(#loginBox:not([style*="display: none"])) {
   display: block !important;
@@ -812,17 +812,31 @@ body > h1 {
   border-radius: 14px !important;
 }
 
-#loginBox input {
+#loginBox input,
+#loginBox input#username,
+#loginBox input#password {
   width: 100% !important;
   height: 48px !important;
   box-sizing: border-box !important;
   font-size: 16px !important;
+  color: #222 !important;
+  -webkit-text-fill-color: #222 !important;
+  background: #fff !important;
+  opacity: 1 !important;
+  caret-color: #222 !important;
+  text-shadow: none !important;
 }
 
 #loginBox button {
   width: 100% !important;
   min-height: 46px !important;
   box-sizing: border-box !important;
+}
+
+#loginBox #username {
+  position: static !important;
+  float: none !important;
+  display: block !important;
 }
 
 body > #loginBox + button {
@@ -833,13 +847,124 @@ body > #loginBox + button {
   min-height: 46px !important;
 }
 
-/* ===== USERNAME ONLY FIX ===== */
-#loginBox #username {
-  position: static !important;
-  float: none !important;
+body:has(#chatBox[style*="display: block"]) > h1,
+body:has(#chatBox[style*="display: block"]) > #loginBox + button {
+  display: none !important;
+}
+
+
+/* FINAL LOGIN INPUT TEXT VISIBILITY FIX */
+#loginBox input#username,
+#loginBox input#password {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+  caret-color: #111111 !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-indent: 0 !important;
+  filter: none !important;
+}
+
+#loginBox input#username::placeholder,
+#loginBox input#password::placeholder {
+  color: #777777 !important;
+  -webkit-text-fill-color: #777777 !important;
+  opacity: 1 !important;
+}
+
+
+/* ===== RKY CHAT LOGIN FINAL ===== */
+body:has(#loginBox) {
+  background: #f0f2f5 !important;
+}
+
+#loginBox {
+  width: calc(100% - 32px) !important;
+  max-width: 400px !important;
+  margin: 20px auto !important;
+  padding: 22px !important;
+  box-sizing: border-box !important;
+  background: #fff !important;
+  border-radius: 14px !important;
+}
+
+#loginBox input {
+  all: unset !important;
   display: block !important;
   width: 100% !important;
-  max-width: 100% !important;
-  margin: 8px 0 !important;
+  height: 48px !important;
   box-sizing: border-box !important;
+  padding: 12px !important;
+  margin: 0 0 12px !important;
+  background: #fff !important;
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+  caret-color: #000 !important;
+  font: 16px Arial, sans-serif !important;
+  border: 1px solid #ccc !important;
+  border-radius: 8px !important;
+}
+
+#loginBox input::placeholder {
+  color: #777 !important;
+  -webkit-text-fill-color: #777 !important;
+}
+
+#loginBox button {
+  width: 100% !important;
+  min-height: 46px !important;
+  box-sizing: border-box !important;
+}
+
+#registerButton {
+  display: block !important;
+  width: calc(100% - 32px) !important;
+  max-width: 400px !important;
+  margin: 10px auto !important;
+}
+
+/* ---------- RKY PROFILE FIX ---------- */
+#chatBox > #profile {
+  position: absolute !important;
+  top: 10px !important;
+  left: 12px !important;
+  width: 48px !important;
+  height: 48px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border: 2px solid white !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  z-index: 9999 !important;
+}
+
+#chatBox > #userName {
+  position: absolute !important;
+  top: 13px !important;
+  left: 70px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: white !important;
+  font-size: 17px !important;
+  font-weight: 600 !important;
+  z-index: 9999 !important;
+}
+
+#chatBox > #status {
+  position: absolute !important;
+  top: 35px !important;
+  left: 70px !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #d9fdd3 !important;
+  font-size: 11px !important;
+  z-index: 9999 !important;
 }

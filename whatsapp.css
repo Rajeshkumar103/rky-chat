@@ -968,3 +968,10 @@ body:has(#loginBox) {
   font-size: 11px !important;
   z-index: 9999 !important;
 }
+
+/* Hide Rky Chat title in normal chat header */
+#chatBox > h1,
+#chatBox > h2,
+#chatBox > h3 {
+  display: none !important;
+}

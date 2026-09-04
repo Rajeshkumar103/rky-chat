@@ -1016,3 +1016,23 @@ body:has(#loginBox) {
   padding-bottom: 70px !important;
 }
 
+
+/* ===== RKY MESSAGE BAR AT BOTTOM ===== */
+div:has(> input[placeholder*="Type a message"]) {
+  position: fixed !important;
+  bottom: 0 !important;
+  top: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 340px !important;
+  min-height: 58px !important;
+  z-index: 99999 !important;
+  box-sizing: border-box !important;
+}
+
+/* Keep chat area above the message bar */
+#chatBox {
+  padding-bottom: 65px !important;
+}
+

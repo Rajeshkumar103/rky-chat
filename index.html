@@ -15787,12 +15787,18 @@ function rkySaveProfile(){
 }
 
 document.addEventListener("click",function(e){
- var t=e.target.closest("*");
- if(!t)return;
- if((t.textContent||"").trim()==="Profile"){
-   if(t.id!=="rkyNewProfileName" && !t.closest("#rkyNewProfile")){
-     rkyOpenProfile();
+ var t=e.target;
+ while(t && t!==document.body){
+   var txt=(t.textContent||"").trim();
+   if(txt==="Profile" || txt.includes("Profile Settings")){
+     if(!t.closest("#rkyNewProfile")){
+       e.preventDefault();
+       e.stopPropagation();
+       rkyOpenProfile();
+       return;
+     }
    }
+   t=t.parentElement;
  }
 });
 </script>

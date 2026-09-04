@@ -15713,6 +15713,89 @@ document.addEventListener("input", function(e){
   new MutationObserver(fix).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
+
+<!-- RKY_NEW_PROFILE_MODULE -->
+<style>
+#rkyNewProfile{
+ display:none;position:fixed;inset:0;z-index:999999;
+ background:#fff;color:#111;font-family:Arial,sans-serif;
+}
+#rkyNewProfile .head{
+ height:60px;background:#075e54;color:white;display:flex;
+ align-items:center;padding:0 15px;gap:15px;font-size:19px;
+}
+#rkyNewProfile .body{text-align:center;padding:35px 20px}
+#rkyNewProfileImg{
+ width:110px;height:110px;border-radius:50%;object-fit:cover;
+ border:3px solid #075e54;margin:15px auto;display:block;
+}
+#rkyNewProfile input{
+ width:90%;max-width:350px;padding:12px;margin:8px;
+ border:1px solid #ccc;border-radius:8px;
+}
+.rkyProfileBtn{
+ padding:11px 22px;border:0;border-radius:8px;
+ background:#075e54;color:white;margin:8px;cursor:pointer;
+}
+</style>
+
+<div id="rkyNewProfile">
+ <div class="head">
+  <button onclick="rkyCloseProfile()" style="background:none;border:0;color:white;font-size:25px">‹</button>
+  <b>Profile</b>
+ </div>
+ <div class="body">
+  <img id="rkyNewProfileImg" src="https://via.placeholder.com/110">
+  <h2 id="rkyNewProfileName">Profile</h2>
+  <input id="rkyNewProfileNameInput" placeholder="Profile name">
+  <input id="rkyNewProfilePhotoInput" placeholder="Photo URL">
+  <br>
+  <button class="rkyProfileBtn" onclick="rkySaveProfile()">Save</button>
+ </div>
+</div>
+
+<script>
+function rkyOpenProfile(){
+ document.getElementById("rkyNewProfile").style.display="block";
+ var old=document.getElementById("newProfileName");
+ var name=document.getElementById("rkyNewProfileNameInput");
+ var photo=document.getElementById("rkyNewProfilePhotoInput");
+ if(old) name.value=old.value||"";
+ var img=document.getElementById("profile");
+ if(img && img.src && !img.src.includes("placeholder")){
+   photo.value=img.src;
+   document.getElementById("rkyNewProfileImg").src=img.src;
+ }
+ document.getElementById("rkyNewProfileName").textContent=name.value||"Profile";
+}
+function rkyCloseProfile(){
+ document.getElementById("rkyNewProfile").style.display="none";
+}
+function rkySaveProfile(){
+ var name=document.getElementById("rkyNewProfileNameInput").value.trim();
+ var photo=document.getElementById("rkyNewProfilePhotoInput").value.trim();
+ if(!name){alert("Profile name राख्नुहोस्");return;}
+ var old=document.getElementById("newProfileName");
+ if(old) old.value=name;
+ var img=document.getElementById("profile");
+ if(img && photo) img.src=photo;
+ var title=document.getElementById("userName");
+ if(title) title.textContent="User: "+name;
+ document.getElementById("rkyNewProfileName").textContent=name;
+ alert("Profile Updated ✅");
+ rkyCloseProfile();
+}
+
+document.addEventListener("click",function(e){
+ var t=e.target.closest("*");
+ if(!t)return;
+ if((t.textContent||"").trim()==="Profile"){
+   if(t.id!=="rkyNewProfileName" && !t.closest("#rkyNewProfile")){
+     rkyOpenProfile();
+   }
+ }
+});
+</script>
 </body>
 </html>
 

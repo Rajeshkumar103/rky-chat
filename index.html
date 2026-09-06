@@ -16075,3 +16075,50 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY SHOW REQUESTS FINAL FIX -->
+<script>
+(function(){
+  window.rkyShowRequests = function(){
+    const content = document.getElementById("rkyCircleRequestsContent");
+    const arrow = document.getElementById("rkyCircleRequestsArrow");
+
+    if(!content){
+      alert("Friend Requests section not found");
+      return;
+    }
+
+    /* Show the Friend Requests section */
+    content.style.setProperty("display","block","important");
+    content.style.setProperty("visibility","visible","important");
+    content.style.setProperty("opacity","1","important");
+    content.style.setProperty("height","auto","important");
+    content.style.setProperty("max-height","none","important");
+    content.style.setProperty("overflow","visible","important");
+
+    let p = content.parentElement;
+    for(let i=0; p && i<8; i++,p=p.parentElement){
+      if(getComputedStyle(p).display === "none")
+        p.style.setProperty("display","block","important");
+      if(getComputedStyle(p).visibility === "hidden")
+        p.style.setProperty("visibility","visible","important");
+    }
+
+    if(arrow) arrow.textContent="⌄";
+
+    if(typeof window.loadRequests === "function"){
+      window.loadRequests();
+    }
+
+    content.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
+  };
+
+  document.addEventListener("DOMContentLoaded",function(){
+    window.rkyShowRequests = window.rkyShowRequests;
+  });
+})();
+</script>
+

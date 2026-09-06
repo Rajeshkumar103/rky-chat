@@ -1,9 +1,40 @@
-<!DOCTYPE html>  
+f<!DOCTYPE html>  
 <html>  
 <meta charset="UTF-8">
 <head>    
   <title>Rky Chat</title>    
   <style>   
+  #loginBox{
+  width:300px;
+  margin:30px auto;
+  padding:20px;
+  border:1px solid #ccc;
+  border-radius:15px;
+  box-shadow:0 0 10px gray;
+  text-align:center;
+}
+
+#loginBox input{
+  width:90%;
+  padding:10px;
+  margin:8px;
+  border-radius:8px;
+  border:1px solid gray;
+  font-size:16px;
+}
+
+#loginBox button{
+  width:95%;
+  padding:10px;
+  margin:5px;
+  background:#2196f3;
+  color:white;
+  font-size:16px;
+}
+
+#loginBox button:hover{
+  background:#1976d2;
+}
   #profile{
   border-radius:50%;
   border:3px solid black;
@@ -54,6 +85,45 @@ button{
   background:#f2f2f2;
 }
 
+#loginBox{
+  background:white;
+  width:300px;
+  margin:50px auto;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 0 10px gray;
+}
+
+#loginBox input{
+  width:90%;
+  padding:12px;
+  margin:8px;
+  border-radius:8px;
+  border:1px solid gray;
+  font-size:16px;
+}
+
+button{
+  padding:10px 18px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  background:#2196f3;
+  color:white;
+  font-size:15px;
+}
+
+button:hover{
+  opacity:0.8;
+}
+
+#loginBox button{
+  width:90%;
+}
+
+.clearBtn{
+  background:red;
+}
        #messages p{    
   border:1px solid black;    
   padding:10px;    
@@ -83,6 +153,9 @@ margin:10px auto;
 padding:10px;
 }
 
+#loginBox{
+width:90%;
+}
 
 #messages{
 height:250px;
@@ -122,7 +195,7 @@ font-size:16px;
     position:absolute;
     top:58px;
     right:10px;
-    z-index:999999;
+    z-index:10000;
     background:white;
     border:1px solid #ddd;
     border-radius:12px;
@@ -154,32 +227,6 @@ font-size:16px;
 </style>
 
 <script id="rkyFinalLayoutScript">
-
-function toggleRkyCircleRequests(){
-    const content = document.getElementById("rkyCircleRequestsContent");
-    const arrow = document.getElementById("rkyCircleRequestsArrow");
-
-    if(!content) return;
-
-    const hidden = content.style.display === "none" ||
-                   getComputedStyle(content).display === "none";
-
-    content.style.display = hidden ? "block" : "none";
-
-    if(arrow){
-        arrow.textContent = hidden ? "⌄" : "›";
-    }
-
-    if(hidden){
-        if(typeof loadRequests === "function"){
-            loadRequests();
-        }
-        if(typeof loadSentFriendRequests === "function"){
-            loadSentFriendRequests();
-        }
-    }
-}
-
 function toggleRkyMoreMenu(){
     const menu = document.getElementById("rkyMoreMenu");
     if(!menu) return;
@@ -202,57 +249,8 @@ function rkyMoreAction(action){
     }
 
     if(action === "requests"){
-        const requestHeading = Array.from(
-            document.querySelectorAll("#chatBox h3")
-        ).find(el => el.textContent.trim() === "Friend Requests");
-
-        const requestList = document.getElementById("requestList");
-        const connectHeader = document.getElementById("rkyConnectHeader");
-        const connectionsSection = document.getElementById("rkyConnectionsSection");
-
-
-        if(connectionsSection){
-            connectionsSection.style.display = "block";
-            if(typeof loadRkyConnections === "function"){
-                loadRkyConnections();
-            }
-        }
-
-
-        if(connectHeader){
-            connectHeader.style.display = "block";
-            connectHeader.scrollIntoView({
-                behavior: "smooth",
-                block: "start"
-            });
-        }
-
-        if(requestHeading){
-            requestHeading.style.display = "block";
-            requestHeading.scrollIntoView({
-                behavior: "smooth",
-                block: "center"
-            });
-        }
-
-        if(requestList){
-            requestList.style.display = "block";
-        }
-
-        if(typeof loadRequests === "function"){
+        if(typeof loadRequests === "function")
             loadRequests();
-        }
-
-        const sentRequestsSection =
-            document.getElementById("rkySentRequestsSection");
-
-        if(sentRequestsSection){
-            sentRequestsSection.style.display = "block";
-        }
-
-        if(typeof loadSentFriendRequests === "function"){
-            loadSentFriendRequests();
-        }
     }
 
     if(action === "callHistory"){
@@ -300,317 +298,59 @@ document.addEventListener("click", function(e){
 </script>
 
 
+<style id="rkyHideOldControls">
 
-
-
-<style id="whatsapp-custom-style">
-  :root {
-    --wa-header: #075e54;
-    --wa-bg: #efeae2;
-    --wa-input-bg: #f0f0f0;
-    --wa-green: #00a884;
-    --wa-my-msg: #d9fdd3;
-    --wa-other-msg: #ffffff;
-  }
-  body, html { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-</style>
-
-
-<style>
-  /* WhatsApp Bottom Bar Container */
-  .chat-input-bar, .message-input-container, #inputBar {
-  }
-
-  /* Input Field */
-  .chat-input-bar input, #messageInput {
-  }
-
-  /* Round Green Send Button */
-  #sendBtn, .send-button {
-  }
-</style>
-
-
-<style id="whatsapp-exact-layout">
-  /* Chat main wrapper offset */
-  #chatBox {
-  }
-
-  /* WhatsApp Bottom Message Input Container */
-  .wa-bottom-bar {
-  }
-
-  /* Message Input Field */
-  #message {
-  }
-
-  /* Input bar inside Buttons (Emoji, Attach, Camera) */
-  div:has(> #message) button, #chatBox > button {
-  }
-
-  /* WhatsApp Send Button (Round Green Button) */
-  button[onclick*="sendMessage"], button[onclick*="sendMsg"], #sendBtn {
-  }
-</style>
-
-
-<style id="whatsapp-exact-bar">
-  /* Chat UI Box Layout */
-  #chatBox {
-  }
-
-  /* Chat Messages Box */
-  #chatBox > div[style*="border"] {
-  }
-
-  /* Message Input Bar Fix (WhatsApp Layout) */
-  #message, input[placeholder*="Type a message"] {
-  }
-
-  /* Group Input and Buttons into Single Line */
-  div:has(> #message), div:has(> input[placeholder*="Type a message"]) {
-  }
-
-  /* Style All Action Buttons inside Input Bar */
-  div:has(> #message) button {
-  }
-
-  /* Specific Emoji/Icon Button Override */
-  div:has(> #message) button[onclick*="addEmoji"] {
-  }
-</style>
-
-
-
-
-
-<style id="wa-final-override-v2">
-  .wa-bottom-bar {
-  }
-  .wa-bottom-bar input#message {
-  }
-  .wa-bottom-bar button {
-  }
-  .wa-bottom-bar button[onclick*="addEmoji"] {
-  }
-</style>
-
-
-<style id="rkyMobileFix">
-*{
-    box-sizing:border-box;
-}
-
-html,body{
-    width:100%;
-    max-width:100%;
-    overflow-x:hidden;
-}
-
-#chatBox{
-    width:min(90%, 600px);
-    max-width:100%;
-    margin:10px auto;
-    padding:10px;
-    overflow-x:hidden;
-}
-
-#chatBox input,
-#chatBox textarea,
-#chatBox select,
-#chatBox button{
-    max-width:100%;
-}
-
-#chatBox img,
-#chatBox video{
-    max-width:100%;
-}
-
-#rkyMoreMenu{
-    max-width:calc(100vw - 20px);
-}
-
-@media(max-width:500px){
-    #chatBox{
-        width:calc(100% - 20px);
-        margin:10px;
-        padding:10px;
-    }
-
-    #rkyMoreMenu{
-        right:5px;
-        min-width:0;
-        width:min(210px, calc(100vw - 20px));
-    }
-
-    #rkyCircleRequestsToggle{
-        width:100%;
-    }
-
-    #rkyCircleRequestsContent{
-        width:100%;
-        max-width:100%;
-    }
-
-    #rkyCircleRequestsContent > div{
-        max-width:100%;
-    }
-
-    #rkyCircleRequestsContent input{
-        min-width:0;
-        width:100%;
-    }
-
-    #rkyCircleRequestsContent button{
-        flex-shrink:0;
-    }
-}
-</style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<style id="rky-composer-one-clean">
-
-.wa-bottom-bar{
-    display:flex !important;
-    align-items:center !important;
-    width:100% !important;
-    max-width:100% !important;
-    gap:4px !important;
-    padding:4px !important;
-    box-sizing:border-box !important;
-    overflow:hidden !important;
-}
-
-.wa-bottom-bar #message{
-    order:2 !important;
-    flex:1 1 auto !important;
-    min-width:0 !important;
-    width:auto !important;
-    height:40px !important;
-    padding:8px 12px !important;
-    border:1px solid #ddd !important;
-    border-radius:20px !important;
-    background:#fff !important;
-    outline:none !important;
-    font-size:15px !important;
-    box-sizing:border-box !important;
-}
-
-.wa-bottom-bar .wa-emoji-btn{
-    order:1 !important;
-}
-
-.wa-bottom-bar .wa-photo-btn{
-    order:3 !important;
-}
-
-.wa-bottom-bar .wa-camera-btn{
-    order:4 !important;
-}
-
-.wa-bottom-bar .wa-voice-btn{
-    order:5 !important;
-}
-
-.wa-bottom-bar .wa-send-btn{
-    order:4 !important;
+/* Hide duplicate controls now available inside ⋮ More */
+#chatBox > button[onclick="openProfileSettings()"]{
     display:none !important;
-    background:#2196f3 !important;
-    color:#fff !important;
-    font-size:24px !important;
 }
 
-.wa-bottom-bar button{
-    flex:0 0 40px !important;
-    width:40px !important;
-    min-width:40px !important;
-    max-width:40px !important;
-    height:40px !important;
-    padding:0 !important;
-    margin:0 !important;
-    border:0 !important;
-    border-radius:50% !important;
-    background:transparent !important;
-    font-size:20px !important;
-    cursor:pointer !important;
+#chatBox #callHistoryPanel{
+    display:none !important;
 }
 
-@media(max-width:500px){
+#chatBox > h3 + div#requestList{
+    display:none !important;
+}
 
-    .wa-bottom-bar{
-        gap:2px !important;
-        padding:4px !important;
-    }
+/* Keep friend-request heading/input area from appearing separately */
+#chatBox > h3{
+}
 
-    .wa-bottom-bar button{
-        flex-basis:36px !important;
-        width:36px !important;
-        min-width:36px !important;
-        max-width:36px !important;
-        height:36px !important;
-        font-size:18px !important;
-    }
+/* Hide standalone message search */
+#chatBox #searchMessage{
+    display:none !important;
+}
 
-    .wa-bottom-bar #message{
-        height:36px !important;
-        font-size:16px !important;
-        padding:7px 10px !important;
-    }
+/* Hide standalone Starred button */
+#chatBox > button[onclick="showStarredMessages()"]{
+    display:none !important;
+}
+
+/* Hide standalone Clear Chat wrapper */
+#chatBox > div > button[onclick="clearCurrentChat()"]{
+    display:none !important;
+}
+
+/* Hide standalone Logout */
+#chatBox > button[onclick="logout()"]{
+    display:none !important;
 }
 
 </style>
 
-
-<style id="rky-send-final-fix">
-.wa-bottom-bar .wa-send-btn{
-  display:none !important;
-  flex:0 0 38px !important;
-  width:38px !important;
-  min-width:38px !important;
-  max-width:38px !important;
-  height:38px !important;
-  border-radius:50% !important;
-  background:#2196f3 !important;
-  color:white !important;
-  font-size:22px !important;
-  line-height:38px !important;
-  text-align:center !important;
-  padding:0 !important;
-  margin:0 !important;
-}
-
-.wa-bottom-bar .wa-send-btn.rky-show-send{
-  display:block !important;
-}
-</style>
-
-<link rel="stylesheet" href="whatsapp.css">
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
 <div id="loginBox">    
-<input id="username" type="text" placeholder="username" style="color:#000 !important; -webkit-text-fill-color:#000 !important; background:#fff !important;">    
+<input id="username" type="text" placeholder="username">    
 <input id="password" type="password" placeholder="password">  
 <button onclick="login()">Login</button>
 <button class="clearBtn" onclick="clearData()">
 Clear Data
 </button>
  </div> 
-<button id="registerButton" onclick="register()">Register</button>
+<button onclick="register()">Register</button>
 <div id="chatBox" style="display:none;">
 <div id="rkyMoreMenu">
 
@@ -657,19 +397,19 @@ Clear Data
     ⋮
 </button>
 
-<div id="rkyHeader" style="position:relative; min-height:65px; padding:8px 12px 8px 70px; box-sizing:border-box;">
-<button onclick="requestNotificationPermission()" style="display:none!important;">
+<h2>Rky Chat</h2>
+<button onclick="requestNotificationPermission()">
 🔔 Enable Notifications
 </button>
 
 <p id="status"></p>
-<img id="profile" width="80" height="80" style="display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;top:10px!important;left:12px!important;width:48px!important;height:48px!important;border-radius:50%!important;z-index:99999!important;background:#25D366!important;">
+<img id="profile" width="80" height="80">
 <h3 id="userName"></h3>
-<button onclick="openProfileSettings()" style="display:none!important;">
+<button onclick="openProfileSettings()">
 ⚙️ Profile Settings
 </button>
 
-<div id="profileSettings" style="display:none; background:#eee; padding:20px; border-radius:10px; position:fixed; inset:0; z-index:999999; overflow:auto; color:#111;">
+<div id="profileSettings" style="display:none; background:#eee; padding:10px; border-radius:10px;">
 
 <h3>Edit Profile</h3>
 
@@ -727,7 +467,7 @@ Cancel
 
 <!-- 📋 Rky Chat Call History v1 -->
 <div id="callHistoryPanel"
-style="display:none; margin:10px 0; padding:12px; background:#f2f2f2; border-radius:10px;">
+style="margin:10px 0; padding:12px; background:#f2f2f2; border-radius:10px;">
 
     <div style="display:flex; justify-content:space-between; align-items:center;">
         <strong>📋 Call History</strong>
@@ -747,7 +487,7 @@ style="display:none; margin:10px 0; padding:12px; background:#f2f2f2; border-rad
 </div>
 
 <div id="voiceCallControls"
-style="display:none; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
+style="display:block; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
 
     <button
         id="startVoiceCallButton"
@@ -987,238 +727,23 @@ style="display:none; margin:10px 0; position:relative;">
 
 </div>
 
-<!-- ✨ Rky Connect -->
-<div id="rkyConnectHeader"
-style="
-display:none;
-margin:10px 0 8px;
-padding:16px;
-border-radius:16px;
-background:linear-gradient(135deg,#f7f7ff,#ffffff);
-border:1px solid #ddd;
-box-shadow:0 3px 12px rgba(0,0,0,.08);
-">
-    <div style="font-size:21px;font-weight:700;">
-        ✨ Rky Connect
-    </div>
-    <div style="font-size:13px;color:#777;margin-top:4px;">
-        Build your own Rky Circle
-    </div>
-</div>
+<h3>Add Friend</h3>
 
+<input id="friendUsername" placeholder="Friend username">
 
-
-
-<button
-  id="rkyCircleRequestsToggle"
-  type="button"
-  onclick="toggleRkyCircleRequests()"
-  style="
-  width:100%;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin:12px 0 8px;
-  padding:12px 14px;
-  border:1px solid #e5e5ee;
-  border-radius:14px;
-  background:linear-gradient(135deg,#ffffff,#f8f7ff);
-  cursor:pointer;
-  font-size:15px;
-  font-weight:700;
-  text-align:left;
-  box-sizing:border-box;
-  ">
-  <span style="display:flex;align-items:center;gap:8px;">
-    <span>📨 Rky Circle Requests</span>
-    <span
-      id="friendRequestBadge"
-      style="
-        display:none;
-        min-width:20px;
-        height:20px;
-        padding:0 6px;
-        border-radius:10px;
-        background:#e53935;
-        color:#fff;
-        font-size:11px;
-        font-weight:700;
-        line-height:20px;
-        text-align:center;
-        box-sizing:border-box;
-      "
-    ></span>
-  </span>
-  <span id="rkyCircleRequestsArrow">›</span>
+<button onclick="sendFriendRequest()">
+Send Request
 </button>
 
-<script>
-function toggleRkyFriendRequests(){
-    const box = document.getElementById("rkyCircleRequestsContent");
-    const arrow = document.getElementById("rkyCircleRequestsArrow");
-
-    if(!box) return;
-
-    const opening = box.style.display === "none" || box.style.display === "";
-
-    box.style.display = opening ? "block" : "none";
-
-    if(arrow){
-        arrow.textContent = opening ? "⌄" : "›";
-    }
-
-    if(opening && typeof loadRequests === "function"){
-        loadRequests();
-    }
-}
-</script>
-
-<div id="rkyCircleRequestsContent"
-style="display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;max-height:none!important;overflow:visible!important;">
-
-<div style="display:flex;gap:7px;margin-bottom:10px;">
-    <input
-        id="friendUsername"
-        type="text"
-        placeholder="Friend username"
-        style="flex:1;padding:10px 12px;border:1px solid #ccc;border-radius:10px;box-sizing:border-box;"
-    >
-    <button
-        type="button"
-        onclick="sendFriendRequest()"
-        style="padding:10px 13px;border:none;border-radius:10px;cursor:pointer;font-weight:600;"
-    >✨ Send</button>
-</div>
+<h3>Friend Requests</h3>
 
 <div id="requestList">
-    <p style="font-size:13px;color:#888;">
-        No new connection requests.
-    </p>
+    <p>Loading friend requests...</p>
 </div>
 
-</div>
-
-<button
-  onclick="toggleRkyFriendRequests()"
-  type="button"
-  style="
-  margin-top:8px;
-  padding:8px 12px;
-  border:1px solid #ddd;
-  border-radius:10px;
-  background:#fff;
-  cursor:pointer;
-  ">
-  🔄 Refresh
+<button onclick="loadRequests()" type="button">
+    🔄 Refresh Requests
 </button>
-
-<!-- 📤 Sent Rky Circle Requests -->
-<div id="rkySentRequestsSection"
-style="
-margin:14px 0 10px;
-padding:14px;
-border:1px solid #e5e5ee;
-border-radius:16px;
-background:linear-gradient(135deg,#ffffff,#faf9ff);
-box-shadow:0 3px 10px rgba(0,0,0,.06);
-">
-
-    <div style="
-        display:flex;
-        align-items:center;
-        justify-content:space-between;
-        margin-bottom:10px;
-    ">
-        <div>
-            <div style="font-size:16px;font-weight:700;">
-                📤 Sent Requests
-            </div>
-            <div style="font-size:12px;color:#888;margin-top:3px;">
-                Requests you have sent
-            </div>
-        </div>
-
-        <button
-          type="button"
-          onclick="loadSentFriendRequests()"
-          style="
-          padding:7px 9px;
-          border:1px solid #ddd;
-          border-radius:10px;
-          background:#fff;
-          cursor:pointer;
-          ">
-          ↻
-        </button>
-    </div>
-
-    <div id="sentRequestList">
-        <div style="
-            font-size:13px;
-            color:#999;
-            text-align:center;
-            padding:10px;
-        ">
-            No pending sent requests.
-        </div>
-    </div>
-
-</div>
-
-<!-- 👥 Your Rky Connections -->
-<div id="rkyConnectionsSection"
-style="
-margin:14px 0 10px;
-padding:14px;
-border:1px solid #e5e5ee;
-border-radius:16px;
-background:linear-gradient(135deg,#ffffff,#faf9ff);
-box-shadow:0 3px 10px rgba(0,0,0,.06);
-">
-
-    <div style="
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:10px;
-    ">
-        <div>
-            <div style="font-size:16px;font-weight:700;">
-                👥 Your Rky Connections
-            </div>
-            <div style="font-size:12px;color:#888;margin-top:3px;">
-                People in your Rky Circle
-            </div>
-        </div>
-
-        <button
-          type="button"
-          onclick="loadRkyConnections()"
-          style="
-          padding:7px 9px;
-          border:1px solid #ddd;
-          border-radius:10px;
-          background:#fff;
-          cursor:pointer;
-          ">
-          ↻
-        </button>
-    </div>
-
-    <div id="rkyConnectionsList">
-        <div style="font-size:13px;color:#999;text-align:center;padding:10px;">
-            Loading your Rky Circle...
-        </div>
-    </div>
-
-
-
-
-
-
-</div>
-
-
 <input id="searchMessage"
 type="text"
 placeholder="🔍 Search message"
@@ -1250,53 +775,40 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
   <span id="replyText"></span>
   <button onclick="cancelReply()">✖</button>
 </div>
-  <div class="wa-bottom-bar">
+  <input id="message" type="text" placeholder="Type a message" oninput="typing()" 
+  onkeydown="checkEnter(event)">    
+  <button onclick="addEmoji('😀')">😀</button>    
+<button onclick="addEmoji('😍')">😍</button>    
+<button onclick="addEmoji('❤️')">❤️</button>    
+<button onclick="addEmoji('👌')">👌</button>    
+  <button onclick="sendmessage()">Send    
+  </button>
+<button onclick="startVoiceRecording()">🎤 Voice</button>  
+  <input type="file"
+id="photoMessage"
+accept="image/*"
+multiple
+style="display:none;"
+onchange="sendPhotoMessage()">
 
-  <button type="button"
-    class="wa-emoji-btn"
-    onclick="addEmoji('😀')">😀</button>
+<button onclick="document.getElementById('photoMessage').click()">
+📷 Photo
+</button>
+<input
+  type="file"
+  id="videoMessage"
+  accept="video/*"
+  style="display:none;"
+  onchange="sendVideoMessage()"
+>
 
-  <input
-    id="message"
-    type="text"
-    placeholder="Type a message"
-    oninput="typing(); updateComposerButtons();"
-    onkeydown="checkEnter(event)"
-  >
-
-  <button type="button"
-    class="wa-photo-btn"
-    onclick="document.getElementById('photoMessage').click()">📷</button>
-
-  <button type="button"
-    class="wa-camera-btn"
-    onclick="document.getElementById('videoMessage').click()">🎥</button>
-
-  <button type="button"
-    class="wa-voice-btn"
-    onclick="startVoiceRecording()">🎤</button>
-
-  <button type="button"
-    class="wa-send-btn"
-    onclick="sendmessage()">➤</button>
-
-  <input
-    type="file"
-    id="photoMessage"
-    accept="image/*"
-    multiple
-    style="display:none;"
-    onchange="sendPhotoMessage()">
-
-  <input
-    type="file"
-    id="videoMessage"
-    accept="video/*"
-    style="display:none;"
-    onchange="sendVideoMessage()">
-
-</div>
-
+<button onclick="document.getElementById('videoMessage').click()">
+🎥 Video
+</button>
+  <button onclick="deletemessage()">delete</button>
+  <button onclick="logout()">Logout</button>
+ 
+  </div>  
   <script>   
   let currentUser =
 localStorage.getItem("currentUser") || "";
@@ -11094,136 +10606,9 @@ return users[0] + "_" + users[1];
     reader.readAsDataURL(file);
 }
 
-async function loadRkyConnections(){
-
-    const list = document.getElementById("rkyConnectionsList");
-
-    if(!list || !currentUser){
-        return;
-    }
-
-    list.innerHTML =
-        '<div style="font-size:13px;color:#999;text-align:center;padding:10px;">Loading...</div>';
-
-    try{
-        const response = await fetch(
-            "/api/friends/" +
-            encodeURIComponent(currentUser) +
-            "?t=" + Date.now()
-        );
-
-        if(!response.ok){
-            throw new Error("HTTP " + response.status);
-        }
-
-        const data = await response.json();
-
-        if(!data.success){
-            throw new Error(data.message || "Could not load connections");
-        }
-
-        const friends = Array.isArray(data.friends)
-            ? data.friends
-            : [];
-
-        if(friends.length === 0){
-            list.innerHTML =
-                '<div style="font-size:13px;color:#999;text-align:center;padding:10px;">' +
-                'No people in your Rky Circle yet.' +
-                '</div>';
-            return;
-        }
-
-        list.innerHTML = "";
-
-        friends.forEach(function(friend){
-
-            const button = document.createElement("button");
-            button.type = "button";
-
-            const profileName =
-                friend.profileName || friend.username;
-
-            const photo =
-                friend.photo ||
-                "https://via.placeholder.com/50";
-
-            let statusHTML = "";
-
-            if(friend.status === "Online"){
-                statusHTML =
-                    "<span style='color:green;'>🟢 Online</span>";
-            }else{
-                statusHTML =
-                    "<span style='color:red;'>🔴 Offline</span>";
-
-                if(friend.lastSeen){
-                    statusHTML +=
-                        "<br><small>Last Seen: " +
-                        escapeHTML(friend.lastSeen) +
-                        "</small>";
-                }
-            }
-
-            button.innerHTML =
-                "<div style='display:flex;align-items:center;gap:10px;text-align:left;'>" +
-
-                "<img src='" +
-                escapeHTML(photo) +
-                "' width='50' height='50' " +
-                "style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
-
-                "<div style='min-width:0;'>" +
-
-                "<div style='font-weight:700;font-size:16px;'>" +
-                escapeHTML(profileName) +
-                "</div>" +
-
-                "<div style='font-size:12px;margin-top:3px;'>" +
-                statusHTML +
-                "</div>" +
-
-                "</div>" +
-
-                "</div>";
-
-            button.style.display = "block";
-            button.style.width = "100%";
-            button.style.margin = "5px 0";
-            button.style.padding = "10px";
-            button.style.border = "1px solid #ddd";
-            button.style.borderRadius = "12px";
-            button.style.background = "#fff";
-            button.style.cursor = "pointer";
-            button.style.boxSizing = "border-box";
-
-            button.onclick = function(){
-                selectFriend(friend.username);
-            };
-
-            list.appendChild(button);
-        });
-
-    }catch(error){
-
-        console.error(
-            "loadRkyConnections error:",
-            error
-        );
-
-        list.innerHTML =
-            '<div style="font-size:13px;color:#d33;text-align:center;padding:10px;">' +
-            'Could not load your Rky Circle.' +
-            '</div>';
-    }
-}
-
-
 async function loadFriends(){
 
     const list = document.getElementById("friendList");
-
-
 
     if(!list || !currentUser){
         return;
@@ -11603,21 +10988,8 @@ async function login(){
             JSON.stringify(savedUsers)
         );
 
-        document.getElementById("loginBox").style.setProperty("display", "none", "important");
+        document.getElementById("loginBox").style.display = "none";
         document.getElementById("chatBox").style.display = "block";
-        const w1 = document.querySelector("body > h1");
-        const r1 = document.getElementById("registerButton");
-        if (w1) w1.style.setProperty("display", "none", "important");
-        if (r1) r1.style.setProperty("display", "none", "important");
-
-        document.querySelector("body > h1").style.display = "none";
-        document.querySelector("body > #loginBox + button").style.display = "none";
-
-        const loginWelcome = document.querySelector("body > h1");
-        const registerButton = document.getElementById("registerButton");
-
-        if (loginWelcome) loginWelcome.style.setProperty("display", "none", "important");
-        if (registerButton) registerButton.style.setProperty("display", "none", "important");
 
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
@@ -12617,7 +11989,6 @@ async function sendmessage(){
         );
 
         input.value = "";
-        updateComposerButtons();
 
         replyMessageId = null;
 
@@ -13093,7 +12464,7 @@ async function sendFriendRequest(){
     }
 
     try{
-        let response = await fetch("/api/friends/request", {
+        let response = await fetch("/api/friend-request", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -13118,150 +12489,67 @@ async function sendFriendRequest(){
         alert("Server connection failed");
     }
 }
-
-function updateFriendRequestBadge(count){
-    const headings = document.querySelectorAll("h3");
-
-    headings.forEach(function(h){
-        if(h.textContent.trim() === "Friend Requests"){
-            h.innerHTML =
-                'Friend Requests' +
-                (count > 0
-                    ? ' <span style="display:inline-block;background:#e53935;color:#fff;border-radius:12px;padding:2px 8px;font-size:12px;margin-left:6px;">' +
-                      count +
-                      '</span>'
-                    : '');
-        }
-    });
-}
-
 async function loadRequests(){
-    console.log("🔥 LOAD REQUESTS RUNNING:", currentUser);
-
+console.log("🔥 LOAD REQUESTS RUNNING:", currentUser);
     const list = document.getElementById("requestList");
 
-    if(!list || !currentUser){
-        console.log("❌ requestList/currentUser missing");
-        return;
-    }
-
-    list.innerHTML =
-        '<p style="text-align:center;color:#888;">Loading friend requests...</p>';
+    if(!list || !currentUser) return;
 
     try{
-        const url =
-            "/api/friends/requests/" +
+        const response = await fetch(
+            "/api/friend-requests/" +
             encodeURIComponent(currentUser) +
-            "?t=" + Date.now();
-
-        console.log("📨 Request URL:", url);
-
-        const response = await fetch(url, {
-            method: "GET",
-            cache: "no-store"
-        });
-
-        console.log("📨 Request HTTP:", response.status);
+            "?t=" + Date.now()
+        );
 
         const data = await response.json();
 
-        console.log("📨 Request DATA:", data);
-
-        if(!response.ok || !data || data.success !== true){
-            throw new Error(
-                data && data.message
-                    ? data.message
-                    : "Could not load requests"
-            );
-        }
-
-        const requests =
-            Array.isArray(data.requests)
-                ? data.requests
-                : [];
-
-        updateFriendRequestBadge(requests.length);
-
-        list.innerHTML = "";
-
-        if(requests.length === 0){
-            list.innerHTML =
-                '<p style="text-align:center;color:#888;">' +
-                'No friend requests.' +
-                '</p>';
+        if(!data.success){
+            list.innerHTML = "<p>Could not load requests.</p>";
             return;
         }
 
-        requests.forEach(function(request){
+        list.innerHTML = "";
 
-            const card = document.createElement("div");
+        if(data.requests.length === 0){
+            list.innerHTML = "<p>No friend requests.</p>";
+            return;
+        }
 
-            card.style.cssText =
-                "display:flex;" +
-                "align-items:center;" +
-                "gap:10px;" +
-                "padding:12px;" +
-                "margin:7px 0;" +
-                "border:1px solid #ddd;" +
-                "border-radius:12px;" +
-                "background:#fff;";
+        data.requests.forEach(function(request){
 
-            const text = document.createElement("div");
+            const p = document.createElement("p");
 
-            text.style.cssText =
-                "flex:1;font-size:14px;color:#222;";
+            p.innerHTML =
+                escapeHTML(request.username) +
+                " sent you a request ";
 
-            text.textContent =
-                (request.username || "Someone") +
-                " sent you a friend request";
+            const button = document.createElement("button");
 
-            const accept = document.createElement("button");
+            button.innerText = "Accept";
 
-            accept.type = "button";
-            accept.textContent = "Accept";
-
-            accept.style.cssText =
-                "padding:8px 12px;" +
-                "border:0;" +
-                "border-radius:8px;" +
-                "cursor:pointer;";
-
-            accept.onclick = async function(){
-                accept.disabled = true;
-                accept.textContent = "Accepting...";
-
-                await acceptRequest(request.id);
+            button.onclick = function(){
+                acceptRequest(request.id);
             };
 
-            card.appendChild(text);
-            card.appendChild(accept);
-
-            list.appendChild(card);
+            p.appendChild(button);
+            list.appendChild(p);
         });
 
     }catch(error){
-
-        console.error("❌ Request loading error:", error);
-
-        updateFriendRequestBadge(0);
-
+        console.error("Request loading error:", error);
         list.innerHTML =
-            '<p style="color:#d33;text-align:center;">' +
-            'Could not load friend requests.<br>' +
-            '<button type="button" onclick="loadRequests()" ' +
-            'style="margin-top:8px;padding:8px 12px;">' +
-            '↻ Try Again' +
-            '</button>' +
-            '</p>';
+            "<p>Request load error: " + String(error) + "</p>";
     }
 }
+
 
 async function acceptRequest(requestId){
 
     try{
 
         const response = await fetch(
-            "/api/friends/" +
+            "/api/friend-requests/" +
             requestId +
             "/accept",
             {
@@ -13280,7 +12568,6 @@ async function acceptRequest(requestId){
 
             await loadRequests();
             await loadFriends();
-            await loadRkyConnections();
 
         }else{
 
@@ -15511,272 +14798,7 @@ if(typeof connectVoiceCallSocket === "function"){
     console.log("📞 Voice Call system ready");
 }
 </script>
-\n
-<script id="wa-layout-fixer">
-document.addEventListener("DOMContentLoaded", function() {
-  
-});
-</script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<script id="rky-composer-final-clean">
-(function(){
-
-function updateComposerButtons(){
-
-    const input = document.getElementById("message");
-    const photo = document.querySelector(".wa-photo-btn");
-    const camera = document.querySelector(".wa-camera-btn");
-    const voice = document.querySelector(".wa-voice-btn");
-    const send = document.querySelector(".wa-send-btn");
-
-    if(!input) return;
-
-    const hasText = input.value.trim().length > 0;
-
-    /* Photo सधैं देखिने */
-    if(photo){
-        photo.style.setProperty("display","block","important");
-    }
-
-    if(hasText){
-
-        /* लेख्दा:
-           😀 Message 📷 ➤
-        */
-
-        if(camera){
-            camera.style.setProperty("display","none","important");
-        }
-
-        if(voice){
-            voice.style.setProperty("display","none","important");
-        }
-
-        if(send){
-            send.style.setProperty("display","block","important");
-        }
-
-    }else{
-
-        /* खाली हुँदा:
-           😀 Message 📷 🎥
-                         🎤
-        */
-
-        if(camera){
-            camera.style.setProperty("display","block","important");
-        }
-
-        if(voice){
-            voice.style.setProperty("display","block","important");
-        }
-
-        if(send){
-            send.style.setProperty("display","none","important");
-        }
-    }
-}
-
-/* Typing गर्दा */
-document.addEventListener("input", function(e){
-    if(e.target && e.target.id === "message"){
-        updateComposerButtons();
-    }
-});
-
-/* Page load */
-document.addEventListener("DOMContentLoaded", function(){
-    updateComposerButtons();
-});
-
-/* Send भएपछि तुरुन्त फेरि buttons update */
-const originalSend = window.sendmessage;
-
-if(typeof originalSend === "function"){
-
-    window.sendmessage = async function(){
-
-        await originalSend();
-
-        const input = document.getElementById("message");
-
-        if(input){
-            input.value = "";
-        }
-
-        updateComposerButtons();
-    };
-}
-
-})();
-</script>
-
-
-<script id="rky-send-final-js">
-(function(){
-
-function rkyUpdateSendButton(){
-
-  const input = document.getElementById("message");
-  const send = document.querySelector(".wa-send-btn");
-
-  if(!input || !send) return;
-
-  if(input.value.trim().length > 0){
-    send.classList.add("rky-show-send");
-  }else{
-    send.classList.remove("rky-show-send");
-  }
-}
-
-document.addEventListener("DOMContentLoaded", rkyUpdateSendButton);
-
-document.addEventListener("input", function(e){
-  if(e.target && e.target.id === "message"){
-    rkyUpdateSendButton();
-  }
-});
-
-})();
-</script>
-
-
-<script>
-(function(){
-  function RKYProfileDirectFix(){
-    const box=document.getElementById("chatBox");
-    const profile=document.getElementById("profile");
-    if(!box || !profile) return;
-
-    profile.style.setProperty("display","block","important");
-    profile.style.setProperty("visibility","visible","important");
-    profile.style.setProperty("opacity","1","important");
-    profile.style.setProperty("position","absolute","important");
-    profile.style.setProperty("top","8px","important");
-    profile.style.setProperty("left","10px","important");
-    profile.style.setProperty("width","48px","important");
-    profile.style.setProperty("height","48px","important");
-    profile.style.setProperty("border-radius","50%","important");
-    profile.style.setProperty("object-fit","cover","important");
-    profile.style.setProperty("z-index","999999","important");
-    profile.style.setProperty("cursor","pointer","important");
-
-    profile.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-
-      const buttons=[...document.querySelectorAll("button,[role='button'],div,span")];
-      const target=buttons.find(x =>
-        x.textContent && x.textContent.trim()==="⚙️ Profile Settings"
-      );
-
-      if(target) target.click();
-      else if(typeof window.openProfileSettings==="function")
-        window.openProfileSettings();
-    };
-
-    let name=document.getElementById("userName");
-    if(name){
-      name.style.setProperty("display","block","important");
-      name.style.setProperty("visibility","visible","important");
-      name.style.setProperty("opacity","1","important");
-      name.style.setProperty("position","absolute","important");
-      name.style.setProperty("top","13px","important");
-      name.style.setProperty("left","68px","important");
-      name.style.setProperty("z-index","999999","important");
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded",RKYProfileDirectFix);
-  setTimeout(RKYProfileDirectFix,500);
-  setTimeout(RKYProfileDirectFix,1500);
-  setTimeout(RKYProfileDirectFix,3000);
-})();
-</script>
-
-<!-- RKY_PROFILE_FINAL_FIX -->
-<script>
-(function(){
-  function fix(){
-    const box=document.getElementById("chatBox");
-    if(!box)return;
-
-    let p=document.getElementById("profile");
-    let n=document.getElementById("userName");
-
-    if(p){
-      p.style.cssText+=";display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;top:8px!important;left:10px!important;width:48px!important;height:48px!important;border-radius:50%!important;z-index:999999!important;cursor:pointer!important;";
-      p.onclick=function(){
-        let x=[...document.querySelectorAll("*")].find(e=>e.textContent.trim()==="⚙️ Profile Settings");
-        if(x)x.click();
-        else if(window.openProfileSettings)window.openProfileSettings();
-      };
-    }
-
-    if(n)n.style.cssText+=";display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;top:13px!important;left:68px!important;z-index:999999!important;";
-  }
-  fix();
-  new MutationObserver(fix).observe(document.documentElement,{childList:true,subtree:true});
-})();
-</script>
-
-<!-- RKY-FRIEND-REQUEST-TOGGLE-FIX -->
-<script>
-(function(){
-  function setupRkyFriendRequests(){
-    const box=document.getElementById("rkyCircleRequestsContent");
-    const arrow=document.getElementById("rkyCircleRequestsArrow");
-
-    if(!box || !arrow) return false;
-
-    const btn=arrow.closest("button");
-    if(!btn) return false;
-
-    btn.type="button";
-
-    btn.onclick=function(){
-      const open =
-        box.style.display==="none" ||
-        box.style.display==="";
-
-      box.style.display=open ? "block" : "none";
-      arrow.textContent=open ? "⌄" : "›";
-
-      if(open && typeof window.loadRequests==="function"){
-        window.loadRequests();
-      }
-    };
-
-    return true;
-  }
-
-  if(!setupRkyFriendRequests()){
-    document.addEventListener(
-      "DOMContentLoaded",
-      setupRkyFriendRequests,
-      {once:true}
-    );
-    setTimeout(setupRkyFriendRequests,500);
-  }
-})();
-</script>
-</body>
+\n</body>
 </html>
 
 <script>
@@ -15913,1024 +14935,8 @@ document.addEventListener("DOMContentLoaded", function () {
         loadRequests();
     }
 
-    // 🧹 Keep main screen clean after login
-    selectedFriend = "";
-
-    const friendProfile = document.getElementById("friendProfile");
-    const callHistoryPanel = document.getElementById("callHistoryPanel");
-    const voiceCallControls = document.getElementById("voiceCallControls");
-    const videoCallControls = document.getElementById("videoCallControls");
-
-    if (friendProfile) {
-        friendProfile.innerHTML = "";
-    }
-
-    if (videoCallControls) {
-        videoCallControls.style.display = "none";
-    }
-
-    if (callHistoryPanel) {
-        callHistoryPanel.style.display = "none";
-    }
-
-    if (voiceCallControls) {
-        voiceCallControls.style.display = "none";
-    }
-
     if (typeof startStatusHeartbeat === "function") {
         startStatusHeartbeat();
     }
 });
-</script>
-
-
-
-<!-- RKY FINAL FRIEND REQUEST FIX -->
-<script>
-(function(){
-  function fixFriendRequests(){
-    const ids=[
-      "rkyCircleRequestsContent",
-      "rkyCircleRequestsArrow",
-      "friendUsername"
-    ];
-
-    const content=document.getElementById("rkyCircleRequestsContent");
-    if(!content) return;
-
-    /* Make the Friend Requests area visible */
-    content.style.setProperty("display","block","important");
-    content.style.setProperty("visibility","visible","important");
-    content.style.setProperty("opacity","1","important");
-    content.style.setProperty("height","auto","important");
-    content.style.setProperty("max-height","none","important");
-    content.style.setProperty("overflow","visible","important");
-
-    /* Make every hidden parent visible */
-    let p=content.parentElement;
-    let count=0;
-    while(p && count<8){
-      const cs=getComputedStyle(p);
-      if(cs.display==="none") p.style.setProperty("display","block","important");
-      if(cs.visibility==="hidden") p.style.setProperty("visibility","visible","important");
-      if(cs.opacity==="0") p.style.setProperty("opacity","1","important");
-      p=p.parentElement;
-      count++;
-    }
-
-    const arrow=document.getElementById("rkyCircleRequestsArrow");
-    if(arrow){
-      const btn=arrow.closest("button");
-      if(btn){
-        btn.type="button";
-        btn.onclick=function(e){
-          e.preventDefault();
-          e.stopPropagation();
-
-          const open=content.style.display==="none";
-          content.style.setProperty("display",open?"block":"none","important");
-          arrow.textContent=open?"⌄":"›";
-
-          if(open && typeof window.loadRequests==="function"){
-            window.loadRequests();
-          }
-        };
-      }
-    }
-
-    if(typeof window.loadRequests==="function"){
-      try{ window.loadRequests(); }catch(e){}
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",fixFriendRequests);
-  }else{
-    fixFriendRequests();
-  }
-
-  setTimeout(fixFriendRequests,500);
-  setTimeout(fixFriendRequests,1500);
-})();
-</script>
-
-
-<!-- RKY AUTH VISIBILITY FINAL FIX -->
-<style>
-#loginBox.rky-auth-hidden,
-#registerButton.rky-auth-hidden{
-  display:none !important;
-}
-#chatBox.rky-auth-hidden{
-  display:none !important;
-}
-</style>
-
-<script>
-(function(){
-
-  function rkyAuthUI(){
-    const loginBox=document.getElementById("loginBox");
-    const register=document.getElementById("registerButton");
-    const chat=document.getElementById("chatBox");
-
-    if(!loginBox || !chat) return;
-
-    const user=(localStorage.getItem("currentUser") || "").trim();
-
-    if(user){
-      loginBox.classList.add("rky-auth-hidden");
-      if(register) register.classList.add("rky-auth-hidden");
-
-      chat.classList.remove("rky-auth-hidden");
-      chat.style.setProperty("display","block","important");
-    }else{
-      loginBox.classList.remove("rky-auth-hidden");
-      loginBox.style.setProperty("display","block","important");
-
-      if(register) {
-        register.classList.remove("rky-auth-hidden");
-        register.style.removeProperty("display");
-      }
-
-      chat.classList.add("rky-auth-hidden");
-      chat.style.setProperty("display","none","important");
-    }
-  }
-
-  window.rkyAuthUI=rkyAuthUI;
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",rkyAuthUI);
-  }else{
-    rkyAuthUI();
-  }
-
-  setTimeout(rkyAuthUI,300);
-  setTimeout(rkyAuthUI,1000);
-  setTimeout(rkyAuthUI,2000);
-
-  setInterval(rkyAuthUI,1000);
-
-})();
-</script>
-
-
-<!-- RKY SHOW REQUESTS FINAL FIX -->
-<script>
-(function(){
-  window.rkyShowRequests = function(){
-    const content = document.getElementById("rkyCircleRequestsContent");
-    const arrow = document.getElementById("rkyCircleRequestsArrow");
-
-    if(!content){
-      alert("Friend Requests section not found");
-      return;
-    }
-
-    /* Show the Friend Requests section */
-    content.style.setProperty("display","block","important");
-    content.style.setProperty("visibility","visible","important");
-    content.style.setProperty("opacity","1","important");
-    content.style.setProperty("height","auto","important");
-    content.style.setProperty("max-height","none","important");
-    content.style.setProperty("overflow","visible","important");
-
-    let p = content.parentElement;
-    for(let i=0; p && i<8; i++,p=p.parentElement){
-      if(getComputedStyle(p).display === "none")
-        p.style.setProperty("display","block","important");
-      if(getComputedStyle(p).visibility === "hidden")
-        p.style.setProperty("visibility","visible","important");
-    }
-
-    if(arrow) arrow.textContent="⌄";
-
-    if(typeof window.loadRequests === "function"){
-      window.loadRequests();
-    }
-
-    content.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
-  };
-
-  document.addEventListener("DOMContentLoaded",function(){
-    window.rkyShowRequests = window.rkyShowRequests;
-  });
-})();
-</script>
-
-
-<!-- RKY FRIEND REQUEST POPUP FINAL -->
-<style>
-#rkyFriendPopup{
-  position:fixed;
-  inset:0;
-  z-index:999999;
-  background:rgba(0,0,0,.45);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-}
-#rkyFriendPopupBox{
-  width:min(430px,94vw);
-  max-height:85vh;
-  overflow:auto;
-  background:#fff;
-  border-radius:18px;
-  padding:18px;
-  box-shadow:0 12px 40px rgba(0,0,0,.3);
-  color:#222;
-}
-#rkyFriendPopupBox h2{
-  margin:0 0 14px;
-  font-size:20px;
-}
-.rkyFProw{
-  display:flex;
-  gap:8px;
-  margin-bottom:12px;
-}
-.rkyFProw input{
-  flex:1;
-  min-width:0;
-  padding:11px;
-  border:1px solid #ccc;
-  border-radius:10px;
-}
-.rkyFProw button,
-.rkyFPitem button{
-  border:0;
-  border-radius:9px;
-  padding:9px 12px;
-  cursor:pointer;
-}
-.rkyFPsend{
-  background:#078f78;
-  color:#fff;
-}
-.rkyFPclose{
-  float:right;
-  background:#eee;
-}
-.rkyFPsection{
-  margin-top:15px;
-  font-weight:bold;
-}
-.rkyFPitem{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding:10px;
-  margin-top:7px;
-  background:#f3f3f3;
-  border-radius:10px;
-}
-.rkyFPitem button{
-  background:#078f78;
-  color:white;
-}
-.rkyFPitem button.reject{
-  background:#e74c3c;
-}
-.rkyFPempty{
-  color:#777;
-  padding:8px 0;
-}
-</style>
-
-<div id="rkyFriendPopup">
-  <div id="rkyFriendPopupBox">
-    <button class="rkyFPclose" onclick="rkyCloseFriendPopup()">✕</button>
-    <h2>👥 Friend Requests</h2>
-
-    <div class="rkyFProw">
-      <input id="rkyFPUsername" type="text" placeholder="Friend username">
-      <button class="rkyFPsend" onclick="rkyFPSendRequest()">Send</button>
-    </div>
-
-    <div class="rkyFPsection">📥 Incoming Requests</div>
-    <div id="rkyFPIncoming">
-      <div class="rkyFPempty">Loading...</div>
-    </div>
-
-    <div class="rkyFPsection">📤 Sent Requests</div>
-    <div id="rkyFPSent">
-      <div class="rkyFPempty">Loading...</div>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-
-  function popup(){
-    return document.getElementById("rkyFriendPopup");
-  }
-
-  window.rkyCloseFriendPopup=function(){
-    const p=popup();
-    if(p) p.style.display="none";
-  };
-
-  window.rkyOpenFriendPopup=function(){
-    const p=popup();
-    if(!p) return;
-    p.style.display="flex";
-    rkyLoadFriendPopup();
-  };
-
-  window.rkyFPSendRequest=async function(){
-    const input=document.getElementById("rkyFPUsername");
-    const username=(input.value||"").trim();
-    const me=(localStorage.getItem("currentUser")||"").trim();
-
-    if(!username){
-      alert("Enter friend username");
-      return;
-    }
-
-    if(!me){
-      alert("Please login first");
-      return;
-    }
-
-    try{
-      const res=await fetch("/api/friends/request",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          username:me,
-          friend_username:username
-        })
-      });
-
-      const data=await res.json();
-
-      if(!res.ok || data.success===false){
-        alert(data.message || "Friend request failed");
-        return;
-      }
-
-      alert("✅ Friend request sent");
-      input.value="";
-      rkyLoadFriendPopup();
-
-    }catch(e){
-      alert("❌ Server connection failed");
-    }
-  };
-
-  window.rkyLoadFriendPopup=async function(){
-    const me=(localStorage.getItem("currentUser")||"").trim();
-
-    if(!me) return;
-
-    const incoming=document.getElementById("rkyFPIncoming");
-    const sent=document.getElementById("rkyFPSent");
-
-    try{
-      const res=await fetch(
-        "/api/friends/requests/"+encodeURIComponent(me)
-      );
-
-      const data=await res.json();
-
-      const requests=
-        Array.isArray(data) ? data :
-        Array.isArray(data.requests) ? data.requests :
-        [];
-
-      if(!requests.length){
-        incoming.innerHTML='<div class="rkyFPempty">No incoming requests.</div>';
-      }else{
-        incoming.innerHTML=requests.map(r=>`
-          <div class="rkyFPitem">
-            <span>👤 ${r.username || r.from_username || "Unknown"}</span>
-            <span>
-              <button onclick="rkyAcceptFriend(${Number(r.id)})">Accept</button>
-              <button class="reject" onclick="rkyRejectFriend(${Number(r.id)})">Reject</button>
-            </span>
-          </div>
-        `).join("");
-      }
-    }catch(e){
-      incoming.innerHTML='<div class="rkyFPempty">Unable to load requests.</div>';
-    }
-
-    try{
-      const res=await fetch(
-        "/api/friends/sent/"+encodeURIComponent(me)
-      );
-
-      if(res.ok){
-        const data=await res.json();
-        const list=
-          Array.isArray(data) ? data :
-          Array.isArray(data.requests) ? data.requests :
-          [];
-
-        sent.innerHTML=list.length
-          ? list.map(r=>`
-              <div class="rkyFPitem">
-                <span>👤 ${r.friend_username || r.username || "Unknown"}</span>
-                <span>Pending</span>
-              </div>
-            `).join("")
-          : '<div class="rkyFPempty">No sent requests.</div>';
-      }else{
-        sent.innerHTML='<div class="rkyFPempty">No sent requests.</div>';
-      }
-    }catch(e){
-      sent.innerHTML='<div class="rkyFPempty">No sent requests.</div>';
-    }
-  };
-
-  window.rkyAcceptFriend=async function(id){
-    try{
-      const res=await fetch("/api/friends/"+id+"/accept",{
-        method:"POST"
-      });
-      const data=await res.json();
-
-      if(!res.ok || data.success===false){
-        alert(data.message || "Accept failed");
-        return;
-      }
-
-      alert("✅ Friend request accepted");
-      rkyLoadFriendPopup();
-      if(typeof loadFriends==="function") loadFriends();
-
-    }catch(e){
-      alert("❌ Server error");
-    }
-  };
-
-  window.rkyRejectFriend=async function(id){
-    try{
-      const res=await fetch("/api/friends/"+id+"/reject",{
-        method:"POST"
-      });
-      const data=await res.json();
-
-      if(!res.ok || data.success===false){
-        alert(data.message || "Reject failed");
-        return;
-      }
-
-      alert("Request rejected");
-      rkyLoadFriendPopup();
-
-    }catch(e){
-      alert("❌ Server error");
-    }
-  };
-
-  /* Replace the broken requests action completely */
-  window.rkyMoreAction=function(action){
-    if(typeof closeRkyMoreMenu==="function")
-      closeRkyMoreMenu();
-
-    if(action==="requests"){
-      rkyOpenFriendPopup();
-      return;
-    }
-
-    if(action==="profile"){
-      if(typeof openProfileSettings==="function")
-        openProfileSettings();
-      return;
-    }
-
-    if(action==="logout"){
-      if(typeof logout==="function")
-        logout();
-    }
-  };
-
-})();
-</script>
-
-
-<!-- RKY ACCEPT -> FRIEND LIST FINAL FIX -->
-<script>
-(function(){
-
-  const oldAccept = window.rkyAcceptFriend;
-
-  window.rkyAcceptFriend = async function(id){
-    try{
-      const res = await fetch("/api/friends/" + id + "/accept", {
-        method:"POST",
-        headers:{"Content-Type":"application/json"}
-      });
-
-      const data = await res.json();
-
-      if(!res.ok || data.success === false){
-        alert(data.message || "Accept failed");
-        return;
-      }
-
-      /* Close request popup */
-      const popup = document.getElementById("rkyFriendPopup");
-      if(popup) popup.style.display = "none";
-
-      /* Refresh Friends list immediately */
-      if(typeof window.loadFriends === "function"){
-        await window.loadFriends();
-      }
-
-      /* Make Friends list visible */
-      const friendList = document.getElementById("friendList");
-      if(friendList){
-        friendList.style.setProperty("display","block","important");
-        friendList.style.setProperty("visibility","visible","important");
-        friendList.style.setProperty("opacity","1","important");
-      }
-
-      const chatBox = document.getElementById("chatBox");
-      if(chatBox){
-        chatBox.style.setProperty("display","block","important");
-      }
-
-      alert("✅ Friend added successfully");
-
-    }catch(e){
-      alert("❌ Server error while accepting friend");
-    }
-  };
-
-})();
-</script>
-
-
-<!-- RKY FRIEND DISPLAY FINAL -->
-<style>
-#friendList{
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  height:auto !important;
-  max-height:none !important;
-  overflow:visible !important;
-}
-
-.rky-friend-card{
-  display:flex !important;
-  align-items:center;
-  gap:10px;
-  width:100%;
-  box-sizing:border-box;
-  padding:10px 12px;
-  margin:6px 0;
-  background:#fff;
-  border-radius:12px;
-  border:1px solid #ddd;
-  cursor:pointer;
-  text-align:left;
-  color:#222 !important;
-}
-
-.rky-friend-avatar{
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:#20c76a;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  color:#fff;
-  font-weight:bold;
-  flex:none;
-}
-
-.rky-friend-info{
-  flex:1;
-  min-width:0;
-}
-
-.rky-friend-name{
-  font-weight:bold;
-  font-size:14px;
-}
-
-.rky-friend-status{
-  font-size:11px;
-  margin-top:3px;
-}
-</style>
-
-<script>
-(function(){
-
-  window.rkyFinalLoadFriends = async function(){
-
-    const username =
-      (localStorage.getItem("currentUser") || "").trim();
-
-    const list = document.getElementById("friendList");
-
-    if(!username || !list) return;
-
-    try{
-
-      const response = await fetch(
-        "/api/friends/" +
-        encodeURIComponent(username) +
-        "?t=" + Date.now(),
-        {cache:"no-store"}
-      );
-
-      const data = await response.json();
-
-      if(!data.success || !Array.isArray(data.friends)){
-        return;
-      }
-
-      /* Make friend area visible */
-      list.style.setProperty("display","block","important");
-      list.style.setProperty("visibility","visible","important");
-      list.style.setProperty("opacity","1","important");
-
-      if(data.friends.length === 0){
-        list.innerHTML =
-          '<div style="padding:12px;text-align:center;color:#777;">No friends yet.</div>';
-        return;
-      }
-
-      list.innerHTML = "";
-
-      data.friends.forEach(function(friend){
-
-        const card = document.createElement("div");
-        card.className = "rky-friend-card";
-
-        const avatar = document.createElement("div");
-        avatar.className = "rky-friend-avatar";
-        avatar.textContent =
-          (friend.profileName || friend.username || "?")
-          .charAt(0)
-          .toUpperCase();
-
-        const info = document.createElement("div");
-        info.className = "rky-friend-info";
-
-        const name = document.createElement("div");
-        name.className = "rky-friend-name";
-        name.textContent =
-          friend.profileName || friend.username;
-
-        const status = document.createElement("div");
-        status.className = "rky-friend-status";
-
-        if(friend.status === "Online"){
-          status.innerHTML =
-            '<span style="color:green;">🟢 Online</span>';
-        }else{
-          status.innerHTML =
-            '<span style="color:#777;">⚪ Offline</span>';
-        }
-
-        info.appendChild(name);
-        info.appendChild(status);
-
-        card.appendChild(avatar);
-        card.appendChild(info);
-
-        card.onclick = function(){
-
-          if(typeof window.openChat === "function"){
-            window.openChat(friend.username);
-          }else if(typeof window.selectFriend === "function"){
-            window.selectFriend(friend.username);
-          }
-
-        };
-
-        list.appendChild(card);
-      });
-
-    }catch(error){
-      console.log("RKY friend display error:",error);
-    }
-  };
-
-  document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(window.rkyFinalLoadFriends,800);
-    setTimeout(window.rkyFinalLoadFriends,2000);
-  });
-
-  /* Refresh after login / accept */
-  setInterval(function(){
-    if(localStorage.getItem("currentUser")){
-      window.rkyFinalLoadFriends();
-    }
-  },3000);
-
-})();
-</script>
-
-
-<!-- RKY VISIBLE FRIENDS FINAL -->
-<style>
-#rkyVisibleFriends{
-  position:fixed !important;
-  top:224px !important;
-  left:0 !important;
-  right:0 !important;
-  z-index:99990 !important;
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  padding:6px 10px !important;
-  box-sizing:border-box !important;
-  pointer-events:auto !important;
-}
-
-.rky-visible-friend{
-  display:flex !important;
-  align-items:center !important;
-  gap:10px !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-  padding:10px !important;
-  margin:0 0 6px !important;
-  background:#fff !important;
-  border:1px solid #ddd !important;
-  border-radius:12px !important;
-  box-shadow:0 2px 6px rgba(0,0,0,.12) !important;
-}
-
-.rky-visible-avatar{
-  width:42px !important;
-  height:42px !important;
-  border-radius:50% !important;
-  background:#20c76a !important;
-  color:white !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  font-weight:bold !important;
-  flex:none !important;
-}
-
-.rky-visible-info{
-  flex:1 !important;
-  color:#222 !important;
-}
-
-.rky-visible-name{
-  font-size:14px !important;
-  font-weight:bold !important;
-}
-
-.rky-visible-status{
-  font-size:11px !important;
-  margin-top:2px !important;
-}
-</style>
-
-<div id="rkyVisibleFriends"></div>
-
-<script>
-(function(){
-
-  async function showRealFriends(){
-
-    const me=(localStorage.getItem("currentUser")||"").trim();
-    const box=document.getElementById("rkyVisibleFriends");
-
-    if(!me || !box) return;
-
-    try{
-
-      const res=await fetch(
-        "/api/friends/"+encodeURIComponent(me)+"?t="+Date.now(),
-        {cache:"no-store"}
-      );
-
-      const data=await res.json();
-
-      if(!data.success || !Array.isArray(data.friends)){
-        return;
-      }
-
-      box.innerHTML="";
-
-      data.friends.forEach(function(friend){
-
-        const name=friend.profileName || friend.username || "Friend";
-
-        const card=document.createElement("div");
-        card.className="rky-visible-friend";
-
-        const avatar=document.createElement("div");
-        avatar.className="rky-visible-avatar";
-        avatar.textContent=name.charAt(0).toUpperCase();
-
-        const info=document.createElement("div");
-        info.className="rky-visible-info";
-
-        const nm=document.createElement("div");
-        nm.className="rky-visible-name";
-        nm.textContent=name;
-
-        const st=document.createElement("div");
-        st.className="rky-visible-status";
-
-        st.innerHTML =
-          friend.status === "Online"
-          ? '<span style="color:green">🟢 Online</span>'
-          : '<span style="color:#777">⚪ Offline</span>';
-
-        info.appendChild(nm);
-        info.appendChild(st);
-
-        card.appendChild(avatar);
-        card.appendChild(info);
-
-        card.onclick=function(){
-          if(typeof window.openChat==="function"){
-            window.openChat(friend.username);
-          }else if(typeof window.selectFriend==="function"){
-            window.selectFriend(friend.username);
-          }
-        };
-
-        box.appendChild(card);
-      });
-
-    }catch(e){
-      console.log("Friends display:",e);
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(showRealFriends,500);
-    setTimeout(showRealFriends,1500);
-  });
-
-  setInterval(showRealFriends,5000);
-
-})();
-</script>
-
-
-<!-- RKY FRIEND POSITION FINAL -->
-<style>
-#chatBox #friendList{
-  position:static !important;
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  width:100% !important;
-  height:auto !important;
-  max-height:none !important;
-  overflow:visible !important;
-  margin:8px 0 !important;
-  padding:0 !important;
-  transform:none !important;
-  float:none !important;
-  clear:both !important;
-}
-
-#chatBox #friendList .rky-friend-card,
-#chatBox #friendList button,
-#chatBox #friendList > div{
-  position:static !important;
-  float:none !important;
-  transform:none !important;
-}
-
-#rkyVisibleFriends{
-  display:none !important;
-}
-</style>
-
-<script>
-(function(){
-
-  function fixFriendPosition(){
-
-    const heading = Array.from(
-      document.querySelectorAll("#chatBox h3")
-    ).find(function(el){
-      return el.textContent.trim() === "Friends";
-    });
-
-    const list = document.getElementById("friendList");
-
-    if(!heading || !list) return;
-
-    /* Put the REAL friend list directly below Friends heading */
-    heading.insertAdjacentElement("afterend", list);
-
-    /* Remove positioning that was moving it elsewhere */
-    list.style.setProperty("position","static","important");
-    list.style.setProperty("display","block","important");
-    list.style.setProperty("visibility","visible","important");
-    list.style.setProperty("opacity","1","important");
-    list.style.setProperty("width","100%","important");
-    list.style.setProperty("height","auto","important");
-    list.style.setProperty("max-height","none","important");
-    list.style.setProperty("overflow","visible","important");
-    list.style.setProperty("transform","none","important");
-    list.style.setProperty("float","none","important");
-    list.style.setProperty("clear","both","important");
-    list.style.setProperty("margin","8px 0","important");
-    list.style.setProperty("padding","0","important");
-
-    if(typeof window.loadFriends === "function"){
-      window.loadFriends();
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(fixFriendPosition,300);
-    setTimeout(fixFriendPosition,1200);
-    setTimeout(fixFriendPosition,2500);
-  });
-
-  setInterval(fixFriendPosition,5000);
-
-})();
-</script>
-
-
-<script>
-/* RKY: keep login -> chat at phone viewport scale */
-(function () {
-  function resetRkyViewport() {
-    var meta = document.querySelector('meta[name="viewport"]');
-
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.name = 'viewport';
-      document.head.appendChild(meta);
-    }
-
-    meta.setAttribute(
-      'content',
-      'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
-    );
-
-    document.documentElement.style.width = '100%';
-    document.body.style.width = '100%';
-    document.documentElement.style.maxWidth = '100%';
-    document.body.style.maxWidth = '100%';
-    document.documentElement.style.overflowX = 'hidden';
-    document.body.style.overflowX = 'hidden';
-
-    setTimeout(function () {
-      window.scrollTo(0, 0);
-    }, 50);
-  }
-
-  document.addEventListener('click', function (e) {
-    var el = e.target.closest('button');
-    if (!el) return;
-
-    var text = (el.innerText || '').toLowerCase();
-
-    if (
-      text.includes('login') ||
-      text.includes('log in') ||
-      text.includes('sign in')
-    ) {
-      setTimeout(resetRkyViewport, 300);
-      setTimeout(resetRkyViewport, 800);
-    }
-  });
-
-  window.addEventListener('load', function () {
-    setTimeout(resetRkyViewport, 300);
-  });
-})();
-</script>
-
-
-<script>
-/* RKY: prevent repeated visual flicker during data refresh */
-(function () {
-  let lastWidth = window.innerWidth;
-
-  function stabilize() {
-    document.documentElement.style.setProperty('--rky-stable-width', lastWidth + 'px');
-  }
-
-  window.addEventListener('resize', function () {
-    if (Math.abs(window.innerWidth - lastWidth) > 20) {
-      lastWidth = window.innerWidth;
-      stabilize();
-    }
-  });
-
-  stabilize();
-})();
 </script>

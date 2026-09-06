@@ -2152,3 +2152,29 @@ html, body {
     box-sizing:border-box !important;
   }
 }
+
+/* RKY STABLE DISPLAY FIX */
+html, body {
+  overflow-x: hidden !important;
+}
+
+#chatBox {
+  backface-visibility: hidden !important;
+  -webkit-backface-visibility: hidden !important;
+  transform: none !important;
+}
+
+#chatBox * {
+  animation: none !important;
+  transition: none !important;
+}
+
+#friendsList,
+#rkyCircleRequestsContent,
+#rkyCircleSentContent,
+#rkyCircleConnectionsContent {
+  animation: none !important;
+  transition: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}

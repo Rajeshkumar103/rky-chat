@@ -1,0 +1,5 @@
+nohup: ignoring input
+◇ injected env (2) from .env // tip: ⌘ enable debugging { debug: true }
+Rky Chat Database Ready ✅
+VAPID configured ✅
+Rky Chat Server running on port 3000

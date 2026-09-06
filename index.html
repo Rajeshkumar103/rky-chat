@@ -16636,3 +16636,148 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY VISIBLE FRIENDS FINAL -->
+<style>
+#rkyVisibleFriends{
+  position:fixed !important;
+  top:224px !important;
+  left:0 !important;
+  right:0 !important;
+  z-index:99990 !important;
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  padding:6px 10px !important;
+  box-sizing:border-box !important;
+  pointer-events:auto !important;
+}
+
+.rky-visible-friend{
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  padding:10px !important;
+  margin:0 0 6px !important;
+  background:#fff !important;
+  border:1px solid #ddd !important;
+  border-radius:12px !important;
+  box-shadow:0 2px 6px rgba(0,0,0,.12) !important;
+}
+
+.rky-visible-avatar{
+  width:42px !important;
+  height:42px !important;
+  border-radius:50% !important;
+  background:#20c76a !important;
+  color:white !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  font-weight:bold !important;
+  flex:none !important;
+}
+
+.rky-visible-info{
+  flex:1 !important;
+  color:#222 !important;
+}
+
+.rky-visible-name{
+  font-size:14px !important;
+  font-weight:bold !important;
+}
+
+.rky-visible-status{
+  font-size:11px !important;
+  margin-top:2px !important;
+}
+</style>
+
+<div id="rkyVisibleFriends"></div>
+
+<script>
+(function(){
+
+  async function showRealFriends(){
+
+    const me=(localStorage.getItem("currentUser")||"").trim();
+    const box=document.getElementById("rkyVisibleFriends");
+
+    if(!me || !box) return;
+
+    try{
+
+      const res=await fetch(
+        "/api/friends/"+encodeURIComponent(me)+"?t="+Date.now(),
+        {cache:"no-store"}
+      );
+
+      const data=await res.json();
+
+      if(!data.success || !Array.isArray(data.friends)){
+        return;
+      }
+
+      box.innerHTML="";
+
+      data.friends.forEach(function(friend){
+
+        const name=friend.profileName || friend.username || "Friend";
+
+        const card=document.createElement("div");
+        card.className="rky-visible-friend";
+
+        const avatar=document.createElement("div");
+        avatar.className="rky-visible-avatar";
+        avatar.textContent=name.charAt(0).toUpperCase();
+
+        const info=document.createElement("div");
+        info.className="rky-visible-info";
+
+        const nm=document.createElement("div");
+        nm.className="rky-visible-name";
+        nm.textContent=name;
+
+        const st=document.createElement("div");
+        st.className="rky-visible-status";
+
+        st.innerHTML =
+          friend.status === "Online"
+          ? '<span style="color:green">🟢 Online</span>'
+          : '<span style="color:#777">⚪ Offline</span>';
+
+        info.appendChild(nm);
+        info.appendChild(st);
+
+        card.appendChild(avatar);
+        card.appendChild(info);
+
+        card.onclick=function(){
+          if(typeof window.openChat==="function"){
+            window.openChat(friend.username);
+          }else if(typeof window.selectFriend==="function"){
+            window.selectFriend(friend.username);
+          }
+        };
+
+        box.appendChild(card);
+      });
+
+    }catch(e){
+      console.log("Friends display:",e);
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded",function(){
+    setTimeout(showRealFriends,500);
+    setTimeout(showRealFriends,1500);
+  });
+
+  setInterval(showRealFriends,5000);
+
+})();
+</script>
+

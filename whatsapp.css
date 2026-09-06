@@ -1135,3 +1135,83 @@ html, body {
   box-sizing: border-box !important;
 }
 
+
+/* ===== RKY FRIENDS + CHAT FINAL LAYOUT FIX ===== */
+
+#chatBox{
+  display:flex !important;
+  flex-direction:column !important;
+  overflow:hidden !important;
+}
+
+/* Friends heading + friend list stay visible */
+#chatBox > h3{
+  flex:0 0 auto !important;
+  display:block !important;
+  margin:0 !important;
+  padding:10px 15px !important;
+  text-align:center !important;
+  box-sizing:border-box !important;
+  background:#efeae2 !important;
+  color:#111 !important;
+}
+
+#chatBox #friendList{
+  flex:0 0 auto !important;
+  display:block !important;
+  position:static !important;
+  width:100% !important;
+  max-height:150px !important;
+  overflow-y:auto !important;
+  box-sizing:border-box !important;
+  margin:0 !important;
+  padding:5px 10px !important;
+  background:#efeae2 !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  transform:none !important;
+}
+
+/* Friend buttons/cards */
+#chatBox #friendList button,
+#chatBox #friendList > div{
+  position:static !important;
+  display:flex !important;
+  width:100% !important;
+  min-height:55px !important;
+  box-sizing:border-box !important;
+  margin:5px 0 !important;
+  padding:8px 10px !important;
+  transform:none !important;
+}
+
+/* Messages take remaining space */
+#chatBox #messages{
+  flex:1 1 auto !important;
+  min-height:0 !important;
+  height:auto !important;
+  overflow-y:auto !important;
+  position:static !important;
+  box-sizing:border-box !important;
+}
+
+/* Don't let friend profile/history push layout around */
+#chatBox #friendProfile{
+  flex:0 0 auto !important;
+}
+
+@media(max-width:500px){
+  #chatBox{
+    width:100% !important;
+    height:100vh !important;
+  }
+
+  #chatBox #friendList{
+    max-height:130px !important;
+  }
+
+  #chatBox #messages{
+    flex:1 1 auto !important;
+    min-height:0 !important;
+  }
+}

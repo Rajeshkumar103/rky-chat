@@ -16469,3 +16469,170 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY FRIEND DISPLAY FINAL -->
+<style>
+#friendList{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+}
+
+.rky-friend-card{
+  display:flex !important;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  box-sizing:border-box;
+  padding:10px 12px;
+  margin:6px 0;
+  background:#fff;
+  border-radius:12px;
+  border:1px solid #ddd;
+  cursor:pointer;
+  text-align:left;
+  color:#222 !important;
+}
+
+.rky-friend-avatar{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#20c76a;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-weight:bold;
+  flex:none;
+}
+
+.rky-friend-info{
+  flex:1;
+  min-width:0;
+}
+
+.rky-friend-name{
+  font-weight:bold;
+  font-size:14px;
+}
+
+.rky-friend-status{
+  font-size:11px;
+  margin-top:3px;
+}
+</style>
+
+<script>
+(function(){
+
+  window.rkyFinalLoadFriends = async function(){
+
+    const username =
+      (localStorage.getItem("currentUser") || "").trim();
+
+    const list = document.getElementById("friendList");
+
+    if(!username || !list) return;
+
+    try{
+
+      const response = await fetch(
+        "/api/friends/" +
+        encodeURIComponent(username) +
+        "?t=" + Date.now(),
+        {cache:"no-store"}
+      );
+
+      const data = await response.json();
+
+      if(!data.success || !Array.isArray(data.friends)){
+        return;
+      }
+
+      /* Make friend area visible */
+      list.style.setProperty("display","block","important");
+      list.style.setProperty("visibility","visible","important");
+      list.style.setProperty("opacity","1","important");
+
+      if(data.friends.length === 0){
+        list.innerHTML =
+          '<div style="padding:12px;text-align:center;color:#777;">No friends yet.</div>';
+        return;
+      }
+
+      list.innerHTML = "";
+
+      data.friends.forEach(function(friend){
+
+        const card = document.createElement("div");
+        card.className = "rky-friend-card";
+
+        const avatar = document.createElement("div");
+        avatar.className = "rky-friend-avatar";
+        avatar.textContent =
+          (friend.profileName || friend.username || "?")
+          .charAt(0)
+          .toUpperCase();
+
+        const info = document.createElement("div");
+        info.className = "rky-friend-info";
+
+        const name = document.createElement("div");
+        name.className = "rky-friend-name";
+        name.textContent =
+          friend.profileName || friend.username;
+
+        const status = document.createElement("div");
+        status.className = "rky-friend-status";
+
+        if(friend.status === "Online"){
+          status.innerHTML =
+            '<span style="color:green;">🟢 Online</span>';
+        }else{
+          status.innerHTML =
+            '<span style="color:#777;">⚪ Offline</span>';
+        }
+
+        info.appendChild(name);
+        info.appendChild(status);
+
+        card.appendChild(avatar);
+        card.appendChild(info);
+
+        card.onclick = function(){
+
+          if(typeof window.openChat === "function"){
+            window.openChat(friend.username);
+          }else if(typeof window.selectFriend === "function"){
+            window.selectFriend(friend.username);
+          }
+
+        };
+
+        list.appendChild(card);
+      });
+
+    }catch(error){
+      console.log("RKY friend display error:",error);
+    }
+  };
+
+  document.addEventListener("DOMContentLoaded",function(){
+    setTimeout(window.rkyFinalLoadFriends,800);
+    setTimeout(window.rkyFinalLoadFriends,2000);
+  });
+
+  /* Refresh after login / accept */
+  setInterval(function(){
+    if(localStorage.getItem("currentUser")){
+      window.rkyFinalLoadFriends();
+    }
+  },3000);
+
+})();
+</script>
+

@@ -16781,3 +16781,84 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY FRIEND POSITION FINAL -->
+<style>
+#chatBox #friendList{
+  position:static !important;
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:100% !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+  margin:8px 0 !important;
+  padding:0 !important;
+  transform:none !important;
+  float:none !important;
+  clear:both !important;
+}
+
+#chatBox #friendList .rky-friend-card,
+#chatBox #friendList button,
+#chatBox #friendList > div{
+  position:static !important;
+  float:none !important;
+  transform:none !important;
+}
+
+#rkyVisibleFriends{
+  display:none !important;
+}
+</style>
+
+<script>
+(function(){
+
+  function fixFriendPosition(){
+
+    const heading = Array.from(
+      document.querySelectorAll("#chatBox h3")
+    ).find(function(el){
+      return el.textContent.trim() === "Friends";
+    });
+
+    const list = document.getElementById("friendList");
+
+    if(!heading || !list) return;
+
+    /* Put the REAL friend list directly below Friends heading */
+    heading.insertAdjacentElement("afterend", list);
+
+    /* Remove positioning that was moving it elsewhere */
+    list.style.setProperty("position","static","important");
+    list.style.setProperty("display","block","important");
+    list.style.setProperty("visibility","visible","important");
+    list.style.setProperty("opacity","1","important");
+    list.style.setProperty("width","100%","important");
+    list.style.setProperty("height","auto","important");
+    list.style.setProperty("max-height","none","important");
+    list.style.setProperty("overflow","visible","important");
+    list.style.setProperty("transform","none","important");
+    list.style.setProperty("float","none","important");
+    list.style.setProperty("clear","both","important");
+    list.style.setProperty("margin","8px 0","important");
+    list.style.setProperty("padding","0","important");
+
+    if(typeof window.loadFriends === "function"){
+      window.loadFriends();
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded",function(){
+    setTimeout(fixFriendPosition,300);
+    setTimeout(fixFriendPosition,1200);
+    setTimeout(fixFriendPosition,2500);
+  });
+
+  setInterval(fixFriendPosition,5000);
+
+})();
+</script>
+

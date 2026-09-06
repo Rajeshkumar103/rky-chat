@@ -16122,3 +16122,297 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY FRIEND REQUEST POPUP FINAL -->
+<style>
+#rkyFriendPopup{
+  position:fixed;
+  inset:0;
+  z-index:999999;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+#rkyFriendPopupBox{
+  width:min(430px,94vw);
+  max-height:85vh;
+  overflow:auto;
+  background:#fff;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 12px 40px rgba(0,0,0,.3);
+  color:#222;
+}
+#rkyFriendPopupBox h2{
+  margin:0 0 14px;
+  font-size:20px;
+}
+.rkyFProw{
+  display:flex;
+  gap:8px;
+  margin-bottom:12px;
+}
+.rkyFProw input{
+  flex:1;
+  min-width:0;
+  padding:11px;
+  border:1px solid #ccc;
+  border-radius:10px;
+}
+.rkyFProw button,
+.rkyFPitem button{
+  border:0;
+  border-radius:9px;
+  padding:9px 12px;
+  cursor:pointer;
+}
+.rkyFPsend{
+  background:#078f78;
+  color:#fff;
+}
+.rkyFPclose{
+  float:right;
+  background:#eee;
+}
+.rkyFPsection{
+  margin-top:15px;
+  font-weight:bold;
+}
+.rkyFPitem{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  padding:10px;
+  margin-top:7px;
+  background:#f3f3f3;
+  border-radius:10px;
+}
+.rkyFPitem button{
+  background:#078f78;
+  color:white;
+}
+.rkyFPitem button.reject{
+  background:#e74c3c;
+}
+.rkyFPempty{
+  color:#777;
+  padding:8px 0;
+}
+</style>
+
+<div id="rkyFriendPopup">
+  <div id="rkyFriendPopupBox">
+    <button class="rkyFPclose" onclick="rkyCloseFriendPopup()">✕</button>
+    <h2>👥 Friend Requests</h2>
+
+    <div class="rkyFProw">
+      <input id="rkyFPUsername" type="text" placeholder="Friend username">
+      <button class="rkyFPsend" onclick="rkyFPSendRequest()">Send</button>
+    </div>
+
+    <div class="rkyFPsection">📥 Incoming Requests</div>
+    <div id="rkyFPIncoming">
+      <div class="rkyFPempty">Loading...</div>
+    </div>
+
+    <div class="rkyFPsection">📤 Sent Requests</div>
+    <div id="rkyFPSent">
+      <div class="rkyFPempty">Loading...</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+  function popup(){
+    return document.getElementById("rkyFriendPopup");
+  }
+
+  window.rkyCloseFriendPopup=function(){
+    const p=popup();
+    if(p) p.style.display="none";
+  };
+
+  window.rkyOpenFriendPopup=function(){
+    const p=popup();
+    if(!p) return;
+    p.style.display="flex";
+    rkyLoadFriendPopup();
+  };
+
+  window.rkyFPSendRequest=async function(){
+    const input=document.getElementById("rkyFPUsername");
+    const username=(input.value||"").trim();
+    const me=(localStorage.getItem("currentUser")||"").trim();
+
+    if(!username){
+      alert("Enter friend username");
+      return;
+    }
+
+    if(!me){
+      alert("Please login first");
+      return;
+    }
+
+    try{
+      const res=await fetch("/api/friends/request",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          username:me,
+          friend_username:username
+        })
+      });
+
+      const data=await res.json();
+
+      if(!res.ok || data.success===false){
+        alert(data.message || "Friend request failed");
+        return;
+      }
+
+      alert("✅ Friend request sent");
+      input.value="";
+      rkyLoadFriendPopup();
+
+    }catch(e){
+      alert("❌ Server connection failed");
+    }
+  };
+
+  window.rkyLoadFriendPopup=async function(){
+    const me=(localStorage.getItem("currentUser")||"").trim();
+
+    if(!me) return;
+
+    const incoming=document.getElementById("rkyFPIncoming");
+    const sent=document.getElementById("rkyFPSent");
+
+    try{
+      const res=await fetch(
+        "/api/friends/requests/"+encodeURIComponent(me)
+      );
+
+      const data=await res.json();
+
+      const requests=
+        Array.isArray(data) ? data :
+        Array.isArray(data.requests) ? data.requests :
+        [];
+
+      if(!requests.length){
+        incoming.innerHTML='<div class="rkyFPempty">No incoming requests.</div>';
+      }else{
+        incoming.innerHTML=requests.map(r=>`
+          <div class="rkyFPitem">
+            <span>👤 ${r.username || r.from_username || "Unknown"}</span>
+            <span>
+              <button onclick="rkyAcceptFriend(${Number(r.id)})">Accept</button>
+              <button class="reject" onclick="rkyRejectFriend(${Number(r.id)})">Reject</button>
+            </span>
+          </div>
+        `).join("");
+      }
+    }catch(e){
+      incoming.innerHTML='<div class="rkyFPempty">Unable to load requests.</div>';
+    }
+
+    try{
+      const res=await fetch(
+        "/api/friends/sent/"+encodeURIComponent(me)
+      );
+
+      if(res.ok){
+        const data=await res.json();
+        const list=
+          Array.isArray(data) ? data :
+          Array.isArray(data.requests) ? data.requests :
+          [];
+
+        sent.innerHTML=list.length
+          ? list.map(r=>`
+              <div class="rkyFPitem">
+                <span>👤 ${r.friend_username || r.username || "Unknown"}</span>
+                <span>Pending</span>
+              </div>
+            `).join("")
+          : '<div class="rkyFPempty">No sent requests.</div>';
+      }else{
+        sent.innerHTML='<div class="rkyFPempty">No sent requests.</div>';
+      }
+    }catch(e){
+      sent.innerHTML='<div class="rkyFPempty">No sent requests.</div>';
+    }
+  };
+
+  window.rkyAcceptFriend=async function(id){
+    try{
+      const res=await fetch("/api/friends/"+id+"/accept",{
+        method:"POST"
+      });
+      const data=await res.json();
+
+      if(!res.ok || data.success===false){
+        alert(data.message || "Accept failed");
+        return;
+      }
+
+      alert("✅ Friend request accepted");
+      rkyLoadFriendPopup();
+      if(typeof loadFriends==="function") loadFriends();
+
+    }catch(e){
+      alert("❌ Server error");
+    }
+  };
+
+  window.rkyRejectFriend=async function(id){
+    try{
+      const res=await fetch("/api/friends/"+id+"/reject",{
+        method:"POST"
+      });
+      const data=await res.json();
+
+      if(!res.ok || data.success===false){
+        alert(data.message || "Reject failed");
+        return;
+      }
+
+      alert("Request rejected");
+      rkyLoadFriendPopup();
+
+    }catch(e){
+      alert("❌ Server error");
+    }
+  };
+
+  /* Replace the broken requests action completely */
+  window.rkyMoreAction=function(action){
+    if(typeof closeRkyMoreMenu==="function")
+      closeRkyMoreMenu();
+
+    if(action==="requests"){
+      rkyOpenFriendPopup();
+      return;
+    }
+
+    if(action==="profile"){
+      if(typeof openProfileSettings==="function")
+        openProfileSettings();
+      return;
+    }
+
+    if(action==="logout"){
+      if(typeof logout==="function")
+        logout();
+    }
+  };
+
+})();
+</script>
+

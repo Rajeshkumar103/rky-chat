@@ -198,83 +198,156 @@ app.post("/api/login", (req, res) => {
         user: user
     });
 });
-// Send friend request
-app.post("/api/friend-request", (req, res) => {
-    const { username, friend_username } = req.body;
+// ===== RKY FRIEND REQUEST SYSTEM =====
 
-    if (!username || !friend_username) {
+app.post("/api/friends/request", (req,res)=>{
+    const {username, friend_username}=req.body;
+
+    if(!username || !friend_username)
         return res.status(400).json({
-            success: false,
-            message: "Username and friend username are required"
+            success:false,
+            message:"Username and friend username are required"
         });
-    }
 
-    if (username === friend_username) {
+    if(String(username).toLowerCase() === String(friend_username).toLowerCase())
         return res.status(400).json({
-            success: false,
-            message: "You cannot add yourself"
+            success:false,
+            message:"You cannot add yourself"
         });
-    }
 
-    const sender = db.prepare(`
-        SELECT id FROM users WHERE username = ?
-    `).get(username);
+    const sender=db.prepare(
+        "SELECT id FROM users WHERE username=?"
+    ).get(username);
 
-    const receiver = db.prepare(`
-        SELECT id FROM users WHERE username = ?
-    `).get(friend_username);
+    const receiver=db.prepare(
+        "SELECT id FROM users WHERE username=?"
+    ).get(friend_username);
 
-    if (!sender || !receiver) {
+    if(!sender || !receiver)
         return res.status(404).json({
-            success: false,
-            message: "User not found"
+            success:false,
+            message:"User not found"
         });
-    }
 
-    const existing = db.prepare(`
-        SELECT id, status
+    const existing=db.prepare(`
+        SELECT id,status
         FROM friends
-        WHERE username = ? AND friend_username = ?
-    `).get(username, friend_username);
+        WHERE username=? AND friend_username=?
+    `).get(username,friend_username);
 
-    if (existing) {
+    if(existing)
         return res.status(409).json({
-            success: false,
-            message: "Friend request already exists"
+            success:false,
+            message:"Friend request already exists"
         });
-    }
 
     db.prepare(`
         INSERT INTO friends
-        (username, friend_username, status, created_at)
-        VALUES (?, ?, 'pending', ?)
+        (username,friend_username,status,created_at)
+        VALUES (?,?,?,?)
     `).run(
         username,
         friend_username,
+        "pending",
         new Date().toISOString()
     );
 
     res.json({
-        success: true,
-        message: "Friend request sent"
+        success:true,
+        message:"Friend request sent"
     });
 });
-// Friend request test page
-app.get("/friend-test", (req, res) => {
-    res.send(`
-        <h2>Rky Chat Friend Request Test</h2>
 
-        <form method="POST" action="/api/friend-request">
-            <input name="username" placeholder="Your Username" required>
-            <br><br>
+app.get("/api/friends/requests/:username",(req,res)=>{
+    const requests=db.prepare(`
+        SELECT id,username,friend_username,created_at
+        FROM friends
+        WHERE friend_username=?
+        AND status='pending'
+        ORDER BY id DESC
+    `).all(req.params.username);
 
-            <input name="friend_username" placeholder="Friend Username" required>
-            <br><br>
-
-            <button type="submit">Send Friend Request</button>
-        </form>
-    `);
+    res.json({
+        success:true,
+        requests:requests
+    });
 });
+
+app.post("/api/friends/:id/accept",(req,res)=>{
+    const id=Number(req.params.id);
+
+    const request=db.prepare(`
+        SELECT id,username,friend_username
+        FROM friends
+        WHERE id=? AND status='pending'
+    `).get(id);
+
+    if(!request)
+        return res.status(404).json({
+            success:false,
+            message:"Friend request not found"
+        });
+
+    db.prepare(`
+        UPDATE friends
+        SET status='accepted'
+        WHERE id=?
+    `).run(id);
+
+    const reverse=db.prepare(`
+        SELECT id
+        FROM friends
+        WHERE username=? AND friend_username=?
+    `).get(
+        request.friend_username,
+        request.username
+    );
+
+    if(reverse){
+        db.prepare(`
+            UPDATE friends
+            SET status='accepted'
+            WHERE id=?
+        `).run(reverse.id);
+    }else{
+        db.prepare(`
+            INSERT INTO friends
+            (username,friend_username,status,created_at)
+            VALUES (?,?,?,?)
+        `).run(
+            request.friend_username,
+            request.username,
+            "accepted",
+            new Date().toISOString()
+        );
+    }
+
+    res.json({
+        success:true,
+        message:"Friend request accepted"
+    });
+});
+
+app.post("/api/friends/:id/reject",(req,res)=>{
+    const id=Number(req.params.id);
+
+    const result=db.prepare(`
+        DELETE FROM friends
+        WHERE id=? AND status='pending'
+    `).run(id);
+
+    if(!result.changes)
+        return res.status(404).json({
+            success:false,
+            message:"Friend request not found"
+        });
+
+    res.json({
+        success:true,
+        message:"Friend request rejected"
+    });
+});
+
 // Get pending friend requests
 app.get("/api/friend-requests/:username", (req, res) => {
     const username = req.params.username;

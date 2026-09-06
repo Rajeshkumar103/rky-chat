@@ -1052,7 +1052,29 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
   <span id="rkyCircleRequestsArrow">›</span>
 </button>
 
-<div id="rkyCircleRequestsContent" style="display:none;">
+<script>
+function toggleRkyFriendRequests(){
+    const box = document.getElementById("rkyCircleRequestsContent");
+    const arrow = document.getElementById("rkyCircleRequestsArrow");
+
+    if(!box) return;
+
+    const opening = box.style.display === "none" || box.style.display === "";
+
+    box.style.display = opening ? "block" : "none";
+
+    if(arrow){
+        arrow.textContent = opening ? "⌄" : "›";
+    }
+
+    if(opening && typeof loadRequests === "function"){
+        loadRequests();
+    }
+}
+</script>
+
+<div id="rkyCircleRequestsContent"
+style="display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;max-height:none!important;overflow:visible!important;">
 
 <div style="display:flex;gap:7px;margin-bottom:10px;">
     <input
@@ -1077,7 +1099,7 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
 </div>
 
 <button
-  onclick="loadRequests()"
+  onclick="toggleRkyFriendRequests()"
   type="button"
   style="
   margin-top:8px;
@@ -13071,7 +13093,7 @@ async function sendFriendRequest(){
     }
 
     try{
-        let response = await fetch("/api/friend-request", {
+        let response = await fetch("/api/friends/request", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -13128,7 +13150,7 @@ async function loadRequests(){
 
     try{
         const url =
-            "/api/friend-requests/" +
+            "/api/friends/requests/" +
             encodeURIComponent(currentUser) +
             "?t=" + Date.now();
 
@@ -13239,7 +13261,7 @@ async function acceptRequest(requestId){
     try{
 
         const response = await fetch(
-            "/api/friend-requests/" +
+            "/api/friends/" +
             requestId +
             "/accept",
             {
@@ -15713,6 +15735,47 @@ document.addEventListener("input", function(e){
   new MutationObserver(fix).observe(document.documentElement,{childList:true,subtree:true});
 })();
 </script>
+
+<!-- RKY-FRIEND-REQUEST-TOGGLE-FIX -->
+<script>
+(function(){
+  function setupRkyFriendRequests(){
+    const box=document.getElementById("rkyCircleRequestsContent");
+    const arrow=document.getElementById("rkyCircleRequestsArrow");
+
+    if(!box || !arrow) return false;
+
+    const btn=arrow.closest("button");
+    if(!btn) return false;
+
+    btn.type="button";
+
+    btn.onclick=function(){
+      const open =
+        box.style.display==="none" ||
+        box.style.display==="";
+
+      box.style.display=open ? "block" : "none";
+      arrow.textContent=open ? "⌄" : "›";
+
+      if(open && typeof window.loadRequests==="function"){
+        window.loadRequests();
+      }
+    };
+
+    return true;
+  }
+
+  if(!setupRkyFriendRequests()){
+    document.addEventListener(
+      "DOMContentLoaded",
+      setupRkyFriendRequests,
+      {once:true}
+    );
+    setTimeout(setupRkyFriendRequests,500);
+  }
+})();
+</script>
 </body>
 </html>
 
@@ -15880,4 +15943,74 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 
+
+
+<!-- RKY FINAL FRIEND REQUEST FIX -->
+<script>
+(function(){
+  function fixFriendRequests(){
+    const ids=[
+      "rkyCircleRequestsContent",
+      "rkyCircleRequestsArrow",
+      "friendUsername"
+    ];
+
+    const content=document.getElementById("rkyCircleRequestsContent");
+    if(!content) return;
+
+    /* Make the Friend Requests area visible */
+    content.style.setProperty("display","block","important");
+    content.style.setProperty("visibility","visible","important");
+    content.style.setProperty("opacity","1","important");
+    content.style.setProperty("height","auto","important");
+    content.style.setProperty("max-height","none","important");
+    content.style.setProperty("overflow","visible","important");
+
+    /* Make every hidden parent visible */
+    let p=content.parentElement;
+    let count=0;
+    while(p && count<8){
+      const cs=getComputedStyle(p);
+      if(cs.display==="none") p.style.setProperty("display","block","important");
+      if(cs.visibility==="hidden") p.style.setProperty("visibility","visible","important");
+      if(cs.opacity==="0") p.style.setProperty("opacity","1","important");
+      p=p.parentElement;
+      count++;
+    }
+
+    const arrow=document.getElementById("rkyCircleRequestsArrow");
+    if(arrow){
+      const btn=arrow.closest("button");
+      if(btn){
+        btn.type="button";
+        btn.onclick=function(e){
+          e.preventDefault();
+          e.stopPropagation();
+
+          const open=content.style.display==="none";
+          content.style.setProperty("display",open?"block":"none","important");
+          arrow.textContent=open?"⌄":"›";
+
+          if(open && typeof window.loadRequests==="function"){
+            window.loadRequests();
+          }
+        };
+      }
+    }
+
+    if(typeof window.loadRequests==="function"){
+      try{ window.loadRequests(); }catch(e){}
+    }
+  }
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",fixFriendRequests);
+  }else{
+    fixFriendRequests();
+  }
+
+  setTimeout(fixFriendRequests,500);
+  setTimeout(fixFriendRequests,1500);
+})();
+</script>
 

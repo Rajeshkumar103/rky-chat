@@ -15379,28 +15379,16 @@ setInterval(function(){
 }, 10000);
 // 🔐 Login required every time app is opened
 window.addEventListener("load", function(){
+    const savedUser = localStorage.getItem("currentUser") || "";
+    currentUser = savedUser;
 
-    // पुरानो currentUser हटाउने
-    currentUser = "";
-    selectedFriend = "";
-    replyMessageId = null;
-
-    localStorage.removeItem("currentUser");
-
-    // Login देखाउने
-    document.getElementById("loginBox").style.display = "block";
-
-    // Chat लुकाउने
-    document.getElementById("chatBox").style.display = "none";
-
-    // पुरानो data UI बाट हटाउने
-    document.getElementById("messages").innerHTML = "";
-    document.getElementById("friendList").innerHTML = "";
-    document.getElementById("requestList").innerHTML = "";
-    document.getElementById("friendProfile").innerHTML = "";
-    document.getElementById("userName").innerHTML = "";
-    document.getElementById("status").innerHTML = "";
-
+    if (savedUser) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("chatBox").style.display = "block";
+    } else {
+        document.getElementById("loginBox").style.display = "block";
+        document.getElementById("chatBox").style.display = "none";
+    }
 });
 function sendMediaNotification(receiver, messageText){
 
@@ -15658,82 +15646,12 @@ document.addEventListener("input", function(e){
 
 
 <script>
-(function(){
-  function RKYProfileDirectFix(){
-    const box=document.getElementById("chatBox");
-    const profile=document.getElementById("profile");
-    if(!box || !profile) return;
 
-    profile.style.setProperty("display","block","important");
-    profile.style.setProperty("visibility","visible","important");
-    profile.style.setProperty("opacity","1","important");
-    profile.style.setProperty("position","absolute","important");
-    profile.style.setProperty("top","8px","important");
-    profile.style.setProperty("left","10px","important");
-    profile.style.setProperty("width","48px","important");
-    profile.style.setProperty("height","48px","important");
-    profile.style.setProperty("border-radius","50%","important");
-    profile.style.setProperty("object-fit","cover","important");
-    profile.style.setProperty("z-index","999999","important");
-    profile.style.setProperty("cursor","pointer","important");
-
-    profile.onclick=function(e){
-      e.preventDefault();
-      e.stopPropagation();
-
-      const buttons=[...document.querySelectorAll("button,[role='button'],div,span")];
-      const target=buttons.find(x =>
-        x.textContent && x.textContent.trim()==="⚙️ Profile Settings"
-      );
-
-      if(target) target.click();
-      else if(typeof window.openProfileSettings==="function")
-        window.openProfileSettings();
-    };
-
-    let name=document.getElementById("userName");
-    if(name){
-      name.style.setProperty("display","block","important");
-      name.style.setProperty("visibility","visible","important");
-      name.style.setProperty("opacity","1","important");
-      name.style.setProperty("position","absolute","important");
-      name.style.setProperty("top","13px","important");
-      name.style.setProperty("left","68px","important");
-      name.style.setProperty("z-index","999999","important");
-    }
-  }
-
-  document.addEventListener("DOMContentLoaded",RKYProfileDirectFix);
-  setTimeout(RKYProfileDirectFix,500);
-  setTimeout(RKYProfileDirectFix,1500);
-  setTimeout(RKYProfileDirectFix,3000);
-})();
 </script>
 
 <!-- RKY_PROFILE_FINAL_FIX -->
 <script>
-(function(){
-  function fix(){
-    const box=document.getElementById("chatBox");
-    if(!box)return;
 
-    let p=document.getElementById("profile");
-    let n=document.getElementById("userName");
-
-    if(p){
-      p.style.cssText+=";display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;top:8px!important;left:10px!important;width:48px!important;height:48px!important;border-radius:50%!important;z-index:999999!important;cursor:pointer!important;";
-      p.onclick=function(){
-        let x=[...document.querySelectorAll("*")].find(e=>e.textContent.trim()==="⚙️ Profile Settings");
-        if(x)x.click();
-        else if(window.openProfileSettings)window.openProfileSettings();
-      };
-    }
-
-    if(n)n.style.cssText+=";display:block!important;visibility:visible!important;opacity:1!important;position:absolute!important;top:13px!important;left:68px!important;z-index:999999!important;";
-  }
-  fix();
-  new MutationObserver(fix).observe(document.documentElement,{childList:true,subtree:true});
-})();
 </script>
 
 <!-- RKY-FRIEND-REQUEST-TOGGLE-FIX -->

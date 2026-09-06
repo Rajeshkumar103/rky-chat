@@ -16014,3 +16014,64 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY AUTH VISIBILITY FINAL FIX -->
+<style>
+#loginBox.rky-auth-hidden,
+#registerButton.rky-auth-hidden{
+  display:none !important;
+}
+#chatBox.rky-auth-hidden{
+  display:none !important;
+}
+</style>
+
+<script>
+(function(){
+
+  function rkyAuthUI(){
+    const loginBox=document.getElementById("loginBox");
+    const register=document.getElementById("registerButton");
+    const chat=document.getElementById("chatBox");
+
+    if(!loginBox || !chat) return;
+
+    const user=(localStorage.getItem("currentUser") || "").trim();
+
+    if(user){
+      loginBox.classList.add("rky-auth-hidden");
+      if(register) register.classList.add("rky-auth-hidden");
+
+      chat.classList.remove("rky-auth-hidden");
+      chat.style.setProperty("display","block","important");
+    }else{
+      loginBox.classList.remove("rky-auth-hidden");
+      loginBox.style.setProperty("display","block","important");
+
+      if(register) {
+        register.classList.remove("rky-auth-hidden");
+        register.style.removeProperty("display");
+      }
+
+      chat.classList.add("rky-auth-hidden");
+      chat.style.setProperty("display","none","important");
+    }
+  }
+
+  window.rkyAuthUI=rkyAuthUI;
+
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",rkyAuthUI);
+  }else{
+    rkyAuthUI();
+  }
+
+  setTimeout(rkyAuthUI,300);
+  setTimeout(rkyAuthUI,1000);
+  setTimeout(rkyAuthUI,2000);
+
+  setInterval(rkyAuthUI,1000);
+
+})();
+</script>
+

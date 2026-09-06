@@ -1770,3 +1770,100 @@ html, body {
   word-break: break-word !important;
 }
 
+
+/* ===== FINAL PHONE WIDTH FIX ===== */
+html, body {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+#chatBox {
+  position: relative !important;
+  width: 100vw !important;
+  max-width: 100vw !important;
+  min-width: 100vw !important;
+  margin-left: 50% !important;
+  margin-right: 0 !important;
+  transform: translateX(-50%) !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Friends content full width */
+#friendList,
+#friendProfile,
+#rkyCircleRequestsContent,
+#rkySentRequestsSection,
+#rkyConnectionsSection {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Friend cards */
+#friendList > * {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Request input row */
+#rkyCircleRequestsContent > div:first-child {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+}
+
+#rkyCircleRequestsContent input {
+  flex: 1 !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+#rkyCircleRequestsContent button {
+  flex-shrink: 0 !important;
+}
+
+/* Search */
+#searchMessage,
+#searchInput {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Mobile phone */
+@media (max-width: 600px) {
+  #chatBox {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 100vw !important;
+  }
+
+  #chatBox > h2 {
+    width: 100vw !important;
+    max-width: 100vw !important;
+  }
+
+  #messages {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #friendList {
+    padding: 0 4px !important;
+  }
+
+  #rkyCircleRequestsContent,
+  #rkySentRequestsSection,
+  #rkyConnectionsSection {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+  }
+}
+

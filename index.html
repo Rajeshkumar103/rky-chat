@@ -16862,3 +16862,55 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<script>
+/* RKY: keep login -> chat at phone viewport scale */
+(function () {
+  function resetRkyViewport() {
+    var meta = document.querySelector('meta[name="viewport"]');
+
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'viewport';
+      document.head.appendChild(meta);
+    }
+
+    meta.setAttribute(
+      'content',
+      'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'
+    );
+
+    document.documentElement.style.width = '100%';
+    document.body.style.width = '100%';
+    document.documentElement.style.maxWidth = '100%';
+    document.body.style.maxWidth = '100%';
+    document.documentElement.style.overflowX = 'hidden';
+    document.body.style.overflowX = 'hidden';
+
+    setTimeout(function () {
+      window.scrollTo(0, 0);
+    }, 50);
+  }
+
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('button');
+    if (!el) return;
+
+    var text = (el.innerText || '').toLowerCase();
+
+    if (
+      text.includes('login') ||
+      text.includes('log in') ||
+      text.includes('sign in')
+    ) {
+      setTimeout(resetRkyViewport, 300);
+      setTimeout(resetRkyViewport, 800);
+    }
+  });
+
+  window.addEventListener('load', function () {
+    setTimeout(resetRkyViewport, 300);
+  });
+})();
+</script>
+

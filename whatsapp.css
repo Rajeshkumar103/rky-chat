@@ -1139,7 +1139,6 @@ html, body {
 /* ===== RKY FRIENDS + CHAT FINAL LAYOUT FIX ===== */
 
 #chatBox{
-  display:flex !important;
   flex-direction:column !important;
   overflow:hidden !important;
 }

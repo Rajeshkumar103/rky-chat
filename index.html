@@ -15378,18 +15378,7 @@ setInterval(function(){
 
 }, 10000);
 // 🔐 Login required every time app is opened
-window.addEventListener("load", function(){
-    const savedUser = localStorage.getItem("currentUser") || "";
-    currentUser = savedUser;
 
-    if (savedUser) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("chatBox").style.display = "block";
-    } else {
-        document.getElementById("loginBox").style.display = "block";
-        document.getElementById("chatBox").style.display = "none";
-    }
-});
 function sendMediaNotification(receiver, messageText){
 
     for(let i = 0; i < users.length; i++){
@@ -15776,92 +15765,6 @@ setInterval(function(){
 
 <script>
 // 🔐 Restore saved login session
-document.addEventListener("DOMContentLoaded", function () {
-
-    if (!currentUser) {
-        return;
-    }
-
-    const savedUsers =
-        JSON.parse(localStorage.getItem("users")) || [];
-
-    const savedUser =
-        savedUsers.find(u => u.username === currentUser);
-
-    if (!savedUser) {
-        console.log("Saved user not found:", currentUser);
-        return;
-    }
-
-    const loginBox = document.getElementById("loginBox");
-    const chatBox = document.getElementById("chatBox");
-
-    if (loginBox) {
-        loginBox.style.display = "none";
-    }
-
-    if (chatBox) {
-        chatBox.style.display = "block";
-    }
-
-    document.getElementById("status").innerHTML =
-        currentUser + " is Online 🟢";
-
-    document.getElementById("userName").innerHTML =
-        "User: " +
-        (savedUser.profileName || currentUser);
-
-    if (savedUser.photo) {
-        document.getElementById("profile").src =
-            savedUser.photo;
-    }
-
-    console.log("✅ Login session restored:", currentUser);
-
-    if (typeof loadFriends === "function") {
-        loadFriends();
-    }
-
-    if (typeof loadMessages === "function") {
-        loadMessages();
-    }
-
-    if (typeof loadRequests === "function") {
-        loadRequests();
-    }
-
-    // 🧹 Keep main screen clean after login
-    selectedFriend = "";
-
-    const friendProfile = document.getElementById("friendProfile");
-    const callHistoryPanel = document.getElementById("callHistoryPanel");
-    const voiceCallControls = document.getElementById("voiceCallControls");
-    const videoCallControls = document.getElementById("videoCallControls");
-
-    if (friendProfile) {
-        friendProfile.innerHTML = "";
-    }
-
-    if (videoCallControls) {
-        videoCallControls.style.display = "none";
-    }
-
-    if (callHistoryPanel) {
-        callHistoryPanel.style.display = "none";
-    }
-
-    if (voiceCallControls) {
-        voiceCallControls.style.display = "none";
-    }
-
-    if (typeof startStatusHeartbeat === "function") {
-        startStatusHeartbeat();
-    }
-});
-</script>
-
-
-
 <!-- RKY FINAL FRIEND REQUEST FIX -->
 <script>
 (function(){
@@ -15926,8 +15829,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fixFriendRequests();
   }
 
-  setTimeout(fixFriendRequests,500);
-  setTimeout(fixFriendRequests,1500);
+
 })();
 </script>
 
@@ -15944,52 +15846,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </style>
 
 <script>
-(function(){
 
-  function rkyAuthUI(){
-    const loginBox=document.getElementById("loginBox");
-    const register=document.getElementById("registerButton");
-    const chat=document.getElementById("chatBox");
-
-    if(!loginBox || !chat) return;
-
-    const user=(localStorage.getItem("currentUser") || "").trim();
-
-    if(user){
-      loginBox.classList.add("rky-auth-hidden");
-      if(register) register.classList.add("rky-auth-hidden");
-
-      chat.classList.remove("rky-auth-hidden");
-      chat.style.setProperty("display","block","important");
-    }else{
-      loginBox.classList.remove("rky-auth-hidden");
-      loginBox.style.setProperty("display","block","important");
-
-      if(register) {
-        register.classList.remove("rky-auth-hidden");
-        register.style.removeProperty("display");
-      }
-
-      chat.classList.add("rky-auth-hidden");
-      chat.style.setProperty("display","none","important");
-    }
-  }
-
-  window.rkyAuthUI=rkyAuthUI;
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",rkyAuthUI);
-  }else{
-    rkyAuthUI();
-  }
-
-  setTimeout(rkyAuthUI,300);
-  setTimeout(rkyAuthUI,1000);
-  setTimeout(rkyAuthUI,2000);
-
-  setInterval(rkyAuthUI,1000);
-
-})();
 </script>
 
 
@@ -16689,11 +16546,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(showRealFriends,500);
-    setTimeout(showRealFriends,1500);
-  });
 
-  setInterval(showRealFriends,5000);
+
+  });
 
 })();
 </script>
@@ -16769,12 +16624,10 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(fixFriendPosition,300);
-    setTimeout(fixFriendPosition,1200);
-    setTimeout(fixFriendPosition,2500);
-  });
 
-  setInterval(fixFriendPosition,5000);
+
+
+  });
 
 })();
 </script>

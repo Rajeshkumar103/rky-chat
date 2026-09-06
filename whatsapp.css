@@ -1867,3 +1867,98 @@ html, body {
   }
 }
 
+
+/* ===== RKY FINAL MOBILE ALIGNMENT ===== */
+html, body {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow-x: hidden !important;
+}
+
+#chatBox {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  left: auto !important;
+  right: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Header */
+#chatBox > h2 {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Main content */
+#friendList,
+#friendProfile,
+#rkyCircleRequestsContent,
+#rkySentRequestsSection,
+#rkyConnectionsSection {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Keep every child inside screen */
+#friendList *,
+#friendProfile *,
+#rkyCircleRequestsContent *,
+#rkySentRequestsSection *,
+#rkyConnectionsSection * {
+  max-width: 100% !important;
+  min-width: 0 !important;
+  overflow-wrap: anywhere !important;
+}
+
+/* Friend request input */
+#rkyCircleRequestsContent > div {
+  max-width: 100% !important;
+}
+
+#rkyCircleRequestsContent input {
+  min-width: 0 !important;
+}
+
+/* Search */
+#searchMessage,
+#searchInput {
+  width: calc(100% - 16px) !important;
+  max-width: calc(100% - 16px) !important;
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  #chatBox {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #messages {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #friendList {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  #rkyCircleRequestsContent,
+  #rkySentRequestsSection,
+  #rkyConnectionsSection {
+    width: calc(100% - 16px) !important;
+    max-width: calc(100% - 16px) !important;
+  }
+}
+

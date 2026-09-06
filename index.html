@@ -16416,3 +16416,56 @@ document.addEventListener("DOMContentLoaded", function () {
 })();
 </script>
 
+
+<!-- RKY ACCEPT -> FRIEND LIST FINAL FIX -->
+<script>
+(function(){
+
+  const oldAccept = window.rkyAcceptFriend;
+
+  window.rkyAcceptFriend = async function(id){
+    try{
+      const res = await fetch("/api/friends/" + id + "/accept", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"}
+      });
+
+      const data = await res.json();
+
+      if(!res.ok || data.success === false){
+        alert(data.message || "Accept failed");
+        return;
+      }
+
+      /* Close request popup */
+      const popup = document.getElementById("rkyFriendPopup");
+      if(popup) popup.style.display = "none";
+
+      /* Refresh Friends list immediately */
+      if(typeof window.loadFriends === "function"){
+        await window.loadFriends();
+      }
+
+      /* Make Friends list visible */
+      const friendList = document.getElementById("friendList");
+      if(friendList){
+        friendList.style.setProperty("display","block","important");
+        friendList.style.setProperty("visibility","visible","important");
+        friendList.style.setProperty("opacity","1","important");
+      }
+
+      const chatBox = document.getElementById("chatBox");
+      if(chatBox){
+        chatBox.style.setProperty("display","block","important");
+      }
+
+      alert("✅ Friend added successfully");
+
+    }catch(e){
+      alert("❌ Server error while accepting friend");
+    }
+  };
+
+})();
+</script>
+

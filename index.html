@@ -645,7 +645,7 @@ Clear Data
     </button>
 
     <button type="button"
-        onclick="rkyMoreAction('logout')">
+        onclick="logout()">
         🚪 Logout
     </button>
 
@@ -12966,96 +12966,77 @@ async function editMessage(id){
 }
 
 async function logout(){
+    try{
+        const username = currentUser || "";
 
-    // OFFLINE STATUS UPDATE
-    if(currentUser){
+        if(typeof stopStatusHeartbeat === "function") stopStatusHeartbeat();
+        if(typeof stopSeenRefresh === "function") stopSeenRefresh();
 
-        try{
-
-            await fetch("/api/status", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username: currentUser,
-                    status: "Offline"
-                }),
-                keepalive: true
-            });
-
-        }catch(error){
-
-            console.error(
-                "Offline status update error:",
-                error
-            );
+        if(typeof window.rkyCloseSelectedChatUI === "function"){
+            try{ window.rkyCloseSelectedChatUI(); }catch(e){ console.error(e); }
         }
+
+        if(username){
+            fetch("/api/status",{
+                method:"POST",
+                headers:{"Content-Type":"application/json"},
+                body:JSON.stringify({username:username,status:"Offline"}),
+                keepalive:true
+            }).catch(function(e){ console.error("Offline status error:",e); });
+        }
+
+        if(typeof users !== "undefined" && Array.isArray(users)){
+            for(let i=0;i<users.length;i++){
+                if(users[i].username === username){
+                    users[i].status="Offline";
+                    users[i].lastSeen=new Date().toLocaleString();
+                }
+            }
+            localStorage.setItem("users",JSON.stringify(users));
+        }
+
+        selectedFriend = "";
+        replyMessageId = null;
+        window.selectedFriend = "";
+
+        localStorage.removeItem("currentUser");
+
+        const ids = [
+            "replyBox","replyText","message","friendProfile","messages",
+            "friendList","requestList","profile","userName","status"
+        ];
+        ids.forEach(function(id){
+            const el=document.getElementById(id);
+            if(!el) return;
+            if(id==="message" || id==="replyText" || id==="userName" || id==="status") el.value=el.innerHTML="";
+            else if(id==="profile") el.src="https://via.placeholder.com/80";
+            else if(id==="replyBox") el.style.display="none";
+            else el.innerHTML="";
+        });
+
+        const chat=document.getElementById("chatBox");
+        const login=document.getElementById("loginBox");
+        if(chat){
+            chat.classList.remove("rky-friend-chat-open","rky-chat-open");
+            chat.style.display="none";
+        }
+        if(login) login.style.display="block";
+
+        const ownMenu=document.getElementById("rkyMoreMenu");
+        if(ownMenu) ownMenu.style.display="none";
+        const friendMenu=document.getElementById("rkyFriendMoreMenu");
+        if(friendMenu) friendMenu.remove();
+        const friendBar=document.getElementById("rkyChatTopBarFriend");
+        if(friendBar) friendBar.remove();
+
+        currentUser = "";
+        console.log("✅ Logged out successfully");
+    }catch(error){
+        console.error("Logout error:",error);
+        alert("Logout failed: " + (error?.message || error));
     }
-
-    if(typeof stopStatusHeartbeat === "function"){
-        stopStatusHeartbeat();
-    }
-    if(typeof stopSeenRefresh === "function"){
-        stopSeenRefresh();
-    }
-
-
-if(currentUser){
-    fetch("/api/status", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            username: currentUser,
-            status: "Offline"
-        }),
-        keepalive: true
-    }).catch(function(error){
-        console.error("Offline status error:", error);
-    });
 }
 
-for(let i=0; i<users.length; i++){
-
-if(users[i].username == currentUser){
-
-users[i].status = "Offline";
-users[i].lastSeen = new Date().toLocaleString();
-
-}
-
-}
-
-localStorage.setItem("users", JSON.stringify(users));
-
-// Reply reset
-replyMessageId = null;
-selectedFriend = "";
-
-document.getElementById("replyBox").style.display = "none";
-document.getElementById("replyText").innerHTML = "";
-document.getElementById("message").value = "";
-
-document.getElementById("friendProfile").innerHTML = "";
-document.getElementById("messages").innerHTML = "";
-console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
-document.getElementById("friendList").innerHTML = "";
-document.getElementById("requestList").innerHTML = "";
-document.getElementById("profile").src =
-"https://via.placeholder.com/80";
-document.getElementById("userName").innerHTML = "";
-document.getElementById("chatBox").style.display = "none";
-document.getElementById("loginBox").style.display = "block";
-localStorage.removeItem("currentUser");
-currentUser = "";
-
-localStorage.removeItem("currentUser");
-
-document.getElementById("status").innerHTML = "";
-
-}
 function clearData(){
 
 if(confirm("Delete all users and chats?")){

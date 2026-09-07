@@ -12276,8 +12276,15 @@ document.getElementById("messages").innerHTML += messageHTML;
 
 /* Scroll */
 
-setTimeout(function(){ document.getElementById("messages").scrollTop =
-document.getElementById("messages").scrollHeight; }, 50);
+setTimeout(function(){
+    const messagesBox = document.getElementById("messages");
+    if(messagesBox){
+        messagesBox.scrollTop = messagesBox.scrollHeight;
+        requestAnimationFrame(function(){
+            messagesBox.scrollTop = messagesBox.scrollHeight;
+        });
+    }
+}, 300);
 
 
 /* Load videos */

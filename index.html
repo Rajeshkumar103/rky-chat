@@ -16862,3 +16862,113 @@ setInterval(function(){
 
 </body>
 </html>
+
+<script>
+/* ===== RKY CHAT HEADER CALL + MENU BUTTONS ===== */
+(function(){
+  function addChatHeaderButtons(){
+    const bar = document.getElementById("rkyChatTopBar");
+    if(!bar || document.getElementById("rkyHeaderActions")) return;
+
+    const actions = document.createElement("div");
+    actions.id = "rkyHeaderActions";
+    actions.innerHTML = `
+      <button type="button" class="rky-call-btn" id="rkyAudioCallBtn" title="Audio Call">📞</button>
+      <button type="button" class="rky-call-btn" id="rkyVideoCallBtn" title="Video Call">🎥</button>
+      <button type="button" class="rky-call-btn" id="rkyMoreBtn" title="More">⋮</button>
+    `;
+
+    bar.appendChild(actions);
+
+    document.getElementById("rkyAudioCallBtn").onclick = function(){
+      if(typeof startVoiceCall === "function"){
+        startVoiceCall(selectedFriend);
+      }else if(typeof connectVoiceCallSocket === "function"){
+        connectVoiceCallSocket();
+      }else{
+        alert("Audio call system ready");
+      }
+    };
+
+    document.getElementById("rkyVideoCallBtn").onclick = function(){
+      if(typeof startVideoCall === "function"){
+        startVideoCall(selectedFriend);
+      }else{
+        alert("Video call system ready");
+      }
+    };
+
+    document.getElementById("rkyMoreBtn").onclick = function(){
+      let menu = document.getElementById("rkyMoreMenu");
+
+      if(menu){
+        menu.remove();
+        return;
+      }
+
+      menu = document.createElement("div");
+      menu.id = "rkyMoreMenu";
+      menu.innerHTML = `
+        <button type="button">👤 Contact info</button>
+        <button type="button">🔕 Notifications</button>
+        <button type="button">🚫 Block</button>
+        <button type="button">🗑️ Clear chat</button>
+      `;
+
+      bar.appendChild(menu);
+    };
+  }
+
+  setInterval(addChatHeaderButtons, 300);
+})();
+</script>
+
+<style>
+#rkyHeaderActions{
+  margin-left:auto !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:2px !important;
+}
+
+.rky-call-btn{
+  width:42px !important;
+  height:42px !important;
+  border:0 !important;
+  background:transparent !important;
+  color:white !important;
+  font-size:21px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  cursor:pointer !important;
+  border-radius:50% !important;
+}
+
+.rky-call-btn:active{
+  background:rgba(255,255,255,.2) !important;
+}
+
+#rkyMoreMenu{
+  position:absolute !important;
+  right:8px !important;
+  top:54px !important;
+  width:180px !important;
+  background:white !important;
+  color:#222 !important;
+  border-radius:8px !important;
+  box-shadow:0 4px 15px rgba(0,0,0,.25) !important;
+  z-index:100001 !important;
+  overflow:hidden !important;
+}
+
+#rkyMoreMenu button{
+  width:100% !important;
+  padding:13px !important;
+  border:0 !important;
+  background:white !important;
+  text-align:left !important;
+  font-size:15px !important;
+}
+</style>
+

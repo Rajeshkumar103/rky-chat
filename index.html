@@ -1260,7 +1260,6 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
     id="message"
     type="text"
     placeholder="Type a message"
-    oninput="typing(); updateComposerButtons();"
     onkeydown="checkEnter(event)"
   >
 
@@ -11404,6 +11403,7 @@ document.getElementById("replyText").innerHTML = "";
 document.getElementById("message").value = "";
 
 document.getElementById("messages").innerHTML = "";
+console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 
 let photo = "https://via.placeholder.com/80";
 let profileName = name;
@@ -11454,8 +11454,6 @@ document.getElementById("friendProfile").innerHTML =
   await loadMessages();
 
 
-alert("✅ Chat cleared successfully");
-  await loadFriends();
 
 }
 
@@ -11922,6 +11920,7 @@ try {
 
     if(!currentUser || !selectedFriend){
         document.getElementById("messages").innerHTML = "";
+console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
         return;
     }
 
@@ -12043,6 +12042,7 @@ console.log("CALLING SEEN API");
 
 
 document.getElementById("messages").innerHTML = "";
+console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 for(let i=0; i<chats.length; i++){
 
 if(
@@ -12276,8 +12276,8 @@ document.getElementById("messages").innerHTML += messageHTML;
 
 /* Scroll */
 
-document.getElementById("messages").scrollTop =
-document.getElementById("messages").scrollHeight;
+setTimeout(function(){ document.getElementById("messages").scrollTop =
+document.getElementById("messages").scrollHeight; }, 50);
 
 
 /* Load videos */
@@ -12617,7 +12617,6 @@ async function sendmessage(){
         );
 
         input.value = "";
-        updateComposerButtons();
 
         replyMessageId = null;
 
@@ -12638,7 +12637,7 @@ async function sendmessage(){
         );
 
         alert(
-            "Server connection failed"
+            "Server connection failed: " + (error?.message || error)
         );
     }
 }
@@ -12735,7 +12734,7 @@ async function deletemessage(){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -12794,7 +12793,7 @@ async function deleteForMe(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -12853,7 +12852,7 @@ async function deleteOne(id){
 
         console.error("Delete message error:", error);
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -12972,7 +12971,7 @@ async function editMessage(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -13051,6 +13050,7 @@ document.getElementById("message").value = "";
 
 document.getElementById("friendProfile").innerHTML = "";
 document.getElementById("messages").innerHTML = "";
+console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 document.getElementById("friendList").innerHTML = "";
 document.getElementById("requestList").innerHTML = "";
 document.getElementById("profile").src =
@@ -13115,7 +13115,7 @@ async function sendFriendRequest(){
 
     }catch(error){
         console.error(error);
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -13279,7 +13279,6 @@ async function acceptRequest(requestId){
             alert("Friend request accepted");
 
             await loadRequests();
-            await loadFriends();
             await loadRkyConnections();
 
         }else{
@@ -13294,7 +13293,7 @@ async function acceptRequest(requestId){
 
         console.error("Accept request error:", error);
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -13443,7 +13442,7 @@ async function changePassword(){
 
         console.error("Change password error:", error);
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
 
     }
 }
@@ -13573,7 +13572,6 @@ async function saveProfile(){
             serverUser.photo ||
             "https://via.placeholder.com/80";
 
-        await loadFriends();
 
         closeProfileSettings();
 
@@ -13926,7 +13924,7 @@ async function forwardMessage(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -14062,7 +14060,7 @@ async function setReaction(id, reaction){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -14188,7 +14186,7 @@ async function showReactionDetails(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
 
     }
 
@@ -14271,7 +14269,7 @@ async function removeReaction(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -14377,7 +14375,6 @@ async function clearCurrentChat(){
 
         await loadMessages();
 
-        alert("✅ Chat cleared successfully");
 
     }catch(error){
 
@@ -14452,7 +14449,7 @@ async function pinMessage(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -14515,7 +14512,7 @@ async function starMessage(id){
             error
         );
 
-        alert("Server connection failed");
+        alert("Server connection failed: " + error.message);
     }
 }
 
@@ -15573,13 +15570,11 @@ function updateComposerButtons(){
 /* Typing गर्दा */
 document.addEventListener("input", function(e){
     if(e.target && e.target.id === "message"){
-        updateComposerButtons();
     }
 });
 
 /* Page load */
 document.addEventListener("DOMContentLoaded", function(){
-    updateComposerButtons();
 });
 
 /* Send भएपछि तुरुन्त फेरि buttons update */
@@ -15597,7 +15592,6 @@ if(typeof originalSend === "function"){
             input.value = "";
         }
 
-        updateComposerButtons();
     };
 }
 

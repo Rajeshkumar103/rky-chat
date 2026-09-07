@@ -17320,5 +17320,190 @@ setInterval(function(){
 })();
 </script>
 
+
+
+<!-- RKY FINAL LOGIN + FRIEND REQUEST UI FIX -->
+<style id="rky-final-login-request-fix">
+/* Call History/Reminder must NOT appear automatically after login. */
+#chatBox:not(.rky-show-call-history) #callHistoryPanel{
+  display:none !important;
+}
+
+/* While a friend chat is open, old Friends page remains hidden. */
+#chatBox.rky-friend-chat-open #callHistoryPanel{
+  display:none !important;
+}
+
+/* Incoming request buttons */
+.rky-request-actions{
+  display:flex !important;
+  gap:6px !important;
+  flex:0 0 auto !important;
+}
+.rky-request-actions button{
+  min-width:72px !important;
+  padding:8px 10px !important;
+  border:0 !important;
+  border-radius:8px !important;
+  color:#fff !important;
+  cursor:pointer !important;
+  font-weight:600 !important;
+}
+.rky-request-accept{background:#078f78 !important;}
+.rky-request-reject{background:#e53935 !important;}
+</style>
+
+<script id="rky-final-login-request-fix-script">
+(function(){
+  'use strict';
+
+  function hideCallHistoryUnlessOpened(){
+    var chat=document.getElementById('chatBox');
+    var panel=document.getElementById('callHistoryPanel');
+    if(!panel) return;
+    if(!chat || !chat.classList.contains('rky-show-call-history')){
+      panel.style.setProperty('display','none','important');
+    }
+  }
+
+  /* Prevent the automatic 500ms loadCallHistory() from showing its panel. */
+  function hideAfterLogin(){
+    hideCallHistoryUnlessOpened();
+    setTimeout(hideCallHistoryUnlessOpened,100);
+    setTimeout(hideCallHistoryUnlessOpened,600);
+    setTimeout(hideCallHistoryUnlessOpened,1500);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',hideAfterLogin);
+  }else{
+    hideAfterLogin();
+  }
+
+  /* Re-render incoming requests with BOTH Accept and Reject. */
+  window.loadRequests = async function(){
+    var list=document.getElementById('requestList');
+    var me=(window.currentUser || currentUser || localStorage.getItem('currentUser') || '').trim();
+    if(!list || !me) return;
+
+    list.innerHTML='<p style="text-align:center;color:#888;">Loading friend requests...</p>';
+
+    try{
+      var response=await fetch('/api/friends/requests/'+encodeURIComponent(me)+'?t='+Date.now(),{cache:'no-store'});
+      var data=await response.json();
+      if(!response.ok || !data || data.success!==true) throw new Error((data&&data.message)||'Could not load requests');
+
+      var requests=Array.isArray(data.requests)?data.requests:[];
+      if(typeof updateFriendRequestBadge==='function') updateFriendRequestBadge(requests.length);
+      list.innerHTML='';
+
+      if(!requests.length){
+        list.innerHTML='<p style="text-align:center;color:#888;">No friend requests.</p>';
+        return;
+      }
+
+      requests.forEach(function(request){
+        var card=document.createElement('div');
+        card.style.cssText='display:flex;align-items:center;gap:10px;padding:12px;margin:7px 0;border:1px solid #ddd;border-radius:12px;background:#fff;';
+
+        var text=document.createElement('div');
+        text.style.cssText='flex:1;font-size:14px;color:#222;';
+        text.textContent=(request.username||request.from_username||'Someone')+' sent you a friend request';
+
+        var actions=document.createElement('div');
+        actions.className='rky-request-actions';
+
+        var accept=document.createElement('button');
+        accept.type='button';
+        accept.className='rky-request-accept';
+        accept.textContent='Accept';
+        accept.onclick=async function(){
+          accept.disabled=true; reject.disabled=true; accept.textContent='Accepting...';
+          try{
+            var res=await fetch('/api/friends/'+encodeURIComponent(request.id)+'/accept',{method:'POST',headers:{'Content-Type':'application/json'}});
+            var d=await res.json();
+            if(!res.ok || !d.success) throw new Error(d.message||'Accept failed');
+            await window.loadRequests();
+            if(typeof window.loadFriends==='function') await window.loadFriends();
+            if(typeof window.loadRkyConnections==='function') await window.loadRkyConnections();
+          }catch(e){
+            accept.disabled=false; reject.disabled=false; accept.textContent='Accept';
+            alert(e.message||'Accept failed');
+          }
+        };
+
+        var reject=document.createElement('button');
+        reject.type='button';
+        reject.className='rky-request-reject';
+        reject.textContent='Reject';
+        reject.onclick=async function(){
+          accept.disabled=true; reject.disabled=true; reject.textContent='Rejecting...';
+          try{
+            var res=await fetch('/api/friends/'+encodeURIComponent(request.id)+'/reject',{method:'POST',headers:{'Content-Type':'application/json'}});
+            var d=await res.json();
+            if(!res.ok || !d.success) throw new Error(d.message||'Reject failed');
+            await window.loadRequests();
+          }catch(e){
+            accept.disabled=false; reject.disabled=false; reject.textContent='Reject';
+            alert(e.message||'Reject failed');
+          }
+        };
+
+        actions.append(accept,reject);
+        card.append(text,actions);
+        list.appendChild(card);
+      });
+    }catch(error){
+      console.error('Final request loader:',error);
+      if(typeof updateFriendRequestBadge==='function') updateFriendRequestBadge(0);
+      list.innerHTML='<p style="color:#d33;text-align:center;">Could not load friend requests.<br><button type="button" onclick="loadRequests()" style="margin-top:8px;padding:8px 12px;">↻ Try Again</button></p>';
+    }
+  };
+
+  /* Own 3-dot: Call History is opt-in, never automatic. */
+  var oldMore=window.rkyMoreAction;
+  window.rkyMoreAction=function(action){
+    var chat=document.getElementById('chatBox');
+    if(action==='callHistory'){
+      if(chat){
+        var open=chat.classList.contains('rky-show-call-history');
+        chat.classList.toggle('rky-show-call-history',!open);
+        var panel=document.getElementById('callHistoryPanel');
+        if(panel) panel.style.setProperty('display',!open?'block':'none','important');
+      }
+      return;
+    }
+    if(typeof oldMore==='function') return oldMore.apply(this,arguments);
+  };
+
+  /* Login finished: explicitly return to clean Friends page. */
+  document.addEventListener('click',function(e){
+    var b=e.target && e.target.closest ? e.target.closest('button') : null;
+    if(!b) return;
+    var t=(b.innerText||'').trim().toLowerCase();
+    if(t==='login' || t==='log in' || t==='sign in'){
+      setTimeout(function(){
+        var chat=document.getElementById('chatBox');
+        if(chat){
+          chat.classList.remove('rky-show-call-history');
+          chat.classList.remove('rky-friend-chat-open');
+        }
+        hideAfterLogin();
+        if(typeof window.loadRequests==='function') window.loadRequests();
+        if(typeof window.loadFriends==='function') window.loadFriends();
+      },700);
+    }
+  },true);
+
+  /* Keep it hidden when returning to Friends page. */
+  setInterval(function(){
+    var chat=document.getElementById('chatBox');
+    if(chat && !chat.classList.contains('rky-friend-chat-open') && !chat.classList.contains('rky-show-call-history')){
+      hideCallHistoryUnlessOpened();
+    }
+  },1000);
+})();
+</script>
+
 </body>
 </html>

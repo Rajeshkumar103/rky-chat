@@ -2449,3 +2449,36 @@ html, body {
     bottom:58px !important;
   }
 }
+
+/* ===== RKY CHAT BACK BUTTON FIX ===== */
+#chatBox.rky-chat-open #rkyChatTopBar{
+  position:fixed !important;
+  top:0 !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  width:100% !important;
+  max-width:480px !important;
+  height:60px !important;
+  display:flex !important;
+  align-items:center !important;
+  z-index:100000 !important;
+  background:#075e54 !important;
+  color:#fff !important;
+}
+
+#chatBox.rky-chat-open .rky-chat-back{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  width:50px !important;
+  height:50px !important;
+  align-items:center !important;
+  justify-content:center !important;
+  color:#fff !important;
+  background:transparent !important;
+  border:0 !important;
+  font-size:38px !important;
+  cursor:pointer !important;
+  flex:0 0 50px !important;
+}
+

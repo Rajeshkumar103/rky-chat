@@ -16905,5 +16905,191 @@ setInterval(function(){
 })();
 </script>
 
+
+<!-- RKY FINAL FRIEND CHAT STATE FIX -->
+<style id="rky-final-friend-chat-state">
+/* When a friend chat is open, hide the old Friends/Profile page controls. */
+#chatBox.rky-friend-chat-open > #rkyHeader,
+#chatBox.rky-friend-chat-open > #friendList,
+#chatBox.rky-friend-chat-open > #friendProfile,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsToggle,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsContent,
+#chatBox.rky-friend-chat-open #rkySentRequestsSection,
+#chatBox.rky-friend-chat-open #rkyConnectionsSection,
+#chatBox.rky-friend-chat-open #searchMessage,
+#chatBox.rky-friend-chat-open #starredMessages,
+#chatBox.rky-friend-chat-open button[onclick="showStarredMessages()"],
+#chatBox.rky-friend-chat-open button[onclick="clearCurrentChat()"]{
+  display:none !important;
+}
+
+/* The old user-level three-dot menu must never show inside friend chat. */
+#chatBox.rky-friend-chat-open #rkyMoreButton,
+#chatBox.rky-friend-chat-open #rkyMoreMenu{
+  display:none !important;
+}
+
+/* Keep the real chat content. */
+#chatBox.rky-friend-chat-open #messages{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+#chatBox.rky-friend-chat-open .wa-bottom-bar{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+</style>
+
+<script id="rky-final-friend-chat-state-script">
+(function(){
+  'use strict';
+
+  function setHidden(id, hidden){
+    var el=document.getElementById(id);
+    if(el) el.style.setProperty('display', hidden ? 'none' : '', 'important');
+  }
+
+  function hideOldFriendPage(){
+    [
+      'rkyHeader','friendList','friendProfile',
+      'rkyCircleRequestsToggle','rkyCircleRequestsContent',
+      'rkySentRequestsSection','rkyConnectionsSection',
+      'searchMessage','starredMessages','rkyMoreButton','rkyMoreMenu'
+    ].forEach(function(id){ setHidden(id,true); });
+
+    document.querySelectorAll(
+      '#chatBox button[onclick="showStarredMessages()"],' +
+      '#chatBox button[onclick="clearCurrentChat()"]'
+    ).forEach(function(el){
+      el.style.setProperty('display','none','important');
+    });
+  }
+
+  function openFriendChatFinal(name){
+    var chat=document.getElementById('chatBox');
+    if(!chat) return;
+    chat.classList.add('rky-friend-chat-open');
+    hideOldFriendPage();
+
+    var back=document.querySelector('#rkyChatTopBarFriend .rky-friend-back');
+    if(back){
+      back.onclick=function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        closeFriendChatFinal();
+      };
+    }
+  }
+
+  function closeFriendChatFinal(){
+    var chat=document.getElementById('chatBox');
+    if(!chat) return;
+
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(menu) menu.classList.remove('show');
+
+    var top=document.getElementById('rkyChatTopBarFriend');
+    if(top) top.remove();
+
+    chat.classList.remove('rky-friend-chat-open');
+
+    [
+      'rkyHeader','friendList',
+      'rkyCircleRequestsToggle','rkyCircleRequestsContent',
+      'rkySentRequestsSection','rkyConnectionsSection'
+    ].forEach(function(id){ setHidden(id,false); });
+
+    setHidden('friendProfile',true);
+    setHidden('searchMessage',false);
+    setHidden('starredMessages',true);
+    setHidden('rkyMoreButton',false);
+    setHidden('rkyMoreMenu',true);
+
+    document.querySelectorAll(
+      '#chatBox button[onclick="showStarredMessages()"],' +
+      '#chatBox button[onclick="clearCurrentChat()"]'
+    ).forEach(function(el){
+      el.style.removeProperty('display');
+    });
+
+    var messages=document.getElementById('messages');
+    if(messages) messages.innerHTML='';
+
+    var reply=document.getElementById('replyBox');
+    if(reply) reply.style.display='none';
+
+    var input=document.getElementById('message');
+    if(input) input.value='';
+
+    window.selectedFriend='';
+    if(typeof selectedFriend !== 'undefined') selectedFriend='';
+
+    if(typeof window.loadFriends==='function'){
+      try{ window.loadFriends(); }catch(e){ console.error(e); }
+    }
+  }
+
+  window.rkyCloseSelectedChatUI=closeFriendChatFinal;
+
+  function watch(){
+    var chat=document.getElementById('chatBox');
+    if(!chat) return;
+
+    if(chat.classList.contains('rky-friend-chat-open')){
+      hideOldFriendPage();
+      var back=document.querySelector('#rkyChatTopBarFriend .rky-friend-back');
+      if(back && !back.__rkyFinalBack){
+        back.__rkyFinalBack=true;
+        back.onclick=function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          closeFriendChatFinal();
+        };
+      }
+    }
+  }
+
+  /* Patch whichever selectFriend wrapper is currently installed. */
+  function install(){
+    if(typeof window.selectFriend!=='function') return;
+    if(window.selectFriend.__rkyFinalStateWrapped) return;
+
+    var old=window.selectFriend;
+    async function wrapped(name){
+      openFriendChatFinal(name);
+      var result;
+      try{
+        result=await old.apply(this,arguments);
+        return result;
+      }finally{
+        openFriendChatFinal(name);
+      }
+    }
+    wrapped.__rkyFinalStateWrapped=true;
+    window.selectFriend=wrapped;
+  }
+
+  var tries=0;
+  var timer=setInterval(function(){
+    install();
+    watch();
+    if(++tries>120) clearInterval(timer);
+  },100);
+
+  document.addEventListener('click',function(e){
+    var b=e.target.closest && e.target.closest('#rkyChatTopBarFriend .rky-friend-back');
+    if(b){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeFriendChatFinal();
+    }
+  },true);
+
+  window.addEventListener('pageshow',watch);
+})();
+</script>
+
 </body>
 </html>

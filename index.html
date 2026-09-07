@@ -16828,5 +16828,82 @@ setInterval(function(){
 })();
 </script>
 
+
+
+<!-- RKY FRIEND CHAT CLEAN VIEW FIX -->
+<style id="rky-friend-chat-clean-view">
+#chatBox.rky-friend-chat-open #friendList,
+#chatBox.rky-friend-chat-open #friendProfile,
+#chatBox.rky-friend-chat-open #voiceCallControls,
+#chatBox.rky-friend-chat-open #videoCallControls,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsToggle,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsContent,
+#chatBox.rky-friend-chat-open #rkySentRequestsSection,
+#chatBox.rky-friend-chat-open #rkyConnectionsSection,
+#chatBox.rky-friend-chat-open #searchMessage,
+#chatBox.rky-friend-chat-open #starredMessages,
+#chatBox.rky-friend-chat-open #starredMessages + *,
+#chatBox.rky-friend-chat-open #callHistoryPanel{
+  display:none !important;
+}
+
+/* Keep only the actual chat area visible after selecting a friend. */
+#chatBox.rky-friend-chat-open #messages{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+#chatBox.rky-friend-chat-open .wa-bottom-bar{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+</style>
+
+<script id="rky-friend-chat-clean-script">
+(function(){
+  function cleanFriendChatView(){
+    var chat=document.getElementById('chatBox');
+    if(!chat || !chat.classList.contains('rky-friend-chat-open')) return;
+
+    var ids=[
+      'friendList','friendProfile','voiceCallControls','videoCallControls',
+      'rkyCircleRequestsToggle','rkyCircleRequestsContent',
+      'rkySentRequestsSection','rkyConnectionsSection',
+      'searchMessage','starredMessages','callHistoryPanel'
+    ];
+
+    ids.forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.style.setProperty('display','none','important');
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    if(e.target.closest && e.target.closest('.rky-friend-chat-open')){
+      setTimeout(cleanFriendChatView, 0);
+    }
+  }, true);
+
+  var oldSelect=window.selectFriend;
+  if(typeof oldSelect==='function'){
+    window.selectFriend=async function(name){
+      var result;
+      try{
+        result=await oldSelect.apply(this, arguments);
+        return result;
+      }finally{
+        setTimeout(cleanFriendChatView, 0);
+        setTimeout(cleanFriendChatView, 150);
+        setTimeout(cleanFriendChatView, 500);
+      }
+    };
+  }
+
+  setInterval(cleanFriendChatView, 1000);
+})();
+</script>
+
 </body>
 </html>

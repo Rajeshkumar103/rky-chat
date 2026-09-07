@@ -2213,3 +2213,157 @@ html, body {
   }
 }
 
+
+
+/* ===== RKY CHAT UI FINAL - SELECTED FRIEND CHAT MODE ===== */
+#chatBox.rky-chat-open{
+  position:relative !important;
+  width:100% !important;
+  max-width:480px !important;
+  height:100dvh !important;
+  min-height:100dvh !important;
+  margin:0 auto !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  background:#efeae2 !important;
+  box-sizing:border-box !important;
+}
+
+#chatBox.rky-chat-open > h3,
+#chatBox.rky-chat-open > #friendList,
+#chatBox.rky-chat-open > #rkyCircleRequestsToggle,
+#chatBox.rky-chat-open > #rkyCircleRequestsContent,
+#chatBox.rky-chat-open > #rkySentRequestsSection,
+#chatBox.rky-chat-open > #rkyConnectionsSection,
+#chatBox.rky-chat-open > #rkyConnectHeader,
+#chatBox.rky-chat-open > #searchMessage,
+#chatBox.rky-chat-open > #starredMessages,
+#chatBox.rky-chat-open > div:has(> button[onclick="clearCurrentChat()"]){
+  display:none !important;
+}
+
+#chatBox.rky-chat-open #rkyVisibleFriends{
+  display:none !important;
+}
+
+#chatBox.rky-chat-open #friendProfile{
+  display:none !important;
+}
+
+#chatBox.rky-chat-open #rkyChatTopBar{
+  position:absolute !important;
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  height:60px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  padding:6px 8px !important;
+  box-sizing:border-box !important;
+  background:#008069 !important;
+  color:#fff !important;
+  z-index:1000 !important;
+}
+
+#rkyChatTopBar .rky-chat-back{
+  flex:0 0 42px !important;
+  width:42px !important;
+  height:42px !important;
+  border:0 !important;
+  border-radius:50% !important;
+  background:transparent !important;
+  color:#fff !important;
+  font-size:25px !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+
+#rkyChatTopBar .rky-chat-avatar{
+  width:42px !important;
+  height:42px !important;
+  border-radius:50% !important;
+  object-fit:cover !important;
+  background:#25d366 !important;
+  flex:0 0 42px !important;
+}
+
+#rkyChatTopBar .rky-chat-info{
+  min-width:0 !important;
+  flex:1 1 auto !important;
+  text-align:left !important;
+}
+
+#rkyChatTopBar .rky-chat-name{
+  font-size:16px !important;
+  font-weight:700 !important;
+  white-space:nowrap !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+}
+
+#rkyChatTopBar .rky-chat-status{
+  font-size:11px !important;
+  color:#d9fdd3 !important;
+  margin-top:2px !important;
+}
+
+#chatBox.rky-chat-open #messages{
+  position:absolute !important;
+  top:60px !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:60px !important;
+  width:100% !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:12px 8px 15px !important;
+  overflow-x:hidden !important;
+  overflow-y:auto !important;
+  box-sizing:border-box !important;
+  z-index:5 !important;
+}
+
+#chatBox.rky-chat-open .wa-bottom-bar{
+  position:absolute !important;
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
+  width:100% !important;
+  height:60px !important;
+  z-index:1001 !important;
+}
+
+#chatBox.rky-chat-open #typing{
+  position:absolute !important;
+  left:10px !important;
+  bottom:61px !important;
+  z-index:1002 !important;
+}
+
+#chatBox.rky-chat-open #replyBox{
+  position:absolute !important;
+  left:8px !important;
+  right:8px !important;
+  bottom:61px !important;
+  z-index:1003 !important;
+}
+
+@media(max-width:500px){
+  #chatBox.rky-chat-open{
+    width:100% !important;
+    max-width:none !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+  }
+  #chatBox.rky-chat-open #messages{
+    top:58px !important;
+    bottom:58px !important;
+  }
+  #chatBox.rky-chat-open #rkyChatTopBar{
+    height:58px !important;
+  }
+  #chatBox.rky-chat-open .wa-bottom-bar{
+    height:58px !important;
+  }
+}

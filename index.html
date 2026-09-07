@@ -16705,5 +16705,160 @@ setInterval(function(){
 })();
 </script>
 
+
+
+<script id="rky-selected-chat-ui-final">
+(function(){
+  "use strict";
+
+  function getFriendInfo(name){
+    var result = {
+      name: name || "Chat",
+      photo: "",
+      status: "Offline"
+    };
+
+    try{
+      var saved = JSON.parse(localStorage.getItem("users")) || [];
+      for(var i=0;i<saved.length;i++){
+        if(saved[i] && saved[i].username === name){
+          result.name = saved[i].profileName || saved[i].username || result.name;
+          result.photo = saved[i].photo || "";
+          result.status = saved[i].status === "Online" ? "Online" : "Offline";
+          break;
+        }
+      }
+    }catch(e){}
+
+    return result;
+  }
+
+  function openSelectedChatUI(name){
+    var chat = document.getElementById("chatBox");
+    if(!chat) return;
+
+    chat.classList.add("rky-chat-open");
+
+    var old = document.getElementById("rkyChatTopBar");
+    if(old) old.remove();
+
+    var info = getFriendInfo(name);
+
+    var bar = document.createElement("div");
+    bar.id = "rkyChatTopBar";
+
+    var back = document.createElement("button");
+    back.type = "button";
+    back.className = "rky-chat-back";
+    back.textContent = "‹";
+    back.title = "Back to Friends";
+    back.onclick = function(){
+      closeSelectedChatUI();
+    };
+
+    var avatar = document.createElement("img");
+    avatar.className = "rky-chat-avatar";
+    avatar.src = info.photo || "https://via.placeholder.com/50";
+    avatar.alt = "";
+
+    var wrap = document.createElement("div");
+    wrap.className = "rky-chat-info";
+
+    var nm = document.createElement("div");
+    nm.className = "rky-chat-name";
+    nm.textContent = info.name;
+
+    var st = document.createElement("div");
+    st.className = "rky-chat-status";
+    st.textContent = info.status === "Online" ? "Online" : "Offline";
+
+    wrap.appendChild(nm);
+    wrap.appendChild(st);
+
+    bar.appendChild(back);
+    bar.appendChild(avatar);
+    bar.appendChild(wrap);
+    chat.appendChild(bar);
+
+    var messages = document.getElementById("messages");
+    if(messages){
+      messages.style.setProperty("display","block","important");
+      messages.style.setProperty("visibility","visible","important");
+      messages.style.setProperty("opacity","1","important");
+    }
+
+    var composer = chat.querySelector(".wa-bottom-bar");
+    if(composer){
+      composer.style.setProperty("display","flex","important");
+      composer.style.setProperty("visibility","visible","important");
+      composer.style.setProperty("opacity","1","important");
+    }
+  }
+
+  function closeSelectedChatUI(){
+    var chat = document.getElementById("chatBox");
+    if(!chat) return;
+
+    chat.classList.remove("rky-chat-open");
+
+    var bar = document.getElementById("rkyChatTopBar");
+    if(bar) bar.remove();
+
+    var friendList = document.getElementById("friendList");
+    if(friendList){
+      friendList.style.removeProperty("display");
+      friendList.style.removeProperty("visibility");
+      friendList.style.removeProperty("opacity");
+    }
+
+    var requestToggle = document.getElementById("rkyCircleRequestsToggle");
+    if(requestToggle) requestToggle.style.removeProperty("display");
+
+    var visibleFriends = document.getElementById("rkyVisibleFriends");
+    if(visibleFriends) visibleFriends.style.removeProperty("display");
+
+    window.selectedFriend = "";
+  }
+
+  window.rkyOpenSelectedChatUI = openSelectedChatUI;
+  window.rkyCloseSelectedChatUI = closeSelectedChatUI;
+
+  function install(){
+    if(typeof window.selectFriend !== "function") return false;
+    if(window.selectFriend.__rkyChatUIWrapped) return true;
+
+    var original = window.selectFriend;
+
+    async function wrappedSelectFriend(name){
+      openSelectedChatUI(name);
+
+      try{
+        return await original.apply(this, arguments);
+      }catch(error){
+        console.error("selectFriend UI wrapper:", error);
+      }finally{
+        openSelectedChatUI(name);
+      }
+    }
+
+    wrappedSelectFriend.__rkyChatUIWrapped = true;
+    wrappedSelectFriend.__rkyOriginal = original;
+    window.selectFriend = wrappedSelectFriend;
+
+    return true;
+  }
+
+  if(!install()){
+    var tries = 0;
+    var timer = setInterval(function(){
+      tries++;
+      if(install() || tries >= 40){
+        clearInterval(timer);
+      }
+    },250);
+  }
+})();
+</script>
+
 </body>
 </html>

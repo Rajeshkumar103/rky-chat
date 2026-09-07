@@ -16983,6 +16983,7 @@ setInterval(function(){
     ].forEach(function(id){ setHidden(id,false); });
 
     setHidden('friendProfile',true);
+    setHidden('callHistoryPanel',true);
     setHidden('searchMessage',false);
     setHidden('starredMessages',true);
     setHidden('rkyMoreButton',false);
@@ -17302,6 +17303,20 @@ setInterval(function(){
       restoreFriends();
     }
   },true);
+})();
+</script>
+<script>
+(function(){
+  function closeCallHistoryOnFriendsPage(){
+    var chat=document.getElementById('chatBox');
+    if(!chat || !chat.classList.contains('rky-friend-chat-open')){
+      var panel=document.getElementById('callHistoryPanel');
+      if(panel) panel.style.setProperty('display','none','important');
+    }
+  }
+  closeCallHistoryOnFriendsPage();
+  setTimeout(closeCallHistoryOnFriendsPage,100);
+  setTimeout(closeCallHistoryOnFriendsPage,500);
 })();
 </script>
 

@@ -17505,5 +17505,126 @@ setInterval(function(){
 })();
 </script>
 
+
+<!-- RKY FINAL COMPOSER MOVE FIX -->
+<style id="rky-final-composer-move-fix">
+#chatBox.rky-friend-chat-open > .wa-bottom-bar{
+  position:fixed !important;
+  left:50% !important;
+  right:auto !important;
+  bottom:0 !important;
+  transform:translateX(-50%) !important;
+  width:100% !important;
+  max-width:480px !important;
+  height:60px !important;
+  min-height:60px !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  z-index:1000002 !important;
+  background:#f0f2f5 !important;
+  box-sizing:border-box !important;
+}
+#chatBox.rky-friend-chat-open > .wa-bottom-bar #message{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  width:auto !important;
+}
+@media(max-width:500px){
+  #chatBox.rky-friend-chat-open > .wa-bottom-bar{
+    width:100vw !important;
+    max-width:100vw !important;
+    height:58px !important;
+    min-height:58px !important;
+  }
+}
+</style>
+<script id="rky-final-composer-move-script">
+(function(){
+  'use strict';
+  var placeholder=null, originalParent=null, originalNext=null;
+
+  function moveComposerIntoChat(){
+    var chat=document.getElementById('chatBox');
+    if(!chat || !chat.classList.contains('rky-friend-chat-open')) return;
+    var composer=chat.querySelector('.wa-bottom-bar');
+    if(!composer) return;
+
+    if(composer.parentElement !== chat){
+      if(!placeholder){
+        placeholder=document.createComment('rky-composer-placeholder');
+        originalParent=composer.parentElement;
+        originalNext=composer.nextSibling;
+        originalParent.insertBefore(placeholder, composer);
+      }
+      chat.appendChild(composer);
+    }
+
+    composer.style.setProperty('display','flex','important');
+    composer.style.setProperty('visibility','visible','important');
+    composer.style.setProperty('opacity','1','important');
+    composer.style.setProperty('position','fixed','important');
+    composer.style.setProperty('left','50%','important');
+    composer.style.setProperty('right','auto','important');
+    composer.style.setProperty('bottom','0','important');
+    composer.style.setProperty('transform','translateX(-50%)','important');
+    composer.style.setProperty('z-index','1000002','important');
+
+    var input=composer.querySelector('#message');
+    if(input){
+      input.style.setProperty('display','block','important');
+      input.style.setProperty('visibility','visible','important');
+      input.style.setProperty('opacity','1','important');
+    }
+  }
+
+  function restoreComposer(){
+    if(!placeholder) return;
+    var composer=document.querySelector('#chatBox > .wa-bottom-bar');
+    if(composer){
+      placeholder.parentNode.insertBefore(composer, placeholder.nextSibling);
+      composer.style.removeProperty('position');
+      composer.style.removeProperty('left');
+      composer.style.removeProperty('right');
+      composer.style.removeProperty('bottom');
+      composer.style.removeProperty('transform');
+      composer.style.removeProperty('z-index');
+    }
+    placeholder.remove();
+    placeholder=null;
+    originalParent=null;
+    originalNext=null;
+  }
+
+  function watch(){
+    var chat=document.getElementById('chatBox');
+    if(!chat) return;
+    if(chat.classList.contains('rky-friend-chat-open')){
+      moveComposerIntoChat();
+    }else{
+      restoreComposer();
+    }
+  }
+
+  var n=0;
+  var t=setInterval(function(){
+    watch();
+    if(++n>180) clearInterval(t);
+  },100);
+
+  document.addEventListener('click',function(e){
+    if(e.target.closest && e.target.closest('#rkyChatTopBarFriend')){
+      setTimeout(watch,0);
+      setTimeout(watch,100);
+    }
+  },true);
+
+  window.addEventListener('pageshow',watch);
+})();
+</script>
+
 </body>
 </html>

@@ -2177,3 +2177,39 @@ html, body {
   transform: none !important;
   opacity: 1 !important;
 }
+
+/* RKY CHAT - mobile chat visibility fix */
+@media (max-width: 700px){
+  #chatBox{
+    position:relative !important;
+    height:100dvh !important;
+    min-height:100dvh !important;
+    overflow:hidden !important;
+  }
+
+  #messages{
+    position:absolute !important;
+    top:58px !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:62px !important;
+    height:auto !important;
+    overflow-y:auto !important;
+    z-index:10 !important;
+    padding:12px 10px 90px !important;
+  }
+
+  .wa-bottom-bar{
+    position:fixed !important;
+    left:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    z-index:9999 !important;
+  }
+
+  #friendProfile{
+    position:relative !important;
+    z-index:20 !important;
+  }
+}
+

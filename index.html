@@ -11452,6 +11452,8 @@ document.getElementById("friendProfile").innerHTML =
 "</div>";
 
   await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
 
@@ -11802,6 +11804,8 @@ async function startVoiceRecording(){
                 );
 
                 await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
             }catch(error){
 
@@ -12269,6 +12273,7 @@ chats[i].from == currentUser
 "</p>";
 
 document.getElementById("messages").innerHTML += messageHTML;
+document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
 
 }
 
@@ -12550,7 +12555,6 @@ setInterval(function(){
 
 }, 1000);
 async function sendmessage(){
-
     if(!currentUser){
         alert("Please login first");
         return;
@@ -12562,93 +12566,64 @@ async function sendmessage(){
     }
 
     const input = document.getElementById("message");
-    const message = input.value.trim();
+    const text = input ? input.value.trim() : "";
 
-    if(!message){
-        return;
-    }
+    if(!text) return;
 
     try{
-
-        const response = await fetch(
-            "/api/messages",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    sender: currentUser,
-                    receiver: selectedFriend,
-                    message: message,
-                    reply_to: replyMessageId || null
-                })
-            }
-        );
+        const response = await fetch("/api/messages",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({
+                sender:currentUser,
+                receiver:selectedFriend,
+                message:text,
+                reply_to:replyMessageId || null
+            })
+        });
 
         const data = await response.json();
+
         if(!response.ok || !data.success){
-
-            alert(
-                data.message ||
-                "Message send failed"
-            );
-
+            alert(data.message || "Message send failed");
             return;
         }
 
-        let chats =
-            JSON.parse(
-                localStorage.getItem("chats")
-            ) || [];
+        if(input) input.value = "";
 
-        chats.push({
-            id: Number(data.messageId),
-            from: currentUser,
-            to: selectedFriend,
-            message: message,
-            time: data.time || new Date().toISOString(),
-            seen: false,
-            delivered: true,
-            replyTo: data.replyTo || replyMessageId || null,
-            reaction: null,
-            pinned: false,
-            starred: false,
-            edited: false,
-            deleted: false
-        });
+        const box = document.getElementById("messages");
 
-        localStorage.setItem(
-            "chats",
-            JSON.stringify(chats)
-        );
+        if(box){
+            const item = document.createElement("div");
+            item.className = "myMessage";
+            item.style.cssText =
+                "display:block!important;visibility:visible!important;" +
+                "opacity:1!important;text-align:right;margin:8px 0;" +
+                "color:#111!important;";
 
-        input.value = "";
+            const bubble = document.createElement("span");
+            bubble.textContent = text;
+            bubble.style.cssText =
+                "display:inline-block!important;visibility:visible!important;" +
+                "opacity:1!important;padding:8px 12px;border-radius:12px;" +
+                "background:#dcf8c6!important;color:#111!important;" +
+                "max-width:75%;word-break:break-word;";
+
+            item.appendChild(bubble);
+            box.appendChild(item);
+            box.scrollTop = box.scrollHeight;
+        }
 
         replyMessageId = null;
 
-        const replyBox =
-            document.getElementById("replyBox");
-
-        if(replyBox){
-            replyBox.style.display = "none";
-        }
-
-        await loadMessages();
+        const replyBox = document.getElementById("replyBox");
+        if(replyBox) replyBox.style.display = "none";
 
     }catch(error){
-
-        console.error(
-            "Send message error:",
-            error
-        );
-
-        alert(
-            "Server connection failed: " + (error?.message || error)
-        );
+        console.error("Send message error:",error);
+        alert("Server connection failed: " + (error?.message || error));
     }
 }
-
 function addEmoji(emoji){
 
   document.getElementById("message").value += emoji;
@@ -12733,6 +12708,8 @@ async function deletemessage(){
         alert("Messages deleted 🗑️");
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12792,6 +12769,8 @@ async function deleteForMe(id){
         );
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12854,6 +12833,8 @@ async function deleteOne(id){
         alert("Message deleted 🗑️");
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12970,6 +12951,8 @@ async function editMessage(id){
         alert("Message edited ✏️");
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -13921,6 +13904,8 @@ async function forwardMessage(id){
         if(selectedFriend == choice){
 
             await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         }
 
@@ -14059,6 +14044,8 @@ async function setReaction(id, reaction){
         });
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14268,6 +14255,8 @@ async function removeReaction(id){
         });
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14381,6 +14370,8 @@ async function clearCurrentChat(){
          */
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
     }catch(error){
@@ -14448,6 +14439,8 @@ async function pinMessage(id){
         );
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14511,6 +14504,8 @@ async function starMessage(id){
         );
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14770,6 +14765,8 @@ async function uploadMediaMessage(file){
         );
 
         await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         setTimeout(function(){
 
@@ -15291,6 +15288,8 @@ async function refreshSeenStatus(){
             lastSeenState = state;
 
             await loadMessages();
+          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
+          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
         }
 
     }catch(error){

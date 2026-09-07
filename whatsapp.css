@@ -159,9 +159,9 @@ body {
 /* ---------- MESSAGES ---------- */
 
 #messages {
-  height: calc(100vh - 62px - 62px) !important;
+  height: calc(100vh - 62px - 124px) !important;
   margin: 0 !important;
-  padding: 12px 10px 15px !important;
+  padding: 12px 10px 90px !important;
   box-sizing: border-box !important;
 
   border: none !important;

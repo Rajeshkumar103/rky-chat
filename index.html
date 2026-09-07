@@ -16707,330 +16707,126 @@ setInterval(function(){
 
 
 
-<script id="rky-selected-chat-ui-final">
+<!-- RKY: Friend chat header 3-dot menu fix -->
+<style id="rkyFriendChatMenuFix">
+#rkyChatTopBarFriend{
+  position:fixed !important;
+  top:0 !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+  width:100% !important;
+  max-width:480px !important;
+  height:60px !important;
+  display:flex !important;
+  align-items:center !important;
+  box-sizing:border-box !important;
+  padding:5px 6px !important;
+  background:#075e54 !important;
+  color:#fff !important;
+  z-index:100000 !important;
+}
+#rkyChatTopBarFriend .rky-friend-back{
+  width:42px !important;height:48px !important;flex:0 0 42px !important;
+  border:0 !important;background:transparent !important;color:#fff !important;
+  font-size:34px !important;padding:0 !important;margin:0 !important;
+}
+#rkyChatTopBarFriend .rky-friend-avatar{
+  width:42px !important;height:42px !important;border-radius:50% !important;
+  object-fit:cover !important;margin:0 8px 0 0 !important;
+}
+#rkyChatTopBarFriend .rky-friend-info{
+  flex:1 !important;min-width:0 !important;text-align:left !important;
+}
+#rkyChatTopBarFriend .rky-friend-name{font-size:17px !important;font-weight:700 !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+#rkyChatTopBarFriend .rky-friend-status{font-size:12px !important;opacity:.9 !important;}
+#rkyChatTopBarFriend .rky-friend-action{
+  width:44px !important;height:48px !important;flex:0 0 44px !important;
+  border:0 !important;background:transparent !important;color:#fff !important;
+  font-size:27px !important;padding:0 !important;margin:0 !important;
+}
+#rkyFriendMoreMenu{
+  position:fixed !important;top:62px !important;right:max(8px,calc((100vw - 480px)/2 + 8px)) !important;
+  width:215px !important;background:#fff !important;color:#222 !important;
+  border-radius:10px !important;box-shadow:0 5px 20px rgba(0,0,0,.3) !important;
+  z-index:100001 !important;overflow:hidden !important;display:none !important;
+}
+#rkyFriendMoreMenu.show{display:block !important;}
+#rkyFriendMoreMenu button{
+  display:block !important;width:100% !important;min-height:46px !important;
+  border:0 !important;background:#fff !important;color:#222 !important;
+  text-align:left !important;padding:11px 14px !important;margin:0 !important;font-size:15px !important;
+}
+#rkyFriendMoreMenu button:hover{background:#f2f2f2 !important;}
+#chatBox.rky-friend-chat-open #rkyMoreButton{display:none !important;}
+</style>
+<script id="rkyFriendChatMenuFixScript">
 (function(){
-  "use strict";
-
-  function getFriendInfo(name){
-    var result = {
-      name: name || "Chat",
-      photo: "",
-      status: "Offline"
-    };
-
+  'use strict';
+  function friendInfo(name){
+    var r={name:name||'Chat',photo:'',status:'Offline'};
     try{
-      var saved = JSON.parse(localStorage.getItem("users")) || [];
-      for(var i=0;i<saved.length;i++){
-        if(saved[i] && saved[i].username === name){
-          result.name = saved[i].profileName || saved[i].username || result.name;
-          result.photo = saved[i].photo || "";
-          result.status = saved[i].status === "Online" ? "Online" : "Offline";
-          break;
-        }
-      }
+      var a=JSON.parse(localStorage.getItem('users'))||[];
+      var u=a.find(function(x){return x && x.username===name;});
+      if(u){r.name=u.profileName||u.username||r.name;r.photo=u.photo||'';r.status=u.status==='Online'?'Online':'Offline';}
     }catch(e){}
-
-    return result;
+    return r;
   }
-
-  function openSelectedChatUI(name){
-    var chat = document.getElementById("chatBox");
-    if(!chat) return;
-
-    chat.classList.add("rky-chat-open");
-
-    var old = document.getElementById("rkyChatTopBar");
-    if(old) old.remove();
-
-    var info = getFriendInfo(name);
-
-    var bar = document.createElement("div");
-    bar.id = "rkyChatTopBar";
-
-    var back = document.createElement("button");
-    back.type = "button";
-    back.className = "rky-chat-back";
-    back.textContent = "‹";
-    back.title = "Back to Friends";
-    back.onclick = function(){
-      closeSelectedChatUI();
+  function closeFriendMenu(){var m=document.getElementById('rkyFriendMoreMenu');if(m)m.classList.remove('show');}
+  function openFriendMenu(){var m=document.getElementById('rkyFriendMoreMenu');if(m)m.classList.toggle('show');}
+  function buildFriendHeader(name){
+    var chat=document.getElementById('chatBox'); if(!chat)return;
+    chat.classList.add('rky-friend-chat-open');
+    var old=document.getElementById('rkyChatTopBarFriend');if(old)old.remove();
+    closeFriendMenu();
+    var i=friendInfo(name), bar=document.createElement('div');bar.id='rkyChatTopBarFriend';
+    var back=document.createElement('button');back.type='button';back.className='rky-friend-back';back.textContent='‹';back.onclick=function(){
+      closeFriendMenu();chat.classList.remove('rky-friend-chat-open');
+      if(typeof window.rkyCloseSelectedChatUI==='function') window.rkyCloseSelectedChatUI();
     };
-
-    var avatar = document.createElement("img");
-    avatar.className = "rky-chat-avatar";
-    avatar.src = info.photo || "https://via.placeholder.com/50";
-    avatar.alt = "";
-
-    var wrap = document.createElement("div");
-    wrap.className = "rky-chat-info";
-
-    var nm = document.createElement("div");
-    nm.className = "rky-chat-name";
-    nm.textContent = info.name;
-
-    var st = document.createElement("div");
-    st.className = "rky-chat-status";
-    st.textContent = info.status === "Online" ? "Online" : "Offline";
-
-    wrap.appendChild(nm);
-    wrap.appendChild(st);
-
-    bar.appendChild(back);
-    bar.appendChild(avatar);
-    bar.appendChild(wrap);
-    chat.appendChild(bar);
-
-    var messages = document.getElementById("messages");
-    if(messages){
-      messages.style.setProperty("display","block","important");
-      messages.style.setProperty("visibility","visible","important");
-      messages.style.setProperty("opacity","1","important");
-    }
-
-    var composer = chat.querySelector(".wa-bottom-bar");
-    if(composer){
-      composer.style.setProperty("display","flex","important");
-      composer.style.setProperty("visibility","visible","important");
-      composer.style.setProperty("opacity","1","important");
+    var img=document.createElement('img');img.className='rky-friend-avatar';img.src=i.photo||'https://via.placeholder.com/42';img.alt='';
+    var info=document.createElement('div');info.className='rky-friend-info';
+    var nm=document.createElement('div');nm.className='rky-friend-name';nm.textContent=i.name;
+    var st=document.createElement('div');st.className='rky-friend-status';st.textContent=i.status;
+    info.append(nm,st);
+    var call=document.createElement('button');call.type='button';call.className='rky-friend-action';call.textContent='📞';call.title='Audio Call';
+    call.onclick=function(){if(typeof startVoiceCall==='function')startVoiceCall();else if(typeof connectVoiceCallSocket==='function')connectVoiceCallSocket();};
+    var video=document.createElement('button');video.type='button';video.className='rky-friend-action';video.textContent='🎥';video.title='Video Call';
+    video.onclick=function(){if(typeof startVideoCall==='function')startVideoCall();};
+    var more=document.createElement('button');more.type='button';more.className='rky-friend-action';more.textContent='⋮';more.title='More';more.onclick=function(e){e.preventDefault();e.stopPropagation();openFriendMenu();};
+    bar.append(back,img,info,call,video,more);chat.appendChild(bar);
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(!menu){
+      menu=document.createElement('div');menu.id='rkyFriendMoreMenu';
+      menu.innerHTML='<button type="button" data-a="profile">👤 Contact info</button><button type="button" data-a="notifications">🔕 Notifications</button><button type="button" data-a="block">🚫 Block</button><button type="button" data-a="clear">🗑️ Clear chat</button>';
+      document.body.appendChild(menu);
+      menu.addEventListener('click',function(e){
+        var b=e.target.closest('button');if(!b)return;var a=b.getAttribute('data-a');closeFriendMenu();
+        if(a==='profile' && typeof openProfileSettings==='function')openProfileSettings();
+        else if(a==='clear' && typeof rkyMoreAction==='function')rkyMoreAction('clear');
+        else if(a==='block' && typeof rkyMoreAction==='function')rkyMoreAction('block');
+        else if(a==='notifications' && typeof rkyMoreAction==='function')rkyMoreAction('notifications');
+      });
     }
   }
-
-  function closeSelectedChatUI(){
-    var chat = document.getElementById("chatBox");
-    if(!chat) return;
-
-    chat.classList.remove("rky-chat-open");
-
-    var bar = document.getElementById("rkyChatTopBar");
-    if(bar) bar.remove();
-
-    var friendList = document.getElementById("friendList");
-    if(friendList){
-      friendList.style.removeProperty("display");
-      friendList.style.removeProperty("visibility");
-      friendList.style.removeProperty("opacity");
-    }
-
-    var requestToggle = document.getElementById("rkyCircleRequestsToggle");
-    if(requestToggle) requestToggle.style.removeProperty("display");
-
-    var visibleFriends = document.getElementById("rkyVisibleFriends");
-    if(visibleFriends) visibleFriends.style.removeProperty("display");
-
-    window.selectedFriend = "";
-  }
-
-  window.rkyOpenSelectedChatUI = openSelectedChatUI;
-  window.rkyCloseSelectedChatUI = closeSelectedChatUI;
-
   function install(){
-    if(typeof window.selectFriend !== "function") return false;
-    if(window.selectFriend.__rkyChatUIWrapped) return true;
-
-    var original = window.selectFriend;
-
-    async function wrappedSelectFriend(name){
-      openSelectedChatUI(name);
-
-      try{
-        return await original.apply(this, arguments);
-      }catch(error){
-        console.error("selectFriend UI wrapper:", error);
-      }finally{
-        openSelectedChatUI(name);
-      }
+    if(typeof window.selectFriend!=='function')return false;
+    if(window.selectFriend.__rkyFriendMenuWrapped)return true;
+    var old=window.selectFriend;
+    async function wrapped(name){
+      try{buildFriendHeader(name);}catch(e){console.error(e);}
+      return await old.apply(this,arguments);
     }
-
-    wrappedSelectFriend.__rkyChatUIWrapped = true;
-    wrappedSelectFriend.__rkyOriginal = original;
-    window.selectFriend = wrappedSelectFriend;
-
+    wrapped.__rkyFriendMenuWrapped=true;
+    window.selectFriend=wrapped;
     return true;
   }
-
-  if(!install()){
-    var tries = 0;
-    var timer = setInterval(function(){
-      tries++;
-      if(install() || tries >= 40){
-        clearInterval(timer);
-      }
-    },250);
-  }
+  var n=0,t=setInterval(function(){if(install()||++n>100)clearInterval(t);},100);
+  document.addEventListener('click',function(e){
+    var m=document.getElementById('rkyFriendMoreMenu'), bar=document.getElementById('rkyChatTopBarFriend');
+    if(m && !m.contains(e.target) && !(bar && bar.contains(e.target)))closeFriendMenu();
+  });
 })();
 </script>
 
 </body>
 </html>
-
-<script>
-/* ===== RKY CHAT HEADER CALL + MENU BUTTONS ===== */
-(function(){
-  function addChatHeaderButtons(){
-    const bar = document.getElementById("rkyChatTopBar");
-    if(!bar || document.getElementById("rkyHeaderActions")) return;
-
-    const actions = document.createElement("div");
-    actions.id = "rkyHeaderActions";
-    actions.innerHTML = `
-      <button type="button" class="rky-call-btn" id="rkyAudioCallBtn" title="Audio Call">📞</button>
-      <button type="button" class="rky-call-btn" id="rkyVideoCallBtn" title="Video Call">🎥</button>
-      <button type="button" class="rky-call-btn" id="rkyMoreBtn" title="More">⋮</button>
-    `;
-
-    bar.appendChild(actions);
-
-    document.getElementById("rkyAudioCallBtn").onclick = function(){
-      if(typeof startVoiceCall === "function"){
-        startVoiceCall(selectedFriend);
-      }else if(typeof connectVoiceCallSocket === "function"){
-        connectVoiceCallSocket();
-      }else{
-        alert("Audio call system ready");
-      }
-    };
-
-    document.getElementById("rkyVideoCallBtn").onclick = function(){
-      if(typeof startVideoCall === "function"){
-        startVideoCall(selectedFriend);
-      }else{
-        alert("Video call system ready");
-      }
-    };
-
-    document.getElementById("rkyMoreBtn").onclick = function(){
-      let menu = document.getElementById("rkyMoreMenu");
-
-      if(menu){
-        menu.remove();
-        return;
-      }
-
-      menu = document.createElement("div");
-      menu.id = "rkyMoreMenu";
-      menu.innerHTML = `
-        <button type="button">👤 Contact info</button>
-        <button type="button">🔕 Notifications</button>
-        <button type="button">🚫 Block</button>
-        <button type="button">🗑️ Clear chat</button>
-      `;
-
-      bar.appendChild(menu);
-    };
-  }
-
-  setInterval(addChatHeaderButtons, 300);
-})();
-</script>
-
-<style>
-#rkyHeaderActions{
-  margin-left:auto !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:2px !important;
-}
-
-.rky-call-btn{
-  width:42px !important;
-  height:42px !important;
-  border:0 !important;
-  background:transparent !important;
-  color:white !important;
-  font-size:21px !important;
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  cursor:pointer !important;
-  border-radius:50% !important;
-}
-
-.rky-call-btn:active{
-  background:rgba(255,255,255,.2) !important;
-}
-
-#rkyMoreMenu{
-  position:absolute !important;
-  right:8px !important;
-  top:54px !important;
-  width:180px !important;
-  background:white !important;
-  color:#222 !important;
-  border-radius:8px !important;
-  box-shadow:0 4px 15px rgba(0,0,0,.25) !important;
-  z-index:100001 !important;
-  overflow:hidden !important;
-}
-
-#rkyMoreMenu button{
-  width:100% !important;
-  padding:13px !important;
-  border:0 !important;
-  background:white !important;
-  text-align:left !important;
-  font-size:15px !important;
-}
-</style>
-
-
-<style>
-#rkyMoreMenu{
-  position:fixed !important;
-  top:60px !important;
-  right:8px !important;
-  width:210px !important;
-  background:#fff !important;
-  color:#222 !important;
-  border-radius:8px !important;
-  box-shadow:0 4px 18px rgba(0,0,0,.35) !important;
-  z-index:999999 !important;
-  overflow:hidden !important;
-}
-
-#rkyMoreMenu button{
-  display:block !important;
-  width:100% !important;
-  min-height:46px !important;
-  padding:12px 15px !important;
-  border:0 !important;
-  background:#fff !important;
-  color:#222 !important;
-  text-align:left !important;
-  font-size:15px !important;
-}
-
-#rkyMoreMenu button:active{
-  background:#eee !important;
-}
-</style>
-
-<script>
-(function(){
-  document.addEventListener("click",function(e){
-    const btn=e.target.closest("#rkyMoreBtn");
-    if(!btn) return;
-
-    e.preventDefault();
-    e.stopPropagation();
-
-    let old=document.getElementById("rkyMoreMenu");
-    if(old){
-      old.remove();
-      return;
-    }
-
-    const menu=document.createElement("div");
-    menu.id="rkyMoreMenu";
-
-    menu.innerHTML=`
-      <button type="button">👤 Contact info</button>
-      <button type="button">🔕 Notifications</button>
-      <button type="button">🚫 Block</button>
-      <button type="button">🗑️ Clear chat</button>
-    `;
-
-    document.body.appendChild(menu);
-  },true);
-})();
-</script>
-

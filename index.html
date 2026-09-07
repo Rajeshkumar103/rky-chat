@@ -16972,3 +16972,65 @@ setInterval(function(){
 }
 </style>
 
+
+<style>
+#rkyMoreMenu{
+  position:fixed !important;
+  top:60px !important;
+  right:8px !important;
+  width:210px !important;
+  background:#fff !important;
+  color:#222 !important;
+  border-radius:8px !important;
+  box-shadow:0 4px 18px rgba(0,0,0,.35) !important;
+  z-index:999999 !important;
+  overflow:hidden !important;
+}
+
+#rkyMoreMenu button{
+  display:block !important;
+  width:100% !important;
+  min-height:46px !important;
+  padding:12px 15px !important;
+  border:0 !important;
+  background:#fff !important;
+  color:#222 !important;
+  text-align:left !important;
+  font-size:15px !important;
+}
+
+#rkyMoreMenu button:active{
+  background:#eee !important;
+}
+</style>
+
+<script>
+(function(){
+  document.addEventListener("click",function(e){
+    const btn=e.target.closest("#rkyMoreBtn");
+    if(!btn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    let old=document.getElementById("rkyMoreMenu");
+    if(old){
+      old.remove();
+      return;
+    }
+
+    const menu=document.createElement("div");
+    menu.id="rkyMoreMenu";
+
+    menu.innerHTML=`
+      <button type="button">👤 Contact info</button>
+      <button type="button">🔕 Notifications</button>
+      <button type="button">🚫 Block</button>
+      <button type="button">🗑️ Clear chat</button>
+    `;
+
+    document.body.appendChild(menu);
+  },true);
+})();
+</script>
+

@@ -17628,41 +17628,6 @@ setInterval(function(){
 
 
 
-<!-- RKY SEND DISPLAY FIX: refresh chat after successful send without changing core sendmessage/loadMessages -->
-<script id="rky-send-display-fix">
-(function(){
-  function install(){
-    if(typeof window.sendmessage !== 'function') return false;
-    if(window.sendmessage.__rkySendDisplayFix) return true;
 
-    var oldSend = window.sendmessage;
-    async function fixedSend(){
-      var friendBefore = (typeof selectedFriend !== 'undefined') ? selectedFriend : window.selectedFriend;
-      await oldSend.apply(this, arguments);
-
-      /* The server already saved the message. Re-render the selected chat so
-         the just-sent message is visible immediately. */
-      if(currentUser && friendBefore &&
-         ((typeof selectedFriend !== 'undefined' && selectedFriend === friendBefore) ||
-          window.selectedFriend === friendBefore) &&
-         typeof window.loadMessages === 'function'){
-        try{
-          await window.loadMessages();
-        }catch(e){
-          console.error('Send display refresh error:', e);
-        }
-      }
-    }
-    fixedSend.__rkySendDisplayFix = true;
-    window.sendmessage = fixedSend;
-    return true;
-  }
-
-  var n=0;
-  var t=setInterval(function(){
-    if(install() || ++n > 150) clearInterval(t);
-  },100);
-})();
-</script>
 </body>
 </html>

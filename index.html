@@ -11452,7 +11452,6 @@ document.getElementById("friendProfile").innerHTML =
 "</div>";
 
   await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
 
@@ -11803,7 +11802,6 @@ async function startVoiceRecording(){
                 );
 
                 await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
             }catch(error){
 
@@ -12706,7 +12704,6 @@ async function deletemessage(){
         alert("Messages deleted 🗑️");
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12766,7 +12763,6 @@ async function deleteForMe(id){
         );
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12829,7 +12825,6 @@ async function deleteOne(id){
         alert("Message deleted 🗑️");
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -12946,7 +12941,6 @@ async function editMessage(id){
         alert("Message edited ✏️");
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -13879,7 +13873,6 @@ async function forwardMessage(id){
         if(selectedFriend == choice){
 
             await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         }
 
@@ -14018,7 +14011,6 @@ async function setReaction(id, reaction){
         });
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14228,7 +14220,6 @@ async function removeReaction(id){
         });
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14342,7 +14333,6 @@ async function clearCurrentChat(){
          */
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
     }catch(error){
@@ -14410,7 +14400,6 @@ async function pinMessage(id){
         );
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14474,7 +14463,6 @@ async function starMessage(id){
         );
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
 
@@ -14734,7 +14722,6 @@ async function uploadMediaMessage(file){
         );
 
         await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         setTimeout(function(){
 
@@ -15256,7 +15243,6 @@ async function refreshSeenStatus(){
             lastSeenState = state;
 
             await loadMessages();
-          const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
         }
 
     }catch(error){
@@ -17617,3 +17603,39 @@ setInterval(function(){
 
 </body>
 </html>
+
+<script id="rky-final-message-composer-fix">
+(function(){
+  function syncComposer(){
+    const input=document.getElementById("message");
+    const photo=document.querySelector(".wa-photo-btn");
+    const camera=document.querySelector(".wa-camera-btn");
+    const voice=document.querySelector(".wa-voice-btn");
+    const send=document.querySelector(".wa-send-btn");
+    if(!input) return;
+
+    const hasText=input.value.trim().length>0;
+
+    if(photo) photo.style.setProperty("display","block","important");
+    if(camera) camera.style.setProperty("display",hasText?"none":"block","important");
+    if(voice) voice.style.setProperty("display",hasText?"none":"block","important");
+    if(send) send.style.setProperty("display",hasText?"block":"none","important");
+  }
+
+  document.addEventListener("input",function(e){
+    if(e.target && e.target.id==="message") syncComposer();
+  });
+
+  document.addEventListener("DOMContentLoaded",syncComposer);
+
+  const oldSend=window.sendmessage;
+  if(typeof oldSend==="function" && !oldSend.__rkyFinalFix){
+    const fixedSend=async function(){
+      await oldSend.apply(this,arguments);
+      syncComposer();
+    };
+    fixedSend.__rkyFinalFix=true;
+    window.sendmessage=fixedSend;
+  }
+})();
+</script>

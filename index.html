@@ -12045,10 +12045,7 @@ document.getElementById("messages").innerHTML = "";
 console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 for(let i=0; i<chats.length; i++){
 
-if(
-(chats[i].from == currentUser && chats[i].to == selectedFriend) ||
-(chats[i].from == selectedFriend && chats[i].to == currentUser)
-){
+{
 
 let className =
 chats[i].from == currentUser
@@ -15719,7 +15716,6 @@ setInterval(function(){
 <script>
 // 🔐 Restore saved login session
 <!-- RKY FINAL FRIEND REQUEST FIX -->
-<script>
 (function(){
   function fixFriendRequests(){
     const ids=[
@@ -17603,39 +17599,3 @@ setInterval(function(){
 
 </body>
 </html>
-
-<script id="rky-final-message-composer-fix">
-(function(){
-  function syncComposer(){
-    const input=document.getElementById("message");
-    const photo=document.querySelector(".wa-photo-btn");
-    const camera=document.querySelector(".wa-camera-btn");
-    const voice=document.querySelector(".wa-voice-btn");
-    const send=document.querySelector(".wa-send-btn");
-    if(!input) return;
-
-    const hasText=input.value.trim().length>0;
-
-    if(photo) photo.style.setProperty("display","block","important");
-    if(camera) camera.style.setProperty("display",hasText?"none":"block","important");
-    if(voice) voice.style.setProperty("display",hasText?"none":"block","important");
-    if(send) send.style.setProperty("display",hasText?"block":"none","important");
-  }
-
-  document.addEventListener("input",function(e){
-    if(e.target && e.target.id==="message") syncComposer();
-  });
-
-  document.addEventListener("DOMContentLoaded",syncComposer);
-
-  const oldSend=window.sendmessage;
-  if(typeof oldSend==="function" && !oldSend.__rkyFinalFix){
-    const fixedSend=async function(){
-      await oldSend.apply(this,arguments);
-      syncComposer();
-    };
-    fixedSend.__rkyFinalFix=true;
-    window.sendmessage=fixedSend;
-  }
-})();
-</script>

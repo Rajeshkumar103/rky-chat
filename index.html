@@ -11452,7 +11452,6 @@ document.getElementById("friendProfile").innerHTML =
 "</div>";
 
   await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
@@ -11804,7 +11803,6 @@ async function startVoiceRecording(){
                 );
 
                 await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
             }catch(error){
@@ -12708,7 +12706,6 @@ async function deletemessage(){
         alert("Messages deleted 🗑️");
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -12769,7 +12766,6 @@ async function deleteForMe(id){
         );
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -12833,7 +12829,6 @@ async function deleteOne(id){
         alert("Message deleted 🗑️");
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -12951,7 +12946,6 @@ async function editMessage(id){
         alert("Message edited ✏️");
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -13885,7 +13879,6 @@ async function forwardMessage(id){
         if(selectedFriend == choice){
 
             await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         }
@@ -14025,7 +14018,6 @@ async function setReaction(id, reaction){
         });
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -14236,7 +14228,6 @@ async function removeReaction(id){
         });
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -14351,7 +14342,6 @@ async function clearCurrentChat(){
          */
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
 
@@ -14420,7 +14410,6 @@ async function pinMessage(id){
         );
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -14485,7 +14474,6 @@ async function starMessage(id){
         );
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
     }catch(error){
@@ -14746,7 +14734,6 @@ async function uploadMediaMessage(file){
         );
 
         await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
 
         setTimeout(function(){
@@ -15269,7 +15256,6 @@ async function refreshSeenStatus(){
             lastSeenState = state;
 
             await loadMessages();
-          document.getElementById("messages").innerHTML += `<div class="myMessage" style="text-align:right;margin:6px 0;"><span style="display:inline-block;padding:8px 12px;border-radius:12px;background:#dcf8c6;color:#111;">${message}</span></div>`;
           const mb=document.getElementById("messages"); if(mb) mb.scrollTop=mb.scrollHeight;
         }
 

@@ -15825,30 +15825,7 @@ setInterval(function(){
 </style>
 
 <script>
-/* RKY: fresh page must start on Login only. Do not restore a saved session. */
-(function(){
-  function resetAuthView(){
-    /* Clear stale pre-login identity so old Friends UI cannot appear. */
-    try{ localStorage.removeItem("currentUser"); }catch(e){}
-    currentUser = "";
 
-    var loginBox = document.getElementById("loginBox");
-    var registerButton = document.getElementById("registerButton");
-    var chatBox = document.getElementById("chatBox");
-    var visibleFriends = document.getElementById("rkyVisibleFriends");
-
-    if(loginBox) loginBox.style.setProperty("display","block","important");
-    if(registerButton) registerButton.style.setProperty("display","block","important");
-    if(chatBox) chatBox.style.setProperty("display","none","important");
-    if(visibleFriends) visibleFriends.style.setProperty("display","none","important");
-  }
-
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", resetAuthView, {once:true});
-  }else{
-    resetAuthView();
-  }
-})();
 </script>
 
 
@@ -16973,7 +16950,48 @@ setInterval(function(){
     var chat=document.getElementById('chatBox');
     if(!chat) return;
     chat.classList.add('rky-friend-chat-open');
+    chat.style.setProperty('display','block','important');
+    chat.style.setProperty('visibility','visible','important');
+    chat.style.setProperty('opacity','1','important');
+    chat.style.setProperty('position','relative','important');
+    chat.style.setProperty('padding-top','64px','important');
+    chat.style.setProperty('padding-bottom','64px','important');
     hideOldFriendPage();
+
+    var messages=document.getElementById('messages');
+    if(messages){
+      if(messages.parentElement!==chat) chat.appendChild(messages);
+      messages.style.setProperty('display','block','important');
+      messages.style.setProperty('visibility','visible','important');
+      messages.style.setProperty('opacity','1','important');
+      messages.style.setProperty('height','calc(100vh - 128px)','important');
+      messages.style.setProperty('min-height','200px','important');
+      messages.style.setProperty('overflow-y','auto','important');
+      messages.style.setProperty('margin','0','important');
+      messages.style.setProperty('box-sizing','border-box','important');
+    }
+
+    var composer=chat.querySelector('.wa-bottom-bar') || document.querySelector('.wa-bottom-bar');
+    if(composer){
+      if(composer.parentElement!==chat) chat.appendChild(composer);
+      composer.style.setProperty('display','flex','important');
+      composer.style.setProperty('visibility','visible','important');
+      composer.style.setProperty('opacity','1','important');
+      composer.style.setProperty('position','fixed','important');
+      composer.style.setProperty('left','50%','important');
+      composer.style.setProperty('right','auto','important');
+      composer.style.setProperty('bottom','0','important');
+      composer.style.setProperty('transform','translateX(-50%)','important');
+      composer.style.setProperty('width','100%','important');
+      composer.style.setProperty('max-width','480px','important');
+      composer.style.setProperty('z-index','1000002','important');
+      var input=composer.querySelector('#message');
+      if(input){
+        input.style.setProperty('display','block','important');
+        input.style.setProperty('visibility','visible','important');
+        input.style.setProperty('opacity','1','important');
+      }
+    }
 
     var back=document.querySelector('#rkyChatTopBarFriend .rky-friend-back');
     if(back){

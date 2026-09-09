@@ -12040,6 +12040,13 @@ console.log("CALLING SEEN API");
 }
 
 
+const messagesBeforeRender = document.getElementById("messages");
+const previousScrollTop = messagesBeforeRender ? messagesBeforeRender.scrollTop : 0;
+const previousScrollHeight = messagesBeforeRender ? messagesBeforeRender.scrollHeight : 0;
+const previousClientHeight = messagesBeforeRender ? messagesBeforeRender.clientHeight : 0;
+const wasNearBottom = previousScrollHeight <= previousClientHeight ||
+    (previousScrollHeight - previousScrollTop - previousClientHeight <= 40);
+
 let renderedMessagesHTML = "";
 console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 for(let i=0; i<chats.length; i++){
@@ -12276,14 +12283,23 @@ renderedMessagesHTML += messageHTML;
 const messagesContainer = document.getElementById("messages");
 if(messagesContainer){
     messagesContainer.innerHTML = renderedMessagesHTML;
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    if(wasNearBottom){
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }else{
+        const newScrollTop = previousScrollTop +
+            (messagesContainer.scrollHeight - previousScrollHeight);
+        messagesContainer.scrollTop = Math.max(0, newScrollTop);
+    }
 }
 
-/* Scroll */
+/* Scroll: preserve manual position when the user is reading older messages. */
 
 setTimeout(function(){
     const messagesBox = document.getElementById("messages");
-    if(messagesBox){
+    if(!messagesBox) return;
+
+    if(wasNearBottom){
         messagesBox.scrollTop = messagesBox.scrollHeight;
         requestAnimationFrame(function(){
             messagesBox.scrollTop = messagesBox.scrollHeight;
@@ -15582,6 +15598,10 @@ if(typeof originalSend === "function"){
             input.value = "";
         }
 
+        if(typeof loadMessages === "function" && currentUser && selectedFriend){
+            try{ await loadMessages(); }catch(e){ console.error("Post-send refresh error:", e); }
+        }
+
     };
 }
 
@@ -17596,6 +17616,20 @@ setInterval(function(){
     height:calc(100dvh - 128px) !important;
     max-height:calc(100dvh - 128px) !important;
   }
+}
+</style>
+<style id="rky-final-message-scroll-fix">
+#chatBox.rky-friend-chat-open #messages{
+  overflow-y:scroll !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  touch-action:pan-y !important;
+  overscroll-behavior-y:contain !important;
+  pointer-events:auto !important;
+  scrollbar-width:auto !important;
+}
+#chatBox.rky-friend-chat-open #messages *{
+  touch-action:auto;
 }
 </style>
 <!-- RKY FINAL COMPOSER MOVE FIX -->

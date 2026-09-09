@@ -599,6 +599,29 @@ html,body{
 </style>
 
 <link rel="stylesheet" href="whatsapp.css">
+
+<style id="rky-friends-page-red-circle-cleanup">
+#rkyConnectHeader,
+#rkyCircleRequestsToggle,
+#rkyCircleRequestsContent,
+#rkyCircleRequestsToggle + script + #rkyCircleRequestsContent + button,
+#rkySentRequestsSection,
+#rkyConnectionsSection,
+#searchMessage,
+#searchMessage + button,
+#starredMessages,
+#starredMessages + div,
+#messages,
+#typing,
+.wa-bottom-bar,
+#voiceCallControls,
+#videoCallControls,
+#voiceCallArea,
+#videoCallArea,
+#incomingVoiceCall,
+#incomingVideoCall,
+#callHistoryPanel{display:none !important;}
+</style>
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -9003,64 +9026,6 @@ async function startVoiceCall(){
         return;
     }
 
-     // 📡 Check receiver's real-time status before starting call
-    try {
-
-        const statusResponse = await fetch(
-            "/api/status/" + encodeURIComponent(selectedFriend)
-        );
-
-        if (!statusResponse.ok) {
-            alert("❌ Could not check " + selectedFriend + "'s status.");
-            return;
-        }
-
-        const statusData = await statusResponse.json();
-
-        if (
-            !statusData.success ||
-            statusData.status !== "Online"
-        ) {
-
-            const status =
-                document.getElementById("voiceCallStatus");
-
-            if (status) {
-                status.innerText =
-                    "🔴 " + selectedFriend + " is Offline";
-            }
-
-            alert(
-                "🔴 " +
-                selectedFriend +
-                " is Offline.\n\n" +
-                "They cannot receive the call right now."
-            );
-
-            return;
-        }
-
-        console.log(
-            "🟢 Receiver is Online:",
-            selectedFriend
-        );
-
-    } catch (error) {
-
-        console.error(
-            "❌ Receiver status check failed:",
-            error
-        );
-
-        alert(
-            "❌ Could not check receiver status."
-        );
-
-        return;
-
-    }
-
-
     try{
 
         // 🎤 Reset mute state for a new call  
@@ -11602,6 +11567,10 @@ async function login(){
 
         document.getElementById("loginBox").style.setProperty("display", "none", "important");
         document.getElementById("chatBox").style.setProperty("display", "block", "important");
+
+        if(typeof connectVoiceCallSocket === "function"){
+            connectVoiceCallSocket();
+        }
         const w1 = document.querySelector("body > h1");
         const r1 = document.getElementById("registerButton");
         if (w1) w1.style.setProperty("display", "none", "important");
@@ -17836,6 +17805,22 @@ setInterval(function(){
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
 })();
 </script>
+
+<style id="rky-call-ui-scope-v14">
+#chatBox:not(.rky-friend-chat-open) #voiceCallControls,
+#chatBox:not(.rky-friend-chat-open) #videoCallControls,
+#chatBox:not(.rky-friend-chat-open) #voiceCallArea,
+#chatBox:not(.rky-friend-chat-open) #videoCallArea,
+#chatBox:not(.rky-friend-chat-open) #incomingVoiceCall,
+#chatBox:not(.rky-friend-chat-open) #incomingVideoCall{
+  display:none !important;
+}
+#chatBox.rky-friend-chat-open #voiceCallControls,
+#chatBox.rky-friend-chat-open #videoCallControls{
+  display:block;
+}
+</style>
+
 </body>
 </html>
 

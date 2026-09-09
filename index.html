@@ -599,6 +599,51 @@ html,body{
 </style>
 
 <link rel="stylesheet" href="whatsapp.css">
+<style id="rky-emoji-panel-v9">
+.rky-emoji-panel{
+  display:none;
+  position:fixed;
+  left:10px;
+  right:10px;
+  bottom:70px;
+  z-index:1000005;
+  padding:8px;
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:12px;
+  box-shadow:0 4px 18px rgba(0,0,0,.18);
+  grid-template-columns:repeat(8,minmax(0,1fr));
+  gap:5px;
+  max-height:190px;
+  overflow-y:auto;
+}
+.rky-emoji-panel.open{display:grid;}
+.rky-emoji-panel button{
+  border:0;
+  background:transparent;
+  font-size:25px;
+  line-height:1;
+  padding:6px 2px;
+  border-radius:8px;
+  cursor:pointer;
+}
+.rky-emoji-panel button:active{background:#eee;}
+@media(max-width:500px){
+  .rky-emoji-panel{grid-template-columns:repeat(7,minmax(0,1fr));bottom:68px;max-height:180px;}
+}
+</style>
+<script>
+function toggleEmojiPanel(){
+  var panel=document.getElementById('rkyEmojiPanel');
+  if(!panel) return;
+  panel.classList.toggle('open');
+}
+document.addEventListener('click',function(e){
+  var panel=document.getElementById('rkyEmojiPanel');
+  var btn=e.target.closest ? e.target.closest('.wa-emoji-btn') : null;
+  if(panel && !panel.contains(e.target) && !btn) panel.classList.remove('open');
+});
+</script>
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -1252,15 +1297,40 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
 </div>
   <div class="wa-bottom-bar">
 
-  <button type="button"
-    class="wa-emoji-btn"
-    onclick="addEmoji('😀')">😀</button>
-   <button type="button"
-    class="wa-emoji-btn"
-    onclick="addEmoji('👌')">👌</button>
-   <button type="button"
-    class="wa-emoji-btn"
-    onclick="addEmoji('🙏')">🙏</button>
+  <button type="button" class="wa-emoji-btn" onclick="toggleEmojiPanel()" aria-label="Emoji">😀</button>
+
+  <div id="rkyEmojiPanel" class="rky-emoji-panel" aria-label="Emoji picker">
+    <button type="button" onclick="addEmoji('😀')">😀</button>
+    <button type="button" onclick="addEmoji('😁')">😁</button>
+    <button type="button" onclick="addEmoji('😂')">😂</button>
+    <button type="button" onclick="addEmoji('🤣')">🤣</button>
+    <button type="button" onclick="addEmoji('😃')">😃</button>
+    <button type="button" onclick="addEmoji('😄')">😄</button>
+    <button type="button" onclick="addEmoji('😅')">😅</button>
+    <button type="button" onclick="addEmoji('😆')">😆</button>
+    <button type="button" onclick="addEmoji('😉')">😉</button>
+    <button type="button" onclick="addEmoji('😊')">😊</button>
+    <button type="button" onclick="addEmoji('😍')">😍</button>
+    <button type="button" onclick="addEmoji('🥰')">🥰</button>
+    <button type="button" onclick="addEmoji('😘')">😘</button>
+    <button type="button" onclick="addEmoji('😎')">😎</button>
+    <button type="button" onclick="addEmoji('🤔')">🤔</button>
+    <button type="button" onclick="addEmoji('😢')">😢</button>
+    <button type="button" onclick="addEmoji('😭')">😭</button>
+    <button type="button" onclick="addEmoji('😡')">😡</button>
+    <button type="button" onclick="addEmoji('😱')">😱</button>
+    <button type="button" onclick="addEmoji('🙏')">🙏</button>
+    <button type="button" onclick="addEmoji('❤️')">❤️</button>
+    <button type="button" onclick="addEmoji('👍')">👍</button>
+    <button type="button" onclick="addEmoji('👎')">👎</button>
+    <button type="button" onclick="addEmoji('👌')">👌</button>
+    <button type="button" onclick="addEmoji('👏')">👏</button>
+    <button type="button" onclick="addEmoji('🙌')">🙌</button>
+    <button type="button" onclick="addEmoji('💯')">💯</button>
+    <button type="button" onclick="addEmoji('🔥')">🔥</button>
+    <button type="button" onclick="addEmoji('🎉')">🎉</button>
+    <button type="button" onclick="addEmoji('💖')">💖</button>
+  </div>
 
   <input
     id="message"

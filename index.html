@@ -1254,62 +1254,7 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
 
   <button type="button"
     class="wa-emoji-btn"
-    onclick="toggleEmojiPanel()"
-    aria-label="Emoji"
-    title="Emoji">😀</button>
-
-  <div id="rkyEmojiPanel" class="rky-emoji-panel" aria-label="Emoji picker">
-    <button type="button" onclick="addEmoji('😀')">😀</button>
-    <button type="button" onclick="addEmoji('😁')">😁</button>
-    <button type="button" onclick="addEmoji('😂')">😂</button>
-    <button type="button" onclick="addEmoji('🤣')">🤣</button>
-    <button type="button" onclick="addEmoji('😃')">😃</button>
-    <button type="button" onclick="addEmoji('😄')">😄</button>
-    <button type="button" onclick="addEmoji('😅')">😅</button>
-    <button type="button" onclick="addEmoji('😆')">😆</button>
-    <button type="button" onclick="addEmoji('😉')">😉</button>
-    <button type="button" onclick="addEmoji('😊')">😊</button>
-    <button type="button" onclick="addEmoji('🙂')">🙂</button>
-    <button type="button" onclick="addEmoji('🙃')">🙃</button>
-    <button type="button" onclick="addEmoji('😍')">😍</button>
-    <button type="button" onclick="addEmoji('🥰')">🥰</button>
-    <button type="button" onclick="addEmoji('😘')">😘</button>
-    <button type="button" onclick="addEmoji('😎')">😎</button>
-    <button type="button" onclick="addEmoji('🤔')">🤔</button>
-    <button type="button" onclick="addEmoji('😢')">😢</button>
-    <button type="button" onclick="addEmoji('😭')">😭</button>
-    <button type="button" onclick="addEmoji('😡')">😡</button>
-    <button type="button" onclick="addEmoji('😱')">😱</button>
-    <button type="button" onclick="addEmoji('👍')">👍</button>
-    <button type="button" onclick="addEmoji('👎')">👎</button>
-    <button type="button" onclick="addEmoji('👌')">👌</button>
-    <button type="button" onclick="addEmoji('👏')">👏</button>
-    <button type="button" onclick="addEmoji('🙏')">🙏</button>
-    <button type="button" onclick="addEmoji('💪')">💪</button>
-    <button type="button" onclick="addEmoji('❤️')">❤️</button>
-    <button type="button" onclick="addEmoji('💖')">💖</button>
-    <button type="button" onclick="addEmoji('💕')">💕</button>
-    <button type="button" onclick="addEmoji('🔥')">🔥</button>
-    <button type="button" onclick="addEmoji('🎉')">🎉</button>
-    <button type="button" onclick="addEmoji('🎊')">🎊</button>
-    <button type="button" onclick="addEmoji('✨')">✨</button>
-    <button type="button" onclick="addEmoji('💯')">💯</button>
-    <button type="button" onclick="addEmoji('😂')">😂</button>
-    <button type="button" onclick="addEmoji('🤣')">🤣</button>
-    <button type="button" onclick="addEmoji('😇')">😇</button>
-    <button type="button" onclick="addEmoji('🤗')">🤗</button>
-    <button type="button" onclick="addEmoji('😴')">😴</button>
-    <button type="button" onclick="addEmoji('🙈')">🙈</button>
-    <button type="button" onclick="addEmoji('🙉')">🙉</button>
-    <button type="button" onclick="addEmoji('🙊')">🙊</button>
-    <button type="button" onclick="addEmoji('💔')">💔</button>
-    <button type="button" onclick="addEmoji('❤️‍🔥')">❤️‍🔥</button>
-    <button type="button" onclick="addEmoji('💙')">💙</button>
-    <button type="button" onclick="addEmoji('💚')">💚</button>
-    <button type="button" onclick="addEmoji('💛')">💛</button>
-    <button type="button" onclick="addEmoji('💜')">💜</button>
-    <button type="button" onclick="addEmoji('🖤')">🖤</button>
-  </div>
+    onclick="addEmoji('😀')">😀</button>
 
   <input
     id="message"
@@ -17837,81 +17782,59 @@ setInterval(function(){
 
 
 
-
-
-<style id="rky-emoji-panel-v11">
-.rky-emoji-panel{
-  display:none !important;
-  position:fixed !important;
-  left:8px !important;
-  right:8px !important;
-  bottom:70px !important;
-  z-index:2147483000 !important;
-  padding:8px !important;
-  grid-template-columns:repeat(8,minmax(0,1fr)) !important;
-  gap:4px !important;
-  max-height:220px !important;
-  overflow-y:auto !important;
-  overflow-x:hidden !important;
-  background:#fff !important;
-  border:1px solid #ddd !important;
-  border-radius:12px !important;
-  box-shadow:0 4px 18px rgba(0,0,0,.18) !important;
-  box-sizing:border-box !important;
-}
-.rky-emoji-panel.open{display:grid !important;}
-.rky-emoji-panel button{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  border:0 !important;
-  background:transparent !important;
-  font-size:24px !important;
-  line-height:1 !important;
-  padding:7px 2px !important;
-  border-radius:8px !important;
-  cursor:pointer !important;
-  width:auto !important;
-  min-width:0 !important;
-  max-width:none !important;
-  height:auto !important;
-  flex:initial !important;
-}
-.rky-emoji-panel button:active{background:#eee !important;}
-@media(max-width:500px){
-  .rky-emoji-panel{
-    grid-template-columns:repeat(7,minmax(0,1fr)) !important;
-    bottom:72px !important;
-    max-height:210px !important;
-  }
-}
+<style id="rky-emoji-v13-hide-old">
+/* V13: hide the old inline emoji button; keep only the isolated V12 trigger. */
+.wa-bottom-bar > .wa-emoji-btn{display:none !important;}
 </style>
-
-
-<script id="rky-emoji-panel-js-v11">
-function toggleEmojiPanel(){
-  var panel=document.getElementById("rkyEmojiPanel");
-  if(!panel) return;
-  panel.classList.toggle("open");
-}
-
-document.addEventListener("click",function(e){
-  var panel=document.getElementById("rkyEmojiPanel");
-  if(!panel) return;
-  var emojiButton=e.target.closest ? e.target.closest(".wa-emoji-btn") : null;
-  if(!panel.contains(e.target) && !emojiButton){
-    panel.classList.remove("open");
+<style id="rky-emoji-v13-css">
+#rkyEmojiTriggerV12{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:42px!important;height:42px!important;min-width:42px!important;padding:0!important;margin:0 4px 0 0!important;border:0!important;background:transparent!important;font-size:24px!important;line-height:1!important;flex:0 0 42px!important;}
+#rkyEmojiPopupV12{display:none;position:fixed;left:8px;right:8px;bottom:76px;z-index:2147483647;background:#fff;border:1px solid #ccc;border-radius:12px;padding:8px;box-sizing:border-box;box-shadow:0 4px 18px rgba(0,0,0,.2);grid-template-columns:repeat(8,minmax(0,1fr));gap:4px;max-height:230px;overflow-y:auto;overflow-x:hidden;}
+#rkyEmojiPopupV12.rky-open{display:grid;}
+#rkyEmojiPopupV12 button{appearance:none;-webkit-appearance:none;display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:40px!important;min-width:0!important;max-width:none!important;padding:0!important;margin:0!important;border:0!important;background:transparent!important;font-size:24px!important;line-height:1!important;box-sizing:border-box!important;}
+#rkyEmojiPopupV12 button:active{background:#eee!important;border-radius:8px!important;}
+@media(max-width:500px){#rkyEmojiPopupV12{grid-template-columns:repeat(7,minmax(0,1fr));bottom:78px;max-height:220px;}}
+</style>
+<script id="rky-emoji-v13-js">
+(function(){
+  var EMOJIS=['😀','😁','😂','🤣','😃','😄','😅','😆','😉','😊','🙂','🙃','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🫡','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','👍','👎','👌','✌️','🤞','🤟','🤘','👏','🙌','👐','🤲','🙏','💪','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','💕','💖','💗','💓','💞','💘','💝','🔥','✨','⭐','🌟','💯','🎉','🎊','🎂','🍕','🍔','🍟','☕','🍎','🌹','🌸','🌈','☀️','🌙','⚡'];
+  function addEmojiV12(emoji){
+    var input=document.getElementById('message');
+    if(!input) return;
+    var start=typeof input.selectionStart==='number'?input.selectionStart:input.value.length;
+    var end=typeof input.selectionEnd==='number'?input.selectionEnd:start;
+    var value=input.value||'';
+    input.value=value.slice(0,start)+emoji+value.slice(end);
+    var pos=start+emoji.length;
+    try{input.setSelectionRange(pos,pos);}catch(e){}
+    input.focus();
+    input.dispatchEvent(new Event('input',{bubbles:true}));
   }
-});
-
-document.addEventListener("click",function(e){
-  var panel=e.target.closest ? e.target.closest("#rkyEmojiPanel") : null;
-  if(panel && e.target.tagName==="BUTTON"){
-    setTimeout(function(){
-      panel.classList.remove("open");
-    },0);
+  function build(){
+    var trigger=document.createElement('button');
+    trigger.type='button'; trigger.id='rkyEmojiTriggerV12'; trigger.textContent='😀'; trigger.setAttribute('aria-label','Emoji');
+    var composer=document.querySelector('.wa-bottom-bar');
+    if(!composer) return;
+    var send=document.getElementById('sendBtn')||composer.querySelector('[onclick*="sendmessage"]')||composer.querySelector('button:last-child');
+    composer.insertBefore(trigger,composer.firstElementChild);
+    var popup=document.createElement('div'); popup.id='rkyEmojiPopupV12'; popup.setAttribute('aria-hidden','true');
+    EMOJIS.forEach(function(em){
+      var b=document.createElement('button'); b.type='button'; b.textContent=em; b.setAttribute('aria-label','Emoji '+em);
+      b.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();addEmojiV12(em);popup.classList.remove('rky-open');popup.setAttribute('aria-hidden','true');});
+      popup.appendChild(b);
+    });
+    document.body.appendChild(popup);
+    trigger.addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var open=popup.classList.toggle('rky-open');
+      popup.setAttribute('aria-hidden',open?'false':'true');
+    });
+    document.addEventListener('click',function(ev){
+      if(ev.target===trigger || popup.contains(ev.target)) return;
+      popup.classList.remove('rky-open'); popup.setAttribute('aria-hidden','true');
+    },true);
   }
-});
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',build); else build();
+})();
 </script>
 </body>
 </html>

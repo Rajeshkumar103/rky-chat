@@ -16959,6 +16959,26 @@ setInterval(function(){
     chat.classList.add('rky-friend-chat-open');
     hideOldFriendPage();
 
+    /* Keep the real message area and composer outside any hidden old-page wrapper. */
+    ['messages','replyBox'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && el.parentElement!==chat) chat.appendChild(el);
+    });
+    var composer=chat.querySelector('.wa-bottom-bar');
+    if(composer && composer.parentElement!==chat) chat.appendChild(composer);
+
+    var messages=document.getElementById('messages');
+    if(messages){
+      messages.style.setProperty('display','block','important');
+      messages.style.setProperty('visibility','visible','important');
+      messages.style.setProperty('opacity','1','important');
+    }
+    if(composer){
+      composer.style.setProperty('display','flex','important');
+      composer.style.setProperty('visibility','visible','important');
+      composer.style.setProperty('opacity','1','important');
+    }
+
     var back=document.querySelector('#rkyChatTopBarFriend .rky-friend-back');
     if(back){
       back.onclick=function(e){

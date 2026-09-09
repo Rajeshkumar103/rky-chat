@@ -1297,8 +1297,7 @@ style="display:none; background:#fff8dc; padding:10px; margin:10px 0; border-rad
 </div>
 
   <script>   
-  let currentUser =
-localStorage.getItem("currentUser") || "";
+  let currentUser = "";
 
 let users =
 JSON.parse(localStorage.getItem("users")) || [];
@@ -11602,7 +11601,7 @@ async function login(){
         );
 
         document.getElementById("loginBox").style.setProperty("display", "none", "important");
-        document.getElementById("chatBox").style.display = "block";
+        document.getElementById("chatBox").style.setProperty("display", "block", "important");
         const w1 = document.querySelector("body > h1");
         const r1 = document.getElementById("registerButton");
         if (w1) w1.style.setProperty("display", "none", "important");
@@ -13013,7 +13012,7 @@ async function logout(){
         const login=document.getElementById("loginBox");
         if(chat){
             chat.classList.remove("rky-friend-chat-open","rky-chat-open");
-            chat.style.display="none";
+            chat.style.setProperty("display","none","important");
         }
         if(login) login.style.display="block";
 
@@ -16369,6 +16368,34 @@ setInterval(function(){
 })();
 </script>
 
+
+<!-- RKY FINAL AUTH VISIBILITY GUARD -->
+<style id="rky-final-auth-visibility-guard">
+  #chatBox{display:none !important;}
+  #rkyVisibleFriends{display:none !important;}
+</style>
+<script>
+(function(){
+  function enforceAuthVisibility(){
+    var logged=!!((localStorage.getItem("currentUser")||"").trim());
+    var chat=document.getElementById("chatBox");
+    var friends=document.getElementById("rkyVisibleFriends");
+    var login=document.getElementById("loginBox");
+    if(chat && !logged && !chat.classList.contains("rky-friend-chat-open")){
+      chat.style.setProperty("display","none","important");
+    }
+    if(friends){
+      friends.style.setProperty("display", logged ? "block" : "none", "important");
+    }
+    if(login && !logged){
+      login.style.setProperty("display","block","important");
+    }
+  }
+  enforceAuthVisibility();
+  window.addEventListener("load", enforceAuthVisibility);
+  setInterval(enforceAuthVisibility, 500);
+})();
+</script>
 
 <!-- RKY VISIBLE FRIENDS FINAL -->
 <style>

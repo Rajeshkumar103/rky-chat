@@ -17609,3 +17609,14 @@ setInterval(function(){
 
 </body>
 </html>
+
+<style id="rky-final-auth-visibility-fix">
+/* Keep Chat UI hidden while the login form is visible. */
+#loginBox:not([style*="display: none"]) ~ #chatBox,
+#loginBox:not([style*="display: none"]) ~ #rkyVisibleFriends {
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+</style>

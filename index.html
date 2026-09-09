@@ -17044,14 +17044,6 @@ setInterval(function(){
         closeFriendChatFinal();
       };
     }
-
-    /* Ensure existing messages render after the friend-chat DOM is fully visible. */
-    if(typeof loadMessages === 'function' && currentUser && name){
-      selectedFriend = name;
-      setTimeout(function(){
-        loadMessages();
-      }, 0);
-    }
   }
 
   function closeFriendChatFinal(){

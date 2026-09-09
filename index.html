@@ -17013,6 +17013,12 @@ setInterval(function(){
   function openFriendChatFinal(name){
     var chat=document.getElementById('chatBox');
     if(!chat) return;
+
+    /* Set the active friend before the chat UI is finalized. */
+    if(name){
+      selectedFriend = name;
+    }
+
     chat.classList.add('rky-friend-chat-open');
     hideOldFriendPage();
 
@@ -17034,6 +17040,13 @@ setInterval(function(){
       composer.style.setProperty('display','flex','important');
       composer.style.setProperty('visibility','visible','important');
       composer.style.setProperty('opacity','1','important');
+    }
+
+    /* Refresh existing messages after the friend-chat DOM is in place. */
+    if(currentUser && selectedFriend && typeof loadMessages === 'function'){
+      setTimeout(function(){
+        loadMessages().catch(function(err){ console.error('Chat-open message refresh:', err); });
+      }, 60);
     }
 
     var back=document.querySelector('#rkyChatTopBarFriend .rky-friend-back');

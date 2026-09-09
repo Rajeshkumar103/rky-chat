@@ -16377,7 +16377,7 @@ setInterval(function(){
 <script>
 (function(){
   function enforceAuthVisibility(){
-    var logged=!!((localStorage.getItem("currentUser")||"").trim());
+    var logged=!!((typeof currentUser !== "undefined" && typeof currentUser === "string") ? currentUser.trim() : "");
     var chat=document.getElementById("chatBox");
     var friends=document.getElementById("rkyVisibleFriends");
     var login=document.getElementById("loginBox");

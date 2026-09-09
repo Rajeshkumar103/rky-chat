@@ -12040,7 +12040,7 @@ console.log("CALLING SEEN API");
 }
 
 
-document.getElementById("messages").innerHTML = "";
+let renderedMessagesHTML = "";
 console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 for(let i=0; i<chats.length; i++){
 
@@ -12267,11 +12267,16 @@ chats[i].from == currentUser
 
 "</p>";
 
-document.getElementById("messages").innerHTML += messageHTML;
-document.getElementById("messages").scrollTop = document.getElementById("messages").scrollHeight;
+renderedMessagesHTML += messageHTML;
 
 }
 
+}
+
+const messagesContainer = document.getElementById("messages");
+if(messagesContainer){
+    messagesContainer.innerHTML = renderedMessagesHTML;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 /* Scroll */
@@ -12292,6 +12297,26 @@ setTimeout(function(){
 loadChatVideos();
 
 }
+
+/* RKY message DOM dedupe: remove duplicate server-rendered message IDs. */
+(function(){
+  function dedupe(){
+    var box=document.getElementById('messages'); if(!box) return;
+    var seen=Object.create(null);
+    Array.prototype.forEach.call(box.querySelectorAll('[id^="message_"]'),function(el){
+      if(seen[el.id]) el.remove(); else seen[el.id]=true;
+    });
+  }
+  function install(){
+    var box=document.getElementById('messages');
+    if(!box || box.__rkyDedupeInstalled) return;
+    box.__rkyDedupeInstalled=true;
+    new MutationObserver(dedupe).observe(box,{childList:true});
+    dedupe();
+  }
+  install(); document.addEventListener('DOMContentLoaded',install);
+  setInterval(install,1000);
+})();
 
 function scrollToOriginalMessage(id){
 
@@ -16386,6 +16411,8 @@ setInterval(function(){
     }
     if(friends){
       friends.style.setProperty("display", logged ? "block" : "none", "important");
+      friends.style.setProperty("visibility", logged ? "visible" : "hidden", "important");
+      friends.style.setProperty("opacity", logged ? "1" : "0", "important");
     }
     if(login && !logged){
       login.style.setProperty("display","block","important");
@@ -16405,9 +16432,9 @@ setInterval(function(){
   left:0 !important;
   right:0 !important;
   z-index:99990 !important;
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
   padding:6px 10px !important;
   box-sizing:border-box !important;
   pointer-events:auto !important;
@@ -16466,7 +16493,17 @@ setInterval(function(){
     const me=(localStorage.getItem("currentUser")||"").trim();
     const box=document.getElementById("rkyVisibleFriends");
 
-    if(!me || !box) return;
+    if(!box) return;
+    if(!me){
+      box.innerHTML = "";
+      box.style.setProperty("display","none","important");
+      box.style.setProperty("visibility","hidden","important");
+      box.style.setProperty("opacity","0","important");
+      return;
+    }
+    box.style.setProperty("display","block","important");
+    box.style.setProperty("visibility","visible","important");
+    box.style.setProperty("opacity","1","important");
 
     try{
 
@@ -17531,6 +17568,36 @@ setInterval(function(){
 </script>
 
 
+
+<style id="rky-video-fixes-scope-scroll">
+#chatBox:not(.rky-friend-chat-open) > .wa-bottom-bar{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+#chatBox.rky-friend-chat-open{ overflow:hidden !important; }
+#chatBox.rky-friend-chat-open #messages{
+  display:block !important;
+  height:calc(100vh - 128px) !important;
+  max-height:calc(100vh - 128px) !important;
+  min-height:120px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  -webkit-overflow-scrolling:touch !important;
+  touch-action:pan-y !important;
+  overscroll-behavior:contain !important;
+  scroll-behavior:auto !important;
+  box-sizing:border-box !important;
+  padding-bottom:12px !important;
+}
+@media(max-width:500px){
+  #chatBox.rky-friend-chat-open #messages{
+    height:calc(100dvh - 128px) !important;
+    max-height:calc(100dvh - 128px) !important;
+  }
+}
+</style>
 <!-- RKY FINAL COMPOSER MOVE FIX -->
 <style id="rky-final-composer-move-fix">
 #chatBox.rky-friend-chat-open > .wa-bottom-bar{

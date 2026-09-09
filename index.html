@@ -599,37 +599,47 @@ html,body{
 </style>
 
 <link rel="stylesheet" href="whatsapp.css">
-<style id="rky-emoji-panel-v9">
+<style id="rky-emoji-panel-v10">
 .rky-emoji-panel{
-  display:none;
-  position:fixed;
-  left:10px;
-  right:10px;
-  bottom:70px;
-  z-index:1000005;
-  padding:8px;
-  background:#fff;
-  border:1px solid #ddd;
-  border-radius:12px;
-  box-shadow:0 4px 18px rgba(0,0,0,.18);
+  display:none !important;
+  position:fixed !important;
+  left:8px !important;
+  right:8px !important;
+  bottom:62px !important;
+  z-index:1000005 !important;
+  padding:8px !important;
   grid-template-columns:repeat(8,minmax(0,1fr));
-  gap:5px;
-  max-height:190px;
-  overflow-y:auto;
+  gap:4px !important;
+  max-height:220px !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  background:#fff !important;
+  border:1px solid #ddd !important;
+  border-radius:12px !important;
+  box-shadow:0 4px 18px rgba(0,0,0,.18) !important;
+  box-sizing:border-box !important;
 }
-.rky-emoji-panel.open{display:grid;}
+.rky-emoji-panel.open{display:grid !important;}
 .rky-emoji-panel button{
-  border:0;
-  background:transparent;
-  font-size:25px;
-  line-height:1;
-  padding:6px 2px;
-  border-radius:8px;
-  cursor:pointer;
+  border:0 !important;
+  background:transparent !important;
+  font-size:25px !important;
+  line-height:1 !important;
+  padding:7px 2px !important;
+  border-radius:8px !important;
+  cursor:pointer !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:auto !important;
 }
-.rky-emoji-panel button:active{background:#eee;}
+.rky-emoji-panel button:active{background:#eee !important;}
 @media(max-width:500px){
-  .rky-emoji-panel{grid-template-columns:repeat(7,minmax(0,1fr));bottom:68px;max-height:180px;}
+  .rky-emoji-panel{
+    grid-template-columns:repeat(7,minmax(0,1fr)) !important;
+    bottom:64px !important;
+    max-height:210px !important;
+  }
 }
 </style>
 <script>

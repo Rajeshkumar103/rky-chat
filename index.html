@@ -17632,6 +17632,20 @@ setInterval(function(){
   touch-action:auto;
 }
 </style>
+<!-- RKY FIX: keep first message below fixed friend header -->
+<style id="rky-message-header-offset-fix">
+#chatBox.rky-friend-chat-open #messages{
+  padding-top:60px !important;
+  scroll-padding-top:60px !important;
+  box-sizing:border-box !important;
+}
+@media(max-width:500px){
+  #chatBox.rky-friend-chat-open #messages{
+    padding-top:58px !important;
+    scroll-padding-top:58px !important;
+  }
+}
+</style>
 <!-- RKY FINAL COMPOSER MOVE FIX -->
 <style id="rky-final-composer-move-fix">
 #chatBox.rky-friend-chat-open > .wa-bottom-bar{

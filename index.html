@@ -16774,7 +16774,19 @@ setInterval(function(){
     return r;
   }
   function closeFriendMenu(){var m=document.getElementById('rkyFriendMoreMenu');if(m)m.classList.remove('show');}
-  function openFriendMenu(){var m=document.getElementById('rkyFriendMoreMenu');if(m)m.classList.toggle('show');}
+  function openFriendMenu(){
+    var m=document.getElementById('rkyFriendMoreMenu');
+    var chat=document.getElementById('chatBox');
+    if(!m && chat && chat.classList.contains('rky-friend-chat-open')){
+      var bar=document.getElementById('rkyChatTopBarFriend');
+      var name=bar && bar.querySelector('.rky-friend-name') ? bar.querySelector('.rky-friend-name').textContent.trim() : '';
+      if(name) buildFriendHeader(name);
+      m=document.getElementById('rkyFriendMoreMenu');
+    }
+    if(!m)return;
+    m.classList.toggle('show');
+    m.style.setProperty('display',m.classList.contains('show')?'block':'none','important');
+  }
   function buildFriendHeader(name){
     var chat=document.getElementById('chatBox'); if(!chat)return;
     chat.classList.add('rky-friend-chat-open');

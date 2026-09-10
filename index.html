@@ -235,6 +235,11 @@ function rkyMoreAction(action){
             });
         }
 
+        const requestContent = document.getElementById("rkyCircleRequestsContent");
+        if(requestContent){
+            requestContent.style.display = "block";
+        }
+
         if(requestList){
             requestList.style.display = "block";
         }
@@ -1097,7 +1102,7 @@ function toggleRkyFriendRequests(){
 </script>
 
 <div id="rkyCircleRequestsContent"
-style="display:block!important;visibility:visible!important;opacity:1!important;height:auto!important;max-height:none!important;overflow:visible!important;">
+style="display:none;visibility:visible;opacity:1;height:auto;max-height:none;overflow:visible;">
 
 <div id="requestList">
     <p style="font-size:13px;color:#888;">

@@ -627,6 +627,51 @@ html,body{
 #incomingVideoCall,
 #callHistoryPanel{display:none !important;}
 </style>
+<style id="rky-friend-menu-compact-v23">
+/* V23: compact Friend Chat 3-dot menu; only this menu is restyled. */
+#rkyFriendMoreMenu{
+  top:60px !important;
+  right:max(8px,calc((100vw - 480px)/2 + 8px)) !important;
+  width:min(310px,calc(100vw - 16px)) !important;
+  max-height:calc(100dvh - 125px) !important;
+  overflow-y:auto !important;
+  overflow-x:hidden !important;
+  border-radius:14px !important;
+  padding:4px 0 !important;
+  box-sizing:border-box !important;
+}
+#rkyFriendMoreMenu button{
+  min-height:44px !important;
+  height:44px !important;
+  padding:5px 13px !important;
+  font-size:15px !important;
+  line-height:1.15 !important;
+  gap:11px !important;
+  box-sizing:border-box !important;
+}
+#rkyFriendMoreMenu button > span:first-child{
+  width:32px !important;
+  height:32px !important;
+  flex:0 0 32px !important;
+  font-size:18px !important;
+}
+#rkyFriendMoreMenu button[data-a="more"] > span:first-child{
+  font-size:17px !important;
+}
+#rkyFriendMoreMenu button[data-a="more"] > span:last-child{
+  font-size:21px !important;
+}
+#rkyFriendMoreMenu > div{
+  margin:2px 0 !important;
+}
+@media(max-width:500px){
+  #rkyFriendMoreMenu{
+    top:60px !important;
+    width:calc(100vw - 16px) !important;
+    max-height:calc(100dvh - 118px) !important;
+  }
+}
+</style>
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  

@@ -17032,9 +17032,12 @@ setInterval(function(){
 
     [
       'rkyHeader','friendList',
-      'rkyCircleRequestsToggle','rkyCircleRequestsContent',
+      'rkyCircleRequestsToggle',
       'rkySentRequestsSection','rkyConnectionsSection'
     ].forEach(function(id){ setHidden(id,false); });
+
+    /* Friend Requests content must stay hidden on the main Friends page. */
+    setHidden('rkyCircleRequestsContent',true);
 
     setHidden('friendProfile',true);
     setHidden('callHistoryPanel',true);
@@ -17043,15 +17046,25 @@ setInterval(function(){
     setHidden('rkyMoreButton',false);
     setHidden('rkyMoreMenu',true);
 
+    /* Message composer must exist only while a friend chat is open. */
+    var composer=chat.querySelector('.wa-bottom-bar');
+    if(composer) composer.style.setProperty('display','none','important');
+
+    var typing=document.getElementById('typing');
+    if(typing) typing.style.setProperty('display','none','important');
+
+    var messages=document.getElementById('messages');
+    if(messages){
+      messages.style.setProperty('display','none','important');
+      messages.innerHTML='';
+    }
+
     document.querySelectorAll(
       '#chatBox button[onclick="showStarredMessages()"],' +
       '#chatBox button[onclick="clearCurrentChat()"]'
     ).forEach(function(el){
       el.style.removeProperty('display');
     });
-
-    var messages=document.getElementById('messages');
-    if(messages) messages.innerHTML='';
 
     var reply=document.getElementById('replyBox');
     if(reply) reply.style.display='none';

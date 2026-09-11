@@ -18333,17 +18333,9 @@ setInterval(function(){
   }
 
   function openMedia(){
-    var photo=document.getElementById('photoMessage');
-    var video=document.getElementById('videoMessage');
-    if(!photo && !video){ alert('Media upload is not available.'); return; }
-    var useVideo=window.confirm('OK = choose a video\nCancel = choose a photo');
-    var input=useVideo ? video : photo;
-    if(!input) input=useVideo ? photo : video;
-    if(!input){ alert('Media upload is not available.'); return; }
-    try{ input.value=''; }catch(e){}
-    setTimeout(function(){
-      try{ input.click(); }catch(e){ alert('Could not open media picker.'); }
-    },80);
+    if(typeof window.rkyOpenMediaDocs==='function') return window.rkyOpenMediaDocs();
+    if(typeof media==='function') return media();
+    alert('Media, links and docs is not available.');
   }
 
   function toggleMute(){
@@ -18431,7 +18423,7 @@ setInterval(function(){
   window.rkyHandleFriendMenuAction=function(a){
     if(a==='profile') return viewContact();
     if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
-    if(a==='media') return openMedia();
+    if(a==='media') return (typeof window.rkyOpenMediaDocs==='function' ? window.rkyOpenMediaDocs() : (typeof media==='function' ? media() : openMedia()));
     if(a==='notifications') return toggleMute();
     if(a==='disappearing') return toggleDisappearing();
     if(a==='theme') return changeTheme();
@@ -18739,7 +18731,7 @@ setInterval(function(){
 })();
 </script>
 
-<!-- RKY DOCS MENU FIX v8 -->
+<!-- RKY DOCS MENU FIX v10: remove legacy confirm media picker: keep View Contact + route Media directly to Photo/Video/Document menu -->
 <script id="rky-document-upload-v8">
 (function(){
   function showDocError(msg){ alert(msg || 'File upload failed'); }

@@ -18540,15 +18540,6 @@ setInterval(function(){
     d.addEventListener('click',function(e){if(e.target===d||e.target.closest('[data-close]'))d.remove();});
     document.body.appendChild(d); return d;
   }
-  function media(){
-    var photo=document.getElementById('photoMessage'), video=document.getElementById('videoMessage');
-    if(!photo&&!video){alert('Media upload is not available.');return;}
-    var d=modal('rkyMediaChoice','Send media',
-      '<button type="button" data-photo style="width:100%;padding:13px;border:0;border-radius:10px;background:#f1f5f9;text-align:left;font-size:15px;margin:4px 0;">📷 Photo</button>'+
-      '<button type="button" data-video style="width:100%;padding:13px;border:0;border-radius:10px;background:#f1f5f9;text-align:left;font-size:15px;margin:4px 0;">🎥 Video</button>');
-    d.querySelector('[data-photo]').onclick=function(){d.remove();try{photo.value='';}catch(e){}photo.click();};
-    d.querySelector('[data-video]').onclick=function(){d.remove();try{video.value='';}catch(e){}video.click();};
-  }
   function escapeRkyText(v){
     return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
   }

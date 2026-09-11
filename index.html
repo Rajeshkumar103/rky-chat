@@ -18430,7 +18430,7 @@ setInterval(function(){
     var a=b.getAttribute('data-a');
     var menu=document.getElementById('rkyFriendMoreMenu');
     if(menu){ menu.classList.remove('show'); menu.style.setProperty('display','none','important'); }
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
     try{ window.rkyHandleFriendMenuAction(a); }catch(err){ console.error('Friend menu action error:',err); alert('❌ This option could not be opened.'); }
   },true);
 
@@ -18712,13 +18712,7 @@ setInterval(function(){
     if(a==='notifications')return mute(); if(a==='disappearing')return disappearing(); if(a==='theme')return theme();
     if(a==='more')return more(); if(a==='group')return group();
   }
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;
-    if(!b)return;
-    var a=b.getAttribute('data-a');
-    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
-    closeMenu();setTimeout(function(){try{act(a);}catch(err){console.error(err);alert('❌ This option could not be opened.');}},0);
-  },true);
+  /* v6: removed duplicate friend-menu click handler to prevent false error alerts. */
 })();
 </script>
 

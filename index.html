@@ -18706,9 +18706,38 @@ setInterval(function(){
     var chat=document.getElementById('chatBox'),name=friendName();if(!chat||!name)return;
     var key='rkyChatThemeByFriend',all={};try{all=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
     var current=all[name]||'default';
-    var d=modal('rkyThemeChoice','Chat theme','<div style="display:grid;gap:8px;">'+['default','light','dark'].map(function(t){return '<button data-t="'+t+'" style="padding:12px;border:0;border-radius:10px;text-align:left;">'+(t===current?'✓ ':'')+(t==='default'?'🌐 Default':t==='light'?'☀️ Light':'🌙 Dark')+'</button>';}).join('')+'</div>');
-    d.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-t');all[name]=t;localStorage.setItem(key,JSON.stringify(all));chat.setAttribute('data-rky-theme',t);var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';d.remove();};});
+    var presets={
+      'default':{label:'🌐 Default',bg:'#ffffff',text:'#111827',messages:'#f5f5f5'},
+      'ocean':{label:'🌊 Ocean',bg:'#e0f2fe',text:'#0c4a6e',messages:'#dbeafe'},
+      'sunset':{label:'🌅 Sunset',bg:'#fff1f2',text:'#881337',messages:'#ffe4e6'},
+      'forest':{label:'🌿 Forest',bg:'#ecfdf5',text:'#064e3b',messages:'#d1fae5'},
+      'midnight':{label:'🌙 Midnight',bg:'#111827',text:'#f9fafb',messages:'#1f2937'}
+    };
+    var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+    Object.keys(presets).forEach(function(t){
+      var x=presets[t];
+      html+='<button type="button" data-t="'+t+'" style="padding:12px 10px;border:1px solid #d1d5db;border-radius:12px;text-align:left;background:'+x.bg+';color:'+x.text+';font-weight:600;min-height:58px;">'+(t===current?'✓ ':'')+x.label+'</button>';
+    });
+    html+='</div><button type="button" id="rkyThemeGallery" style="width:100%;margin-top:9px;padding:12px;border:0;border-radius:12px;background:#eef2ff;color:#3730a3;font-weight:700;text-align:left;">🖼️ Choose from Gallery</button>';
+    var d=modal('rkyThemeChoice','Chat theme',html);
+    function applyTheme(t,bg,text,msgBg,image){
+      all[name]=t;localStorage.setItem(key,JSON.stringify(all));
+      chat.setAttribute('data-rky-theme',t);
+      if(image)localStorage.setItem('rkyChatThemeImage:'+name,image);else localStorage.removeItem('rkyChatThemeImage:'+name);
+      var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}
+      var imgRule=image?'#chatBox[data-rky-theme="'+t+'"] #messages{background-image:url("'+image.replace(/"/g,'\\"')+'");background-size:cover;background-position:center;background-attachment:fixed;}#chatBox[data-rky-theme="'+t+'"]{background:'+bg+'!important;color:'+text+'!important;}':'#chatBox[data-rky-theme="'+t+'"]{background:'+bg+'!important;color:'+text+'!important;}#chatBox[data-rky-theme="'+t+'"] #messages{background:'+msgBg+'!important;color:'+text+'!important;}';
+      st.textContent=imgRule+(t==='midnight'?'#chatBox[data-rky-theme="midnight"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important;}':'');
+      d.remove();
+    }
+    d.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-t'),x=presets[t];applyTheme(t,x.bg,x.text,x.messages,null);};});
+    var gallery=d.querySelector('#rkyThemeGallery');
+    if(gallery)gallery.onclick=function(){
+      var input=document.createElement('input');input.type='file';input.accept='image/*';input.style.display='none';document.body.appendChild(input);
+      input.onchange=function(){var f=input.files&&input.files[0];if(!f){input.remove();return;}if(f.size>8*1024*1024){alert('Please choose an image smaller than 8 MB.');input.remove();return;}var reader=new FileReader();reader.onload=function(){applyTheme('gallery','#ffffff','#111827','#ffffff',String(reader.result));input.remove();};reader.readAsDataURL(f);};
+      input.click();
+    };
   }
+
   async function starred(){
     var name=friendName();if(!name||!currentUser)return;
     var d=modal('rkyRealStarred','Starred messages','<div id="rkyStarredResults">Loading…</div>'),out=d.querySelector('#rkyStarredResults');
@@ -18762,15 +18791,20 @@ setInterval(function(){
     if(!name)return;
     var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){}
     var t=all[name]||'default';
+    var image=localStorage.getItem('rkyChatThemeImage:'+name)||'';
     chat.setAttribute('data-rky-theme',t);
     var st=document.getElementById('rky-friend-theme-style');
     if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}
-    st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';
+    var map={default:['#ffffff','#111827','#f5f5f5'],ocean:['#e0f2fe','#0c4a6e','#dbeafe'],sunset:['#fff1f2','#881337','#ffe4e6'],forest:['#ecfdf5','#064e3b','#d1fae5'],midnight:['#111827','#f9fafb','#1f2937']};
+    var x=map[t]||map.default;
+    st.textContent='#chatBox[data-rky-theme="'+t+'"]{background:'+x[0]+'!important;color:'+x[1]+'!important;}#chatBox[data-rky-theme="'+t+'"] #messages{background:'+x[2]+'!important;color:'+x[1]+'!important;}'+(image?'#chatBox[data-rky-theme="gallery"] #messages{background-image:url("'+image.replace(/"/g,'\\"')+'");background-size:cover;background-position:center;background-attachment:fixed;}':'')+(t==='midnight'?'#chatBox[data-rky-theme="midnight"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important;}':'');
   }
+
   setInterval(applyFriendTheme,500);applyFriendTheme();
 })();
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
+<!-- RKY CHAT THEMES v14: 5 presets + gallery background. -->
 <!-- RKY FINAL FIX v11: message wrapper changed from P to DIV so document cards can render correctly. -->
 </body>
 </html>

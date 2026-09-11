@@ -18427,8 +18427,8 @@ setInterval(function(){
     if(a==='notifications') return toggleMute();
     if(a==='disappearing') return toggleDisappearing();
     if(a==='theme') return changeTheme();
-    if(a==='group') return newGroup();
-    if(a==='more') return more();
+    if(a==='group') return openRkyGroupTheme();
+    if(a==='more') return openRkyMoreReliable();
   };
 
   document.addEventListener('click',function(e){
@@ -18677,7 +18677,11 @@ setInterval(function(){
     page.querySelector('.rky-contact-back').onclick=page.querySelector('.rky-contact-close').onclick=function(){page.remove();};
     page.querySelectorAll('[data-copy]').forEach(function(b){b.onclick=function(){var txt=b.getAttribute('data-copy')||'';if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){alert('Copied ✅');});else alert(txt);};});
     page.querySelectorAll('[data-ca]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ca');if(a==='message'){page.remove();return;}if(a==='video'){if(typeof startVideoCall==='function')startVideoCall();return;}if(a==='audio'){if(typeof startVoiceCall==='function')startVoiceCall();else if(typeof connectVoiceCallSocket==='function')connectVoiceCallSocket();return;}if(a==='more'){if(typeof more==='function')more();return;}if(a==='media'){if(typeof media==='function')media();return;}if(a==='notifications'){if(typeof mute==='function')mute();setTimeout(contact,150);return;}if(a==='disappearing'){if(typeof disappearing==='function')disappearing();setTimeout(contact,150);return;}if(a==='theme'){if(typeof theme==='function')theme();setTimeout(contact,150);return;}}});
-    page.querySelector('.rky-block-contact').onclick=function(){alert('🚫 Block contact is not connected to a backend block API yet.');};
+    page.querySelector('.rky-block-contact').onclick=function(){
+      var n=friendName(); if(!n)return;
+      var blocked=isRkyBlocked(n); toggleRkyBlock(n);
+      page.querySelector('.rky-block-contact').textContent=blocked?'🚫 Block contact':'✅ Unblock contact';
+    };
 
     var out=page.querySelector('#rkyContactMediaPreview');
     fetch('/api/messages/'+encodeURIComponent(currentUser)+'/'+encodeURIComponent(name)+'?t='+Date.now()).then(function(r){return r.json();}).then(function(data){
@@ -18757,6 +18761,69 @@ setInterval(function(){
     if(a==='notifications')return mute(); if(a==='disappearing')return disappearing(); if(a==='theme')return theme();
     if(a==='more')return more(); if(a==='group')return group();
   }
+
+  /* RKY V15: stronger theme persistence, local block, group theme and reliable More popup. */
+  function isRkyBlocked(name){
+    var a=[];try{a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');}catch(e){}
+    return a.indexOf(String(name))>=0;
+  }
+  function toggleRkyBlock(name){
+    name=String(name||''); if(!name)return;
+    var a=[];try{a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');}catch(e){}
+    var i=a.indexOf(name);
+    if(i>=0){a.splice(i,1);localStorage.setItem('rkyBlockedContacts',JSON.stringify(a));alert('✅ Contact unblocked: '+name);}
+    else{a.push(name);localStorage.setItem('rkyBlockedContacts',JSON.stringify(a));alert('🚫 Contact blocked: '+name);}
+  }
+  function openRkyMoreReliable(){
+    var old=document.getElementById('rkyV15More');if(old)old.remove();
+    var d=document.createElement('div');d.id='rkyV15More';
+    d.style.cssText='position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.35);display:flex;align-items:flex-start;justify-content:flex-end;padding:58px 10px 10px;box-sizing:border-box;';
+    d.innerHTML='<div style="width:190px;max-width:calc(100vw - 20px);background:#fff;color:#111827;border-radius:13px;box-shadow:0 15px 45px rgba(0,0,0,.3);padding:6px;">'+
+      '<button data-v15="starred" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">⭐ Starred messages</button>'+
+      '<button data-v15="history" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">📋 Call history</button>'+
+      '<button data-v15="theme" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">🎨 Chat theme</button>'+
+      '<button data-v15="groupTheme" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">👥 Group theme</button>'+
+      '<button data-v15="block" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">🚫 Block / unblock</button>'+
+      '<button data-v15="clear" style="width:100%;padding:11px;border:0;background:#fff;text-align:left;border-radius:9px;">🗑️ Clear chat</button>'+
+      '</div>';
+    document.body.appendChild(d);
+    d.onclick=function(e){
+      if(e.target===d){d.remove();return;}
+      var b=e.target.closest('[data-v15]');if(!b)return;
+      var a=b.getAttribute('data-v15');d.remove();
+      if(a==='starred')return starred();
+      if(a==='history'&&typeof rkyMoreAction==='function')return rkyMoreAction('callHistory');
+      if(a==='theme')return theme();
+      if(a==='groupTheme')return theme();
+      if(a==='clear'&&typeof clearCurrentChat==='function')return clearCurrentChat();
+      if(a==='block')return toggleRkyBlock(friendName());
+    };
+  }
+  function openRkyGroupTheme(){
+    var chat=document.getElementById('chatBox'),name=friendName();if(!chat||!name){alert('Please open a group chat first.');return;}
+    var key='rkyGroupThemeByChat',all={};try{all=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
+    var presets={default:['🌐 Default','#ffffff','#111827','#f5f5f5'],ocean:['🌊 Ocean','#e0f2fe','#0c4a6e','#dbeafe'],sunset:['🌅 Sunset','#fff1f2','#881337','#ffe4e6'],forest:['🌿 Forest','#ecfdf5','#064e3b','#d1fae5'],midnight:['🌙 Midnight','#111827','#f9fafb','#1f2937']};
+    var html='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+    Object.keys(presets).forEach(function(k){var x=presets[k];html+='<button data-gt="'+k+'" style="padding:12px;border:1px solid #d1d5db;border-radius:10px;background:'+x[1]+';color:'+x[2]+';text-align:left;">'+(all[name]===k?'✓ ':'')+x[0]+'</button>';});
+    html+='</div>';
+    var d=modal('rkyGroupThemeChoice','Group chat theme',html);
+    d.querySelectorAll('[data-gt]').forEach(function(b){b.onclick=function(){var k=b.getAttribute('data-gt');all[name]=k;localStorage.setItem(key,JSON.stringify(all));chat.setAttribute('data-rky-group-theme',k);d.remove();alert('👥 Group theme saved');};});
+  }
+  var oldTheme=theme;
+  theme=function(){
+    var name=friendName(); if(!name)return;
+    var chat=document.getElementById('chatBox'); if(!chat)return;
+    oldTheme();
+  };
+  var oldMore=more;
+  more=function(){openRkyMoreReliable();};
+  var oldAct=act;
+  act=function(a){
+    if(a==='more')return openRkyMoreReliable();
+    if(a==='group')return openRkyGroupTheme();
+    if(a==='block')return toggleRkyBlock(friendName());
+    return oldAct(a);
+  };
   /* v6: removed duplicate friend-menu click handler to prevent false error alerts. */
 })();
 </script>

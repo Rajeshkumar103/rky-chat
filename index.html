@@ -17092,17 +17092,16 @@ setInterval(function(){
           }
         }
         else if(a==='media'){
-              if(typeof media==='function'){
-                try{
-                  media();
-                }catch(_e){
-                  alert('Media menu could not be opened.');
-                }
-              }else{
-                alert('Media option is not available.');
-              }
-            }
-            else if(a==='group'){
+          try{
+            if(typeof window.rkyOpenMediaDocs==='function') window.rkyOpenMediaDocs();
+            else if(typeof media==='function') media();
+            else alert('Media, links and docs is not available.');
+          }catch(e){
+            console.error('Media/docs menu error:',e);
+            alert('Media, links and docs could not be opened.');
+          }
+        }
+        else if(a==='group'){
           if(typeof createGroup==='function')createGroup();
           else if(typeof newGroup==='function')newGroup();
           else if(typeof openCreateGroup==='function')openCreateGroup();
@@ -18525,15 +18524,6 @@ setInterval(function(){
     var m=document.getElementById('rkyFriendMoreMenu');
     if(m){m.classList.remove('show');m.style.setProperty('display','none','important');}
   }
-  function modal(id,title,html){
-    var old=document.getElementById(id); if(old) old.remove();
-    var d=document.createElement('div'); d.id=id;
-    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483646;display:flex;align-items:flex-start;justify-content:center;padding:90px 12px 20px;box-sizing:border-box;';
-    d.innerHTML='<div style="width:min(360px,100%);max-height:75vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:16px;box-sizing:border-box;color:#111827;">'+
-      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><strong style="font-size:18px;flex:1;">'+title+'</strong><button type="button" data-close style="border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px;font-size:18px;">×</button></div>'+html+'</div>';
-    d.addEventListener('click',function(e){if(e.target===d||e.target.closest('[data-close]'))d.remove();});
-    document.body.appendChild(d); return d;
-  }
   function escapeRkyText(v){
     return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
   }
@@ -18572,12 +18562,37 @@ setInterval(function(){
   }
   window.rkyOpenSearchReal = openSearch;
 
-  function media(){
-    var d=modal('rkyRealMedia','Media, links and docs','<div style="display:grid;gap:9px;"><button type="button" id="rkyChoosePhoto" style="padding:13px;border:0;border-radius:10px;text-align:left;">📷 Choose photo</button><button type="button" id="rkyChooseVideo" style="padding:13px;border:0;border-radius:10px;text-align:left;">🎥 Choose video</button><button type="button" id="rkyChooseDoc" style="padding:13px;border:0;border-radius:10px;text-align:left;">📎 Choose file / document</button></div>');
-    d.querySelector('#rkyChoosePhoto').onclick=function(){d.remove();var x=document.getElementById('photoMessage');if(x)x.click();};
-    d.querySelector('#rkyChooseVideo').onclick=function(){d.remove();var x=document.getElementById('videoMessage');if(x)x.click();};
-    d.querySelector('#rkyChooseDoc').onclick=function(){d.remove();var x=document.getElementById('documentMessage');if(x)x.click();};
+  function ensureDocumentInput(){
+    var x=document.getElementById('documentMessage');
+    if(x)return x;
+    x=document.createElement('input');
+    x.type='file'; x.id='documentMessage'; x.multiple=true; x.accept='*/*';
+    x.style.display='none';
+    x.onchange=function(){if(typeof window.sendDocumentMessage==='function')window.sendDocumentMessage();};
+    document.body.appendChild(x);
+    return x;
   }
+
+  function openMediaDocs(){
+    var old=document.getElementById('rkyRealMedia'); if(old)old.remove();
+    var d=document.createElement('div'); d.id='rkyRealMedia';
+    d.style.cssText='position:fixed!important;inset:0!important;background:rgba(0,0,0,.45)!important;z-index:2147483646!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;box-sizing:border-box!important;';
+    d.innerHTML='<div style="width:min(360px,100%)!important;max-height:80vh!important;overflow:auto!important;background:#fff!important;color:#111827!important;border-radius:16px!important;padding:16px!important;box-sizing:border-box!important;box-shadow:0 15px 45px rgba(0,0,0,.35)!important;">'+
+      '<div style="display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;margin-bottom:12px!important;"><b style="font-size:18px!important;">Media, links and docs</b><button type="button" id="rkyMediaClose" style="display:flex!important;align-items:center!important;justify-content:center!important;width:32px!important;height:32px!important;padding:0!important;border:0!important;border-radius:50%!important;background:#f1f5f9!important;font-size:20px!important;">×</button></div>'+
+      '<div style="display:grid!important;gap:9px!important;">'+
+      '<button type="button" id="rkyChoosePhoto" style="display:flex!important;visibility:visible!important;align-items:center!important;width:100%!important;min-height:48px!important;padding:12px!important;border:1px solid #e5e7eb!important;border-radius:10px!important;background:#f8fafc!important;color:#111827!important;text-align:left!important;font-size:15px!important;box-sizing:border-box!important;">📷 Choose photo</button>'+
+      '<button type="button" id="rkyChooseVideo" style="display:flex!important;visibility:visible!important;align-items:center!important;width:100%!important;min-height:48px!important;padding:12px!important;border:1px solid #e5e7eb!important;border-radius:10px!important;background:#f8fafc!important;color:#111827!important;text-align:left!important;font-size:15px!important;box-sizing:border-box!important;">🎥 Choose video</button>'+
+      '<button type="button" id="rkyChooseDoc" style="display:flex!important;visibility:visible!important;align-items:center!important;width:100%!important;min-height:48px!important;padding:12px!important;border:1px solid #e5e7eb!important;border-radius:10px!important;background:#f8fafc!important;color:#111827!important;text-align:left!important;font-size:15px!important;box-sizing:border-box!important;">📎 Choose file / document</button>'+
+      '</div></div>';
+    document.body.appendChild(d);
+    d.addEventListener('click',function(e){if(e.target===d||e.target.id==='rkyMediaClose')d.remove();});
+    d.querySelector('#rkyChoosePhoto').onclick=function(){d.remove();var x=document.getElementById('photoMessage');if(x){try{x.value='';}catch(_e){}x.click();}};
+    d.querySelector('#rkyChooseVideo').onclick=function(){d.remove();var x=document.getElementById('videoMessage');if(x){try{x.value='';}catch(_e){}x.click();}};
+    d.querySelector('#rkyChooseDoc').onclick=function(){d.remove();var x=ensureDocumentInput();try{x.value='';}catch(_e){};if(x.showPicker){try{x.showPicker();return;}catch(_e){}}x.click();};
+    return d;
+  }
+  window.rkyOpenMediaDocs=openMediaDocs;
+  function media(){ return openMediaDocs(); }
   function contact(){
     var name=friendName();if(!name)return;
     var u=null;try{u=(Array.isArray(users)?users:[]).find(function(x){return x.username===name;});}catch(e){}
@@ -18724,7 +18739,8 @@ setInterval(function(){
 })();
 </script>
 
-<script id="rky-document-upload-v7">
+<!-- RKY DOCS MENU FIX v8 -->
+<script id="rky-document-upload-v8">
 (function(){
   function showDocError(msg){ alert(msg || 'File upload failed'); }
   window.sendDocumentMessage = async function(){

@@ -18415,7 +18415,7 @@ setInterval(function(){
 
   window.rkyHandleFriendMenuAction=function(a){
     if(a==='profile') return viewContact();
-    if(a==='search') return openSearch();
+    if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
     if(a==='media') return openMedia();
     if(a==='notifications') return toggleMute();
     if(a==='disappearing') return toggleDisappearing();
@@ -18563,6 +18563,8 @@ setInterval(function(){
     }
     input.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(run,180);});setTimeout(function(){input.focus();},0);
   }
+  window.rkyOpenSearchReal = openSearch;
+
   function media(){
     var d=modal('rkyRealMedia','Send media','<div style="display:grid;gap:9px;"><button type="button" id="rkyChoosePhoto" style="padding:13px;border:0;border-radius:10px;text-align:left;">📷 Choose photo</button><button type="button" id="rkyChooseVideo" style="padding:13px;border:0;border-radius:10px;text-align:left;">🎥 Choose video</button></div>');
     d.querySelector('#rkyChoosePhoto').onclick=function(){d.remove();var x=document.getElementById('photoMessage');if(x)x.click();};

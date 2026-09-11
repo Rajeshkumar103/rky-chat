@@ -18571,8 +18571,103 @@ setInterval(function(){
   function contact(){
     var name=friendName();if(!name)return;
     var u=null;try{u=(Array.isArray(users)?users:[]).find(function(x){return x.username===name;});}catch(e){}
-    var profileName=(u&&u.profileName)||name,photo=(u&&u.photo)||'https://via.placeholder.com/100',status=(u&&u.status)||'Offline';
-    var d=modal('rkyRealContact','View contact','<div style="text-align:center;"><img src="'+escapeRkyText(photo)+'" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #2196f3;"><h3 style="margin:10px 0 4px;">'+escapeRkyText(profileName)+'</h3><div style="opacity:.7;">@'+escapeRkyText(name)+'</div><p>'+escapeRkyText(status==='Online'?'🟢 Online':'🔴 Offline')+'</p></div>');
+    var profileName=(u&&u.profileName)||name;
+    var photo=(u&&u.photo)||'https://via.placeholder.com/160';
+    var status=(u&&u.status)||'Offline';
+    var online=String(status).toLowerCase()==='online';
+    var about=(u&&((u.about)||(u.bio)||(u.statusText)))||'Hey there! I am using Rky Chat.';
+    var phone=(u&&u.phone)||'';
+    var muted=false,disp='Off',themeName='Default';
+    try{var ml=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');muted=ml.indexOf(name)>=0;}catch(e){}
+    try{var dd=JSON.parse(localStorage.getItem('rkyDisappearingMessages')||'{}');var dv=Number(dd[name]||0);disp=dv===300?'5 minutes':dv===86400?'24 hours':dv===604800?'7 days':'Off';}catch(e){}
+    try{var tt=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');themeName=(tt[name]||'default')==='dark'?'Dark':(tt[name]||'default')==='light'?'Light':'Default';}catch(e){}
+
+    var old=document.getElementById('rkyRealContactPage');if(old)old.remove();
+    var page=document.createElement('div');page.id='rkyRealContactPage';
+    page.innerHTML='<div class="rky-contact-page">'+
+      '<div class="rky-contact-top"><button class="rky-contact-back" type="button" aria-label="Back">‹</button><div class="rky-contact-title">Contact info</div><button class="rky-contact-close" type="button" aria-label="Close">⋮</button></div>'+
+      '<div class="rky-contact-scroll">'+
+        '<section class="rky-contact-hero">'+
+          '<img class="rky-contact-photo" src="'+escapeRkyText(photo)+'" onerror="this.src=\'https://via.placeholder.com/160\'">'+
+          '<h2>'+escapeRkyText(profileName)+'</h2>'+
+          '<div class="rky-contact-username">@'+escapeRkyText(name)+'</div>'+
+          '<div class="rky-contact-online '+(online?'is-online':'')+'">● '+escapeRkyText(online?'Online':'Offline')+'</div>'+
+          '<div class="rky-contact-actions">'+
+            '<button data-ca="message"><span>💬</span><small>Message</small></button>'+
+            '<button data-ca="video"><span>📹</span><small>Video call</small></button>'+
+            '<button data-ca="audio"><span>📞</span><small>Audio call</small></button>'+
+            '<button data-ca="more"><span>•••</span><small>More</small></button>'+
+          '</div>'+
+        '</section>'+
+        '<section class="rky-contact-card"><div class="rky-contact-label">About</div><div class="rky-contact-value">'+escapeRkyText(about)+'</div></section>'+
+        (phone?'<section class="rky-contact-card"><div class="rky-contact-row"><span class="rky-contact-icon">☎</span><div><div class="rky-contact-label">Phone</div><div class="rky-contact-value">'+escapeRkyText(phone)+'</div></div><button class="rky-copy" data-copy="'+escapeRkyText(phone)+'">⧉</button></div></section>':'')+
+        '<section class="rky-contact-card"><div class="rky-contact-row"><span class="rky-contact-icon">@</span><div><div class="rky-contact-label">Username</div><div class="rky-contact-value">@'+escapeRkyText(name)+'</div></div><button class="rky-copy" data-copy="@'+escapeRkyText(name)+'">⧉</button></div><div class="rky-contact-divider"></div><div class="rky-contact-row"><span class="rky-contact-icon">👤</span><div><div class="rky-contact-label">Profile name</div><div class="rky-contact-value">'+escapeRkyText(profileName)+'</div></div></div><div class="rky-contact-divider"></div><div class="rky-contact-row"><span class="rky-contact-icon '+(online?'dot-online':'')+'">●</span><div><div class="rky-contact-label">Status</div><div class="rky-contact-value">'+escapeRkyText(status)+'</div></div></div></section>'+
+        '<section class="rky-contact-card rky-media-card"><div class="rky-contact-section-head"><b>Media, links and files</b><button data-ca="media">›</button></div><div id="rkyContactMediaPreview" class="rky-media-preview"><span>Loading…</span></div></section>'+
+        '<section class="rky-contact-card rky-settings-card">'+
+          '<button data-ca="notifications" class="rky-setting-row"><span>🔕</span><div><b>Mute notifications</b><small>'+(muted?'On':'Off')+'</small></div><i>›</i></button>'+
+          '<button data-ca="disappearing" class="rky-setting-row"><span>⏱</span><div><b>Disappearing messages</b><small>'+escapeRkyText(disp)+'</small></div><i>›</i></button>'+
+          '<button data-ca="theme" class="rky-setting-row"><span>🎨</span><div><b>Chat theme</b><small>'+escapeRkyText(themeName)+'</small></div><i>›</i></button>'+
+        '</section>'+
+        '<button class="rky-block-contact" type="button">🚫 Block contact</button>'+
+        '<div style="height:24px"></div>'+
+      '</div></div>';
+    document.body.appendChild(page);
+
+    var style=document.getElementById('rky-contact-page-style');
+    if(!style){style=document.createElement('style');style.id='rky-contact-page-style';style.textContent=`
+      #rkyRealContactPage{position:fixed;inset:0;z-index:2147483000;background:#061923;color:#eef8fb;font-family:inherit;}
+      #rkyRealContactPage .rky-contact-page{height:100%;max-width:760px;margin:0 auto;background:#071d27;display:flex;flex-direction:column;}
+      #rkyRealContactPage .rky-contact-top{height:58px;display:flex;align-items:center;padding:0 10px;border-bottom:1px solid rgba(255,255,255,.08);flex:0 0 58px;}
+      #rkyRealContactPage .rky-contact-back,#rkyRealContactPage .rky-contact-close{width:42px;height:42px;border:0;background:transparent;color:inherit;font-size:30px;line-height:1;border-radius:50%;cursor:pointer;}
+      #rkyRealContactPage .rky-contact-close{font-size:24px;transform:rotate(90deg);}
+      #rkyRealContactPage .rky-contact-title{font-size:18px;font-weight:700;flex:1;text-align:center;}
+      #rkyRealContactPage .rky-contact-scroll{overflow:auto;padding:0 12px 10px;}
+      #rkyRealContactPage .rky-contact-hero{text-align:center;padding:24px 10px 18px;}
+      #rkyRealContactPage .rky-contact-photo{width:132px;height:132px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.8);box-shadow:0 5px 25px rgba(0,0,0,.28);}
+      #rkyRealContactPage .rky-contact-hero h2{margin:10px 0 3px;font-size:25px;}
+      #rkyRealContactPage .rky-contact-username{opacity:.68;font-size:14px;}
+      #rkyRealContactPage .rky-contact-online{margin-top:7px;font-size:14px;opacity:.72;}
+      #rkyRealContactPage .rky-contact-online.is-online{color:#27d69b;opacity:1;}
+      #rkyRealContactPage .rky-contact-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px auto 0;max-width:570px;}
+      #rkyRealContactPage .rky-contact-actions button{border:1px solid rgba(255,255,255,.08);background:#102b37;color:inherit;border-radius:14px;padding:12px 5px;cursor:pointer;}
+      #rkyRealContactPage .rky-contact-actions span{display:block;font-size:22px;margin-bottom:5px;}
+      #rkyRealContactPage .rky-contact-actions small{font-size:11px;opacity:.85;}
+      #rkyRealContactPage .rky-contact-card{background:#0c2732;border:1px solid rgba(255,255,255,.055);border-radius:14px;margin:9px 0;padding:14px 15px;box-sizing:border-box;}
+      #rkyRealContactPage .rky-contact-label{font-size:12px;opacity:.58;margin-bottom:4px;}
+      #rkyRealContactPage .rky-contact-value{font-size:15px;line-height:1.4;word-break:break-word;}
+      #rkyRealContactPage .rky-contact-row{display:flex;align-items:center;gap:13px;min-height:45px;}
+      #rkyRealContactPage .rky-contact-icon{width:25px;text-align:center;font-size:19px;opacity:.9;}
+      #rkyRealContactPage .rky-contact-icon.dot-online{color:#28d69c;font-size:17px;}
+      #rkyRealContactPage .rky-copy{margin-left:auto;border:0;background:transparent;color:inherit;font-size:20px;opacity:.8;cursor:pointer;}
+      #rkyRealContactPage .rky-contact-divider{height:1px;background:rgba(255,255,255,.07);margin:10px 0;}
+      #rkyRealContactPage .rky-contact-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+      #rkyRealContactPage .rky-contact-section-head button{border:0;background:transparent;color:inherit;font-size:28px;cursor:pointer;}
+      #rkyRealContactPage .rky-media-preview{display:flex;gap:8px;overflow:hidden;min-height:64px;}
+      #rkyRealContactPage .rky-media-preview .rky-media-thumb{width:70px;height:70px;border-radius:9px;object-fit:cover;background:#132f3a;flex:0 0 70px;}
+      #rkyRealContactPage .rky-media-empty{opacity:.55;font-size:13px;padding:20px 0;}
+      #rkyRealContactPage .rky-settings-card{padding:4px 15px;}
+      #rkyRealContactPage .rky-setting-row{width:100%;display:flex;align-items:center;gap:13px;padding:13px 0;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:transparent;color:inherit;text-align:left;cursor:pointer;}
+      #rkyRealContactPage .rky-setting-row:last-child{border-bottom:0;}
+      #rkyRealContactPage .rky-setting-row>span{width:25px;text-align:center;font-size:18px;}
+      #rkyRealContactPage .rky-setting-row div{flex:1;}
+      #rkyRealContactPage .rky-setting-row b{display:block;font-size:14px;}
+      #rkyRealContactPage .rky-setting-row small{display:block;margin-top:2px;opacity:.55;font-size:12px;}
+      #rkyRealContactPage .rky-setting-row i{font-style:normal;opacity:.45;font-size:22px;}
+      #rkyRealContactPage .rky-block-contact{width:100%;border:0;border-radius:13px;background:#ef6672;color:white;padding:13px;font-size:14px;font-weight:700;margin-top:9px;cursor:pointer;}
+      @media(max-width:480px){#rkyRealContactPage .rky-contact-scroll{padding-left:9px;padding-right:9px;}#rkyRealContactPage .rky-contact-photo{width:116px;height:116px;}#rkyRealContactPage .rky-contact-actions{gap:6px;}#rkyRealContactPage .rky-contact-actions button{padding:10px 3px;}}
+    `;document.head.appendChild(style);}
+
+    page.querySelector('.rky-contact-back').onclick=page.querySelector('.rky-contact-close').onclick=function(){page.remove();};
+    page.querySelectorAll('[data-copy]').forEach(function(b){b.onclick=function(){var txt=b.getAttribute('data-copy')||'';if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){alert('Copied ✅');});else alert(txt);};});
+    page.querySelectorAll('[data-ca]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ca');if(a==='message'){page.remove();return;}if(a==='video'){if(typeof startVideoCall==='function')startVideoCall();return;}if(a==='audio'){if(typeof startVoiceCall==='function')startVoiceCall();else if(typeof connectVoiceCallSocket==='function')connectVoiceCallSocket();return;}if(a==='more'){if(typeof more==='function')more();return;}if(a==='media'){if(typeof media==='function')media();return;}if(a==='notifications'){if(typeof mute==='function')mute();setTimeout(contact,150);return;}if(a==='disappearing'){if(typeof disappearing==='function')disappearing();setTimeout(contact,150);return;}if(a==='theme'){if(typeof theme==='function')theme();setTimeout(contact,150);return;}}});
+    page.querySelector('.rky-block-contact').onclick=function(){alert('🚫 Block contact is not connected to a backend block API yet.');};
+
+    var out=page.querySelector('#rkyContactMediaPreview');
+    fetch('/api/messages/'+encodeURIComponent(currentUser)+'/'+encodeURIComponent(name)+'?t='+Date.now()).then(function(r){return r.json();}).then(function(data){
+      var msgs=Array.isArray(data.messages)?data.messages:[],items=[];
+      msgs.slice().reverse().some(function(m){if(m.photo||m.video){var src=m.photo||m.video;items.push('<img class="rky-media-thumb" src="'+escapeRkyText(src)+'" onerror="this.style.display=\'none\'">');}return items.length>=4;});
+      out.innerHTML=items.length?items.join(''):'<span class="rky-media-empty">No media shared yet</span>';
+    }).catch(function(){out.innerHTML='<span class="rky-media-empty">Media unavailable</span>';});
   }
   function mute(){
     var name=friendName();if(!name)return;

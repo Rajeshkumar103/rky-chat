@@ -18421,7 +18421,7 @@ setInterval(function(){
   }
 
   window.rkyHandleFriendMenuAction=function(a){
-    if(a==='profile') return viewContact();
+    if(a==='profile') return (typeof contact==='function' ? contact() : viewContact());
     if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
     if(a==='media') return (typeof window.rkyOpenMediaDocs==='function' ? window.rkyOpenMediaDocs() : (typeof media==='function' ? media() : openMedia()));
     if(a==='notifications') return toggleMute();
@@ -18731,6 +18731,7 @@ setInterval(function(){
 })();
 </script>
 
+<!-- RKY VIEW CONTACT FIX v12: friend menu Profile now opens full Contact info page via contact() instead of inline viewContact(). -->
 <!-- RKY DOCS MENU FIX v10: remove legacy confirm media picker: keep View Contact + route Media directly to Photo/Video/Document menu -->
 <script id="rky-document-upload-v8">
 (function(){

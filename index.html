@@ -15140,7 +15140,11 @@ async function checkNewMessagesForNotification(){
              * नयाँ unread message आएको अवस्थामा मात्र popup।
              */
 
-            if(unreadCount > previousCount){
+            var mutedSenders = [];
+            try { mutedSenders = JSON.parse(localStorage.getItem("rkyMutedNotifications") || "[]"); } catch(_e) { mutedSenders = []; }
+            var isMuted = mutedSenders.indexOf(sender) !== -1;
+
+            if(unreadCount > previousCount && !isMuted){
 
                 showMessageNotification(
                     sender,
@@ -18428,6 +18432,162 @@ setInterval(function(){
   });
 })();
 </script>
+
+<style id="rky-friend-menu-final-v2">
+#rkyFriendMoreMenu{
+  position:fixed!important;
+  top:58px!important;
+  right:8px!important;
+  left:auto!important;
+  width:198px!important;
+  max-width:calc(100vw - 16px)!important;
+  padding:4px 0!important;
+  margin:0!important;
+  border:1px solid rgba(0,0,0,.10)!important;
+  border-radius:12px!important;
+  background:#fff!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.25)!important;
+  z-index:2147483000!important;
+  overflow:hidden!important;
+}
+#rkyFriendMoreMenu button{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  padding:3px 9px!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  border:0!important;
+  border-radius:0!important;
+  background:#fff!important;
+  color:#111827!important;
+  font-size:12.5px!important;
+  font-weight:500!important;
+  text-align:left!important;
+  white-space:nowrap!important;
+  box-sizing:border-box!important;
+}
+#rkyFriendMoreMenu button:active,#rkyFriendMoreMenu button:hover{background:#f1f5f9!important}
+#rkyFriendMoreMenu button>span:first-child{
+  width:27px!important;height:27px!important;min-width:27px!important;flex:0 0 27px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  font-size:16px!important;border-radius:50%!important;
+}
+#rkyFriendMoreMenu button>span:nth-child(2){
+  flex:1 1 auto!important;min-width:0!important;overflow:hidden!important;text-overflow:ellipsis!important;
+  white-space:nowrap!important;font-size:12.5px!important;line-height:1.1!important;
+}
+#rkyFriendMoreMenu button[data-a="more"]>span:last-child{font-size:18px!important;margin-left:auto!important}
+</style>
+<script id="rky-friend-menu-final-v2">
+(function(){
+  'use strict';
+  function friendName(){
+    try{ if(typeof selectedFriend!=='undefined' && selectedFriend) return String(selectedFriend); }catch(e){}
+    var b=document.getElementById('rkyChatTopBarFriend');
+    var n=b&&b.querySelector('.rky-friend-name');
+    return n?n.textContent.trim():'';
+  }
+  function closeMenu(){
+    var m=document.getElementById('rkyFriendMoreMenu');
+    if(m){m.classList.remove('show');m.style.setProperty('display','none','important');}
+  }
+  function modal(id,title,html){
+    var old=document.getElementById(id); if(old) old.remove();
+    var d=document.createElement('div'); d.id=id;
+    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483646;display:flex;align-items:flex-start;justify-content:center;padding:90px 12px 20px;box-sizing:border-box;';
+    d.innerHTML='<div style="width:min(360px,100%);max-height:75vh;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.35);padding:16px;box-sizing:border-box;color:#111827;">'+
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><strong style="font-size:18px;flex:1;">'+title+'</strong><button type="button" data-close style="border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px;font-size:18px;">×</button></div>'+html+'</div>';
+    d.addEventListener('click',function(e){if(e.target===d||e.target.closest('[data-close]'))d.remove();});
+    document.body.appendChild(d); return d;
+  }
+  function media(){
+    var photo=document.getElementById('photoMessage'), video=document.getElementById('videoMessage');
+    if(!photo&&!video){alert('Media upload is not available.');return;}
+    var d=modal('rkyMediaChoice','Send media',
+      '<button type="button" data-photo style="width:100%;padding:13px;border:0;border-radius:10px;background:#f1f5f9;text-align:left;font-size:15px;margin:4px 0;">📷 Photo</button>'+
+      '<button type="button" data-video style="width:100%;padding:13px;border:0;border-radius:10px;background:#f1f5f9;text-align:left;font-size:15px;margin:4px 0;">🎥 Video</button>');
+    d.querySelector('[data-photo]').onclick=function(){d.remove();try{photo.value='';}catch(e){}photo.click();};
+    d.querySelector('[data-video]').onclick=function(){d.remove();try{video.value='';}catch(e){}video.click();};
+  }
+  function search(){
+    if(!friendName()){alert('Please open a friend chat first.');return;}
+    var d=modal('rkyFriendSearch','Search messages',
+      '<input id="rkyFriendSearchInput" type="text" placeholder="Type to search…" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;">'+
+      '<p style="font-size:12px;color:#64748b;margin:9px 2px 0;">Search results will appear in the chat.</p>');
+    var inp=d.querySelector('#rkyFriendSearchInput');
+    inp.oninput=function(){var old=document.getElementById('searchMessage');if(old)old.value=inp.value; if(typeof searchMessages==='function')searchMessages();};
+    setTimeout(function(){inp.focus();},50);
+  }
+  function contact(){
+    var name=friendName(); if(!name){alert('Please open a friend chat first.');return;}
+    var u=null; try{u=(Array.isArray(users)?users:[]).find(function(x){return x&&x.username===name;});}catch(e){}
+    var safe=function(x){return String(x||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
+    var photo=safe((u&&u.photo)||'https://via.placeholder.com/120');
+    var pname=safe((u&&u.profileName)||name); var st=(u&&u.status==='Online')?'🟢 Online':'🔴 Offline';
+    modal('rkyContactView','View contact','<div style="text-align:center;"><img src="'+photo+'" width="110" height="110" style="border-radius:50%;object-fit:cover;border:3px solid #2196f3;"><h3 style="margin:10px 0 5px;">'+pname+'</h3><div style="color:#64748b;">'+st+'</div></div>');
+  }
+  function mute(){
+    var name=friendName();if(!name)return;
+    var list=[];try{list=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){}
+    var i=list.indexOf(name);
+    if(i>=0){list.splice(i,1);alert('🔔 Notifications enabled for '+name);}else{list.push(name);alert('🔕 Notifications muted for '+name);}
+    localStorage.setItem('rkyMutedNotifications',JSON.stringify(list));
+  }
+  function disappearing(){
+    var name=friendName();if(!name)return;
+    var data={};try{data=JSON.parse(localStorage.getItem('rkyDisappearingMessages')||'{}');}catch(e){}
+    var current=Number(data[name]||0);
+    var d=modal('rkyDisappearChoice','Disappearing messages',
+      '<p style="margin-top:0;color:#475569;">Choose how long new messages should remain on this device.</p>'+
+      '<div style="display:grid;gap:7px;">'+
+      '<button data-min="0" style="padding:11px;border:0;border-radius:9px;text-align:left;">Off</button>'+
+      '<button data-min="300" style="padding:11px;border:0;border-radius:9px;text-align:left;">5 minutes</button>'+
+      '<button data-min="86400" style="padding:11px;border:0;border-radius:9px;text-align:left;">24 hours</button>'+
+      '<button data-min="604800" style="padding:11px;border:0;border-radius:9px;text-align:left;">7 days</button></div>');
+    d.querySelectorAll('[data-min]').forEach(function(b){b.onclick=function(){data[name]=Number(b.getAttribute('data-min'));localStorage.setItem('rkyDisappearingMessages',JSON.stringify(data));d.remove();alert(data[name]?'⏱️ Disappearing messages set.':'⏱️ Disappearing messages off.');};});
+  }
+  function theme(){
+    var chat=document.getElementById('chatBox');if(!chat)return;
+    var d=modal('rkyThemeChoice','Chat theme',
+      '<div style="display:grid;gap:8px;">'+
+      '<button data-t="default" style="padding:12px;border:0;border-radius:10px;text-align:left;">🌐 Default</button>'+
+      '<button data-t="light" style="padding:12px;border:0;border-radius:10px;text-align:left;">☀️ Light</button>'+
+      '<button data-t="dark" style="padding:12px;border:0;border-radius:10px;text-align:left;">🌙 Dark</button></div>');
+    d.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-t');chat.setAttribute('data-rky-theme',t);var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}':'';localStorage.setItem('rkyChatTheme',t);d.remove();};});
+  }
+  function more(){
+    modal('rkyFriendMoreActions','More',
+      '<div style="display:grid;gap:7px;">'+
+      '<button data-act="starred" style="padding:12px;border:0;border-radius:10px;text-align:left;">⭐ Starred messages</button>'+
+      '<button data-act="history" style="padding:12px;border:0;border-radius:10px;text-align:left;">📋 Call history</button>'+
+      '<button data-act="clear" style="padding:12px;border:0;border-radius:10px;text-align:left;">🗑️ Clear chat</button></div>');
+    var d=document.getElementById('rkyFriendMoreActions');
+    d.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){d.remove();var a=b.getAttribute('data-act');if(a==='starred'&&typeof showStarredMessages==='function')showStarredMessages();if(a==='history'&&typeof rkyMoreAction==='function')rkyMoreAction('callHistory');if(a==='clear'&&typeof clearCurrentChat==='function')clearCurrentChat();};});
+  }
+  function group(){
+    if(typeof createGroup==='function'){try{return createGroup();}catch(e){}}
+    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){}}
+    alert('👥 New group: current server does not have a group-chat API yet.');
+  }
+  function act(a){
+    if(a==='profile')return contact(); if(a==='search')return search(); if(a==='media')return media();
+    if(a==='notifications')return mute(); if(a==='disappearing')return disappearing(); if(a==='theme')return theme();
+    if(a==='more')return more(); if(a==='group')return group();
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;
+    if(!b)return;
+    var a=b.getAttribute('data-a');
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    closeMenu();setTimeout(function(){try{act(a);}catch(err){console.error(err);alert('❌ This option could not be opened.');}},0);
+  },true);
+})();
+</script>
+
 </body>
 </html>
 

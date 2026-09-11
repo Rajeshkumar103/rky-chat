@@ -767,6 +767,9 @@ app.get("/api/messages/:username/:friend", (req, res) => {
             photo,
             video,
             voice,
+            file,
+            file_name,
+            file_type,
             time,
             seen,
             delivered,
@@ -2256,7 +2259,10 @@ app.get("/typing-test", (req, res) => {
     `);
 });
 
-// Photo / Video file upload
+// Photo / Video / Document file upload
+const documentUploadDir = require("path").join(__dirname, "uploads", "document");
+require("fs").mkdirSync(documentUploadDir, { recursive: true });
+
 const mediaStorage = multer.diskStorage({
     destination: function(req, file, cb){
         if(file.mimetype.startsWith("image/")){
@@ -2266,9 +2272,10 @@ const mediaStorage = multer.diskStorage({
             cb(null, videoUploadDir);
         }
         else{
-            cb(new Error("Only image and video files are allowed"));
+            cb(null, documentUploadDir);
         }
     },
+
     filename: function(req, file, cb){
         const safeName = file.originalname
             .replace(/[^a-zA-Z0-9._-]/g, "_");
@@ -2279,28 +2286,48 @@ const mediaStorage = multer.diskStorage({
 
 const mediaUpload = multer({
     storage: mediaStorage,
+
     limits: {
         fileSize: 500 * 1024 * 1024
     },
+
     fileFilter: function(req, file, cb){
+        // Images, videos and normal documents/files are allowed.
         if(
             file.mimetype.startsWith("image/") ||
-            file.mimetype.startsWith("video/")
+            file.mimetype.startsWith("video/") ||
+            file.mimetype
         ){
             cb(null, true);
         }
         else{
-            cb(new Error("Only image and video files are allowed"));
+            cb(new Error("Unsupported file type"));
         }
     }
 });
 
 app.use("/uploads/photo", express.static(photoUploadDir));
 app.use("/uploads/video", express.static(videoUploadDir));
+app.use("/uploads/document", express.static(documentUploadDir));
 
 app.post(
     "/api/messages/media-upload",
-    mediaUpload.single("media"),
+
+    function(req, res, next){
+        mediaUpload.single("media")(req, res, function(err){
+            if(err){
+                console.error("❌ Media upload error:", err);
+
+                return res.status(400).json({
+                    success: false,
+                    message: err.message || "File upload failed"
+                });
+            }
+
+            next();
+        });
+    },
+
     (req, res) => {
 
         const { sender, receiver, message } = req.body;
@@ -2328,23 +2355,61 @@ app.post(
         }
 
         const isPhoto = req.file.mimetype.startsWith("image/");
-        const mediaUrl =
-            (isPhoto ? "/uploads/photo/" : "/uploads/video/") +
-            req.file.filename;
+        const isVideo = req.file.mimetype.startsWith("video/");
+
+        let mediaUrl = null;
+        let photo = null;
+        let video = null;
+        let file = null;
+
+        if(isPhoto){
+            mediaUrl = "/uploads/photo/" + req.file.filename;
+            photo = mediaUrl;
+        }
+        else if(isVideo){
+            mediaUrl = "/uploads/video/" + req.file.filename;
+            video = mediaUrl;
+        }
+        else{
+            mediaUrl = "/uploads/document/" + req.file.filename;
+            file = mediaUrl;
+        }
 
         const time = new Date().toISOString();
 
         const result = db.prepare(`
             INSERT INTO messages
-            (sender, receiver, message, photo, video, time, delivered, seen)
-            VALUES (?, ?, ?, ?, ?, ?, 1, 0)
+            (
+                sender,
+                receiver,
+                message,
+                photo,
+                video,
+                file,
+                file_name,
+                file_type,
+                time,
+                delivered,
+                seen
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 0)
         `).run(
             sender,
             receiver,
             message || "",
-            isPhoto ? mediaUrl : null,
-            isPhoto ? null : mediaUrl,
+            photo,
+            video,
+            file,
+            file ? req.file.originalname : null,
+            file ? req.file.mimetype : null,
             time
+        );
+
+        console.log(
+            "✅ Media uploaded:",
+            req.file.originalname,
+            "=>",
+            mediaUrl
         );
 
         res.json({
@@ -2353,8 +2418,11 @@ app.post(
             messageId: Number(result.lastInsertRowid),
             sender: sender,
             receiver: receiver,
-            photo: isPhoto ? mediaUrl : null,
-            video: isPhoto ? null : mediaUrl,
+            photo: photo,
+            video: video,
+            file: file,
+            fileName: file ? req.file.originalname : null,
+            fileType: file ? req.file.mimetype : null,
             time: time
         });
     }

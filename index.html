@@ -12378,7 +12378,7 @@ escapeHTML(chats[i].message || "");
 /* Message HTML */
 
 let messageHTML =
-"<p id=\"message_"+chats[i].id+"\" class='"+className+"' onclick=\"showActions("+chats[i].id+")\">"+
+"<div id=\"message_"+chats[i].id+"\" class='"+className+"' onclick=\"showActions("+chats[i].id+")\">"+
 
 replyHTML+
 
@@ -12467,7 +12467,7 @@ chats[i].from == currentUser
 
 "</div>"+
 
-"</p>";
+"</div>";
 
 renderedMessagesHTML += messageHTML;
 
@@ -18769,6 +18769,7 @@ setInterval(function(){
 })();
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
+<!-- RKY FINAL FIX v11: message wrapper changed from P to DIV so document cards can render correctly. -->
 </body>
 </html>
 

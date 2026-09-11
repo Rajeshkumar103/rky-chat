@@ -120,6 +120,24 @@ addColumnIfMissing(
     "INTEGER DEFAULT 0"
 );
 
+addColumnIfMissing(
+    "messages",
+    "file",
+    "TEXT"
+);
+
+addColumnIfMissing(
+    "messages",
+    "file_name",
+    "TEXT"
+);
+
+addColumnIfMissing(
+    "messages",
+    "file_type",
+    "TEXT"
+);
+
 // ========================================
 // 🗑️ Delete-for-me
 // ========================================

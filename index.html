@@ -17092,23 +17092,17 @@ setInterval(function(){
           }
         }
         else if(a==='media'){
-          var photo=document.getElementById('photoMessage');
-          var video=document.getElementById('videoMessage');
-
-          if(photo){
-            try{
-              photo.click();
-              return;
-            }catch(_e){}
-          }
-
-          if(video){
-            try{
-              video.click();
-            }catch(_e){}
-          }
-        }
-        else if(a==='group'){
+              if(typeof media==='function'){
+                try{
+                  media();
+                }catch(_e){
+                  alert('Media menu could not be opened.');
+                }
+              }else{
+                alert('Media option is not available.');
+              }
+            }
+            else if(a==='group'){
           if(typeof createGroup==='function')createGroup();
           else if(typeof newGroup==='function')newGroup();
           else if(typeof openCreateGroup==='function')openCreateGroup();

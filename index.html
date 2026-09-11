@@ -12120,6 +12120,20 @@ console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
         };
 
     });
+
+    /* RKY REAL DISAPPEARING MESSAGES: hide expired messages locally. */
+    try{
+        var dm={};
+        dm=JSON.parse(localStorage.getItem("rkyDisappearingMessages")||"{}");
+        var ttl=Number(dm[selectedFriend]||0);
+        if(ttl>0){
+            var cutoff=Date.now()-ttl*1000;
+            chats=chats.filter(function(m){
+                var t=Date.parse(m.time);
+                return !isFinite(t) || t>=cutoff;
+            });
+        }
+    }catch(_dm){ console.warn("Disappearing-message filter error",_dm); }
 if(currentUser && selectedFriend){
 console.log("SEEN SYNC:", currentUser, selectedFriend);
 
@@ -18513,22 +18527,52 @@ setInterval(function(){
     d.querySelector('[data-photo]').onclick=function(){d.remove();try{photo.value='';}catch(e){}photo.click();};
     d.querySelector('[data-video]').onclick=function(){d.remove();try{video.value='';}catch(e){}video.click();};
   }
-  function search(){
-    if(!friendName()){alert('Please open a friend chat first.');return;}
-    var d=modal('rkyFriendSearch','Search messages',
-      '<input id="rkyFriendSearchInput" type="text" placeholder="Type to search…" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;">'+
-      '<p style="font-size:12px;color:#64748b;margin:9px 2px 0;">Search results will appear in the chat.</p>');
-    var inp=d.querySelector('#rkyFriendSearchInput');
-    inp.oninput=function(){var old=document.getElementById('searchMessage');if(old)old.value=inp.value; if(typeof searchMessages==='function')searchMessages();};
-    setTimeout(function(){inp.focus();},50);
+  function escapeRkyText(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});
+  }
+  function modal(id,title,body){
+    var old=document.getElementById(id);if(old)old.remove();
+    var d=document.createElement('div');d.id=id;
+    d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:2147483646;padding:16px;box-sizing:border-box;';
+    d.innerHTML='<div style="width:min(420px,100%);max-height:85vh;overflow:auto;background:#fff;color:#111827;border-radius:14px;padding:16px;box-sizing:border-box;box-shadow:0 15px 45px rgba(0,0,0,.35);"><div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;"><b style="font-size:17px;">'+escapeRkyText(title)+'</b><button type="button" data-close="1" style="border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px;font-size:18px;">×</button></div>'+body+'</div>';
+    document.body.appendChild(d);d.addEventListener('click',function(e){if(e.target===d||e.target.closest('[data-close]'))d.remove();});
+    return d;
+  }
+  function friendName(){
+    try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
+    return '';
+  }
+  function openSearch(){
+    var name=friendName();if(!name||!currentUser)return;
+    var d=modal('rkyRealSearch','Search messages','<input id="rkyRealSearchInput" placeholder="Search in this chat" style="width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;box-sizing:border-box;"><div id="rkyRealSearchResults" style="margin-top:10px;max-height:55vh;overflow:auto;"><div style="opacity:.65;padding:8px;">Type to search…</div></div>');
+    var input=d.querySelector('#rkyRealSearchInput'),out=d.querySelector('#rkyRealSearchResults');
+    var timer=null;
+    async function run(){
+      var q=(input.value||'').trim().toLowerCase();
+      if(!q){out.innerHTML='<div style="opacity:.65;padding:8px;">Type to search…</div>';return;}
+      out.innerHTML='<div style="padding:8px;">Searching…</div>';
+      try{
+        var r=await fetch('/api/messages/'+encodeURIComponent(currentUser)+'/'+encodeURIComponent(name)+'?t='+Date.now());
+        var data=await r.json();
+        if(!r.ok||!data.success||!Array.isArray(data.messages))throw new Error(data.message||'Search failed');
+        var rows=data.messages.filter(function(m){return String(m.message||'').toLowerCase().includes(q);});
+        if(!rows.length){out.innerHTML='<div style="padding:10px;opacity:.65;">No matching messages.</div>';return;}
+        out.innerHTML=rows.map(function(m){return '<button type="button" data-mid="'+escapeRkyText(m.id)+'" style="display:block;width:100%;text-align:left;border:0;background:#f8fafc;border-radius:9px;padding:9px;margin:5px 0;"><b>'+escapeRkyText(m.sender)+'</b><br>'+escapeRkyText(m.message||'📎 Media')+'<br><small style="opacity:.65;">'+escapeRkyText(m.time||'')+'</small></button>';}).join('');
+        out.querySelectorAll('[data-mid]').forEach(function(b){b.onclick=function(){d.remove();var el=document.getElementById('message_'+b.getAttribute('data-mid'));if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.style.outline='3px solid #2196f3';setTimeout(function(){el.style.outline='';},1800);}else if(typeof loadMessages==='function'){loadMessages();}};});
+      }catch(e){out.innerHTML='<div style="padding:10px;color:#b91c1c;">Search failed: '+escapeRkyText(e.message)+'</div>';}
+    }
+    input.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(run,180);});setTimeout(function(){input.focus();},0);
+  }
+  function media(){
+    var d=modal('rkyRealMedia','Send media','<div style="display:grid;gap:9px;"><button type="button" id="rkyChoosePhoto" style="padding:13px;border:0;border-radius:10px;text-align:left;">📷 Choose photo</button><button type="button" id="rkyChooseVideo" style="padding:13px;border:0;border-radius:10px;text-align:left;">🎥 Choose video</button></div>');
+    d.querySelector('#rkyChoosePhoto').onclick=function(){d.remove();var x=document.getElementById('photoMessage');if(x)x.click();};
+    d.querySelector('#rkyChooseVideo').onclick=function(){d.remove();var x=document.getElementById('videoMessage');if(x)x.click();};
   }
   function contact(){
-    var name=friendName(); if(!name){alert('Please open a friend chat first.');return;}
-    var u=null; try{u=(Array.isArray(users)?users:[]).find(function(x){return x&&x.username===name;});}catch(e){}
-    var safe=function(x){return String(x||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});};
-    var photo=safe((u&&u.photo)||'https://via.placeholder.com/120');
-    var pname=safe((u&&u.profileName)||name); var st=(u&&u.status==='Online')?'🟢 Online':'🔴 Offline';
-    modal('rkyContactView','View contact','<div style="text-align:center;"><img src="'+photo+'" width="110" height="110" style="border-radius:50%;object-fit:cover;border:3px solid #2196f3;"><h3 style="margin:10px 0 5px;">'+pname+'</h3><div style="color:#64748b;">'+st+'</div></div>');
+    var name=friendName();if(!name)return;
+    var u=null;try{u=(Array.isArray(users)?users:[]).find(function(x){return x.username===name;});}catch(e){}
+    var profileName=(u&&u.profileName)||name,photo=(u&&u.photo)||'https://via.placeholder.com/100',status=(u&&u.status)||'Offline';
+    var d=modal('rkyRealContact','View contact','<div style="text-align:center;"><img src="'+escapeRkyText(photo)+'" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #2196f3;"><h3 style="margin:10px 0 4px;">'+escapeRkyText(profileName)+'</h3><div style="opacity:.7;">@'+escapeRkyText(name)+'</div><p>'+escapeRkyText(status==='Online'?'🟢 Online':'🔴 Offline')+'</p></div>');
   }
   function mute(){
     var name=friendName();if(!name)return;
@@ -18541,37 +18585,30 @@ setInterval(function(){
     var name=friendName();if(!name)return;
     var data={};try{data=JSON.parse(localStorage.getItem('rkyDisappearingMessages')||'{}');}catch(e){}
     var current=Number(data[name]||0);
-    var d=modal('rkyDisappearChoice','Disappearing messages',
-      '<p style="margin-top:0;color:#475569;">Choose how long new messages should remain on this device.</p>'+
-      '<div style="display:grid;gap:7px;">'+
-      '<button data-min="0" style="padding:11px;border:0;border-radius:9px;text-align:left;">Off</button>'+
-      '<button data-min="300" style="padding:11px;border:0;border-radius:9px;text-align:left;">5 minutes</button>'+
-      '<button data-min="86400" style="padding:11px;border:0;border-radius:9px;text-align:left;">24 hours</button>'+
-      '<button data-min="604800" style="padding:11px;border:0;border-radius:9px;text-align:left;">7 days</button></div>');
-    d.querySelectorAll('[data-min]').forEach(function(b){b.onclick=function(){data[name]=Number(b.getAttribute('data-min'));localStorage.setItem('rkyDisappearingMessages',JSON.stringify(data));d.remove();alert(data[name]?'⏱️ Disappearing messages set.':'⏱️ Disappearing messages off.');};});
+    var labels={0:'Off',300:'5 minutes',86400:'24 hours',604800:'7 days'};
+    var d=modal('rkyDisappearChoice','Disappearing messages','<p style="margin-top:0;opacity:.75;">New messages older than the selected time will be hidden from this device.</p><div style="display:grid;gap:7px;">'+Object.keys(labels).map(function(k){return '<button data-min="'+k+'" style="padding:12px;border:0;border-radius:9px;text-align:left;'+(Number(k)===current?'outline:2px solid #2196f3;':'')+'">'+(Number(k)===current?'✓ ':'')+labels[k]+'</button>';}).join('')+'</div>');
+    d.querySelectorAll('[data-min]').forEach(function(b){b.onclick=function(){data[name]=Number(b.getAttribute('data-min'));localStorage.setItem('rkyDisappearingMessages',JSON.stringify(data));d.remove();if(typeof loadMessages==='function')loadMessages();alert(data[name]?'⏱️ Disappearing messages: '+labels[data[name]]:'⏱️ Disappearing messages off.');};});
   }
   function theme(){
-    var chat=document.getElementById('chatBox');if(!chat)return;
-    var d=modal('rkyThemeChoice','Chat theme',
-      '<div style="display:grid;gap:8px;">'+
-      '<button data-t="default" style="padding:12px;border:0;border-radius:10px;text-align:left;">🌐 Default</button>'+
-      '<button data-t="light" style="padding:12px;border:0;border-radius:10px;text-align:left;">☀️ Light</button>'+
-      '<button data-t="dark" style="padding:12px;border:0;border-radius:10px;text-align:left;">🌙 Dark</button></div>');
-    d.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-t');chat.setAttribute('data-rky-theme',t);var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}':'';localStorage.setItem('rkyChatTheme',t);d.remove();};});
+    var chat=document.getElementById('chatBox'),name=friendName();if(!chat||!name)return;
+    var key='rkyChatThemeByFriend',all={};try{all=JSON.parse(localStorage.getItem(key)||'{}');}catch(e){}
+    var current=all[name]||'default';
+    var d=modal('rkyThemeChoice','Chat theme','<div style="display:grid;gap:8px;">'+['default','light','dark'].map(function(t){return '<button data-t="'+t+'" style="padding:12px;border:0;border-radius:10px;text-align:left;">'+(t===current?'✓ ':'')+(t==='default'?'🌐 Default':t==='light'?'☀️ Light':'🌙 Dark')+'</button>';}).join('')+'</div>');
+    d.querySelectorAll('[data-t]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-t');all[name]=t;localStorage.setItem(key,JSON.stringify(all));chat.setAttribute('data-rky-theme',t);var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';d.remove();};});
+  }
+  async function starred(){
+    var name=friendName();if(!name||!currentUser)return;
+    var d=modal('rkyRealStarred','Starred messages','<div id="rkyStarredResults">Loading…</div>'),out=d.querySelector('#rkyStarredResults');
+    try{var r=await fetch('/api/messages/'+encodeURIComponent(currentUser)+'/'+encodeURIComponent(name)+'?t='+Date.now());var data=await r.json();if(!r.ok||!data.success)throw new Error(data.message||'Could not load messages');var rows=(data.messages||[]).filter(function(m){return !!m.starred;});if(!rows.length){out.innerHTML='<div style="padding:10px;opacity:.65;">No starred messages ⭐</div>';return;}out.innerHTML=rows.map(function(m){return '<button type="button" data-mid="'+escapeRkyText(m.id)+'" style="display:block;width:100%;text-align:left;border:0;background:#fff7d6;border-radius:9px;padding:9px;margin:5px 0;"><b>'+escapeRkyText(m.sender)+'</b><br>'+escapeRkyText(m.message||'📎 Media')+'<br><small>'+escapeRkyText(m.time||'')+'</small></button>';}).join('');out.querySelectorAll('[data-mid]').forEach(function(b){b.onclick=function(){d.remove();var el=document.getElementById('message_'+b.getAttribute('data-mid'));if(el)el.scrollIntoView({behavior:'smooth',block:'center'});};});}catch(e){out.innerHTML='<div style="padding:10px;color:#b91c1c;">'+escapeRkyText(e.message)+'</div>';}
   }
   function more(){
-    modal('rkyFriendMoreActions','More',
-      '<div style="display:grid;gap:7px;">'+
-      '<button data-act="starred" style="padding:12px;border:0;border-radius:10px;text-align:left;">⭐ Starred messages</button>'+
-      '<button data-act="history" style="padding:12px;border:0;border-radius:10px;text-align:left;">📋 Call history</button>'+
-      '<button data-act="clear" style="padding:12px;border:0;border-radius:10px;text-align:left;">🗑️ Clear chat</button></div>');
-    var d=document.getElementById('rkyFriendMoreActions');
-    d.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){d.remove();var a=b.getAttribute('data-act');if(a==='starred'&&typeof showStarredMessages==='function')showStarredMessages();if(a==='history'&&typeof rkyMoreAction==='function')rkyMoreAction('callHistory');if(a==='clear'&&typeof clearCurrentChat==='function')clearCurrentChat();};});
+    var d=modal('rkyFriendMoreActions','More','<div style="display:grid;gap:7px;"><button data-act="starred" style="padding:12px;border:0;border-radius:10px;text-align:left;">⭐ Starred messages</button><button data-act="history" style="padding:12px;border:0;border-radius:10px;text-align:left;">📋 Call history</button><button data-act="clear" style="padding:12px;border:0;border-radius:10px;text-align:left;">🗑️ Clear chat</button></div>');
+    d.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){d.remove();var a=b.getAttribute('data-act');if(a==='starred')return starred();if(a==='history'&&typeof rkyMoreAction==='function')return rkyMoreAction('callHistory');if(a==='clear'&&typeof clearCurrentChat==='function')return clearCurrentChat();};});
   }
   function group(){
-    if(typeof createGroup==='function'){try{return createGroup();}catch(e){}}
-    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){}}
-    alert('👥 New group: current server does not have a group-chat API yet.');
+    if(typeof createGroup==='function'){try{return createGroup();}catch(e){console.error(e);}}
+    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){console.error(e);}}
+    alert('👥 Group chat needs a backend group API. No fake group was created.');
   }
   function act(a){
     if(a==='profile')return contact(); if(a==='search')return search(); if(a==='media')return media();
@@ -18588,6 +18625,23 @@ setInterval(function(){
 })();
 </script>
 
+<script id="rky-real-menu-persistence-v3">
+(function(){
+  function applyFriendTheme(){
+    var chat=document.getElementById('chatBox');
+    if(!chat||!chat.classList.contains('rky-friend-chat-open'))return;
+    var name='';try{name=String(selectedFriend||'');}catch(e){}
+    if(!name)return;
+    var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){}
+    var t=all[name]||'default';
+    chat.setAttribute('data-rky-theme',t);
+    var st=document.getElementById('rky-friend-theme-style');
+    if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}
+    st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';
+  }
+  setInterval(applyFriendTheme,500);applyFriendTheme();
+})();
+</script>
 </body>
 </html>
 

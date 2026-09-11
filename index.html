@@ -17033,13 +17033,61 @@ setInterval(function(){
       document.body.appendChild(menu);
       menu.addEventListener('click',function(e){
         var b=e.target.closest('button');if(!b)return;var a=b.getAttribute('data-a');closeFriendMenu();
-        if(a==='profile' && typeof openProfileSettings==='function')openProfileSettings();
-        else if(a==='notifications' && typeof rkyMoreAction==='function')rkyMoreAction('notifications');
+        if(a==='profile'){
+          if(typeof openProfileSettings==='function')openProfileSettings();
+        }
         else if(a==='search'){
           var sm=document.getElementById('searchMessage');
-          if(sm){sm.style.display='block';try{sm.focus();}catch(_e){}}
+          if(sm){
+            sm.style.display='block';
+            try{sm.focus();}catch(_e){}
+          }
+          else if(typeof searchMessages==='function'){
+            try{searchMessages();}catch(_e){}
+          }
         }
-        /* Other menu items are UI entries for the new style; existing working functions remain untouched. */
+        else if(a==='notifications'){
+          if(typeof rkyMoreAction==='function'){
+            try{rkyMoreAction('notifications');}catch(_e){}
+          }
+        }
+        else if(a==='media'){
+          var photo=document.getElementById('photoMessage');
+          var video=document.getElementById('videoMessage');
+
+          if(photo){
+            try{
+              photo.click();
+              return;
+            }catch(_e){}
+          }
+
+          if(video){
+            try{
+              video.click();
+            }catch(_e){}
+          }
+        }
+        else if(a==='group'){
+          if(typeof createGroup==='function')createGroup();
+          else if(typeof newGroup==='function')newGroup();
+          else if(typeof openCreateGroup==='function')openCreateGroup();
+          else alert('New group feature is not available yet.');
+        }
+        else if(a==='disappearing'){
+          if(typeof openDisappearingMessages==='function')openDisappearingMessages();
+          else if(typeof toggleDisappearingMessages==='function')toggleDisappearingMessages();
+          else alert('Disappearing messages feature is not available yet.');
+        }
+        else if(a==='theme'){
+          if(typeof openChatTheme==='function')openChatTheme();
+          else if(typeof changeChatTheme==='function')changeChatTheme();
+          else if(typeof toggleChatTheme==='function')toggleChatTheme();
+          else alert('Chat theme feature is not available yet.');
+        }
+        else if(a==='more'){
+          if(typeof rkyMoreAction==='function')rkyMoreAction('more');
+        }
       });
     }
   }
@@ -18222,9 +18270,6 @@ setInterval(function(){
 #rkyFriendMoreMenu button > span:first-child{width:25px!important;height:25px!important;min-width:25px!important;font-size:15px!important;}
 #rkyFriendMoreMenu button > span:nth-child(2){font-size:12px!important;}
 </style>
-</body>
-</html>
-
 <style id="rky-final-auth-visibility-fix">
 /* Keep Chat UI hidden while the login form is visible. */
 #loginBox:not([style*="display: none"]) ~ #chatBox,
@@ -18235,3 +18280,154 @@ setInterval(function(){
   pointer-events:none !important;
 }
 </style>
+
+<script id="rky-friend-menu-function-fix-v1">
+(function(){
+  function friendName(){
+    if(typeof selectedFriend !== 'undefined' && selectedFriend) return String(selectedFriend);
+    var bar=document.getElementById('rkyChatTopBarFriend');
+    var el=bar && bar.querySelector('.rky-friend-name');
+    return el ? el.textContent.trim() : '';
+  }
+
+  function openSearch(){
+    var input=document.getElementById('searchMessage');
+    if(!input){ alert('Search is not available in this chat.'); return; }
+    input.style.display='block';
+    input.style.visibility='visible';
+    input.focus();
+    try{ input.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+  }
+
+  function openMedia(){
+    var photo=document.getElementById('photoMessage');
+    var video=document.getElementById('videoMessage');
+    if(!photo && !video){ alert('Media upload is not available.'); return; }
+    var useVideo=window.confirm('OK = choose a video\nCancel = choose a photo');
+    var input=useVideo ? video : photo;
+    if(!input) input=useVideo ? photo : video;
+    if(!input){ alert('Media upload is not available.'); return; }
+    try{ input.value=''; }catch(e){}
+    setTimeout(function(){
+      try{ input.click(); }catch(e){ alert('Could not open media picker.'); }
+    },80);
+  }
+
+  function toggleMute(){
+    var name=friendName();
+    if(!name){ alert('Please open a friend chat first.'); return; }
+    var key='rkyMutedNotifications';
+    var list=[];
+    try{ list=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ list=[]; }
+    var idx=list.indexOf(name);
+    if(idx>=0){ list.splice(idx,1); alert('🔔 Notifications enabled for '+name); }
+    else { list.push(name); alert('🔕 Notifications muted for '+name); }
+    localStorage.setItem(key,JSON.stringify(list));
+  }
+
+  function toggleDisappearing(){
+    var name=friendName();
+    if(!name){ alert('Please open a friend chat first.'); return; }
+    var key='rkyDisappearingMessages';
+    var data={};
+    try{ data=JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){ data={}; }
+    data[name]=!data[name];
+    localStorage.setItem(key,JSON.stringify(data));
+    alert(data[name] ? '⏱️ Disappearing messages enabled for '+name : '⏱️ Disappearing messages disabled for '+name);
+  }
+
+  function changeTheme(){
+    var chat=document.getElementById('chatBox');
+    if(!chat){ alert('Chat theme is not available.'); return; }
+    var themes=['default','light','dark'];
+    var current=chat.getAttribute('data-rky-theme')||'default';
+    var next=themes[(themes.indexOf(current)+1)%themes.length];
+    chat.setAttribute('data-rky-theme',next);
+    var style=document.getElementById('rky-friend-theme-style');
+    if(!style){ style=document.createElement('style'); style.id='rky-friend-theme-style'; document.head.appendChild(style); }
+    style.textContent=
+      '#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important;}'+
+      '#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important;}'+
+      '#chatBox[data-rky-theme="light"]{background:#f7f7f7!important;color:#111827!important;}';
+    if(next==='default') style.textContent='';
+    localStorage.setItem('rkyChatTheme',next);
+    alert('🎨 Chat theme: '+next);
+  }
+
+  function viewContact(){
+    var name=friendName();
+    if(!name){ alert('Please open a friend chat first.'); return; }
+    var user=null;
+    try{
+      var arr=Array.isArray(users)?users:[];
+      user=arr.find(function(u){return u && u.username===name;});
+    }catch(e){}
+    var box=document.getElementById('friendProfile');
+    if(!box){ alert('Contact profile area is not available.'); return; }
+    var photo=(user&&user.photo)||'https://via.placeholder.com/120';
+    var profileName=(user&&user.profileName)||name;
+    var status=(user&&user.status==='Online')?'🟢 Online':'🔴 Offline';
+    box.innerHTML='<div style="background:#eee;padding:12px;border-radius:10px;text-align:center;">'+
+      '<img src="'+photo.replace(/"/g,'&quot;')+'" width="120" height="120" style="border-radius:50%;object-fit:cover;border:3px solid #2196f3;">'+
+      '<h3>'+String(profileName).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];})+'</h3>'+
+      '<p>'+status+'</p><button type="button" id="rkyCloseContactBtn">Close</button></div>';
+    box.style.display='block';
+    var close=document.getElementById('rkyCloseContactBtn');
+    if(close) close.onclick=function(){box.innerHTML='';};
+    try{ box.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+  }
+
+  function newGroup(){
+    if(typeof createGroup==='function'){ try{return createGroup();}catch(e){} }
+    if(typeof newGroupChat==='function'){ try{return newGroupChat();}catch(e){} }
+    alert('👥 New group feature is not connected to the current backend yet.');
+  }
+
+  function more(){
+    var menu=document.getElementById('rkyMoreMenu');
+    var btn=document.getElementById('rkyMoreButton');
+    if(menu){
+      menu.style.display='block';
+      try{ menu.classList.add('show'); }catch(e){}
+      if(btn) btn.setAttribute('aria-expanded','true');
+    }else{
+      alert('More options are not available.');
+    }
+  }
+
+  window.rkyHandleFriendMenuAction=function(a){
+    if(a==='profile') return viewContact();
+    if(a==='search') return openSearch();
+    if(a==='media') return openMedia();
+    if(a==='notifications') return toggleMute();
+    if(a==='disappearing') return toggleDisappearing();
+    if(a==='theme') return changeTheme();
+    if(a==='group') return newGroup();
+    if(a==='more') return more();
+  };
+
+  document.addEventListener('click',function(e){
+    var b=e.target && e.target.closest ? e.target.closest('#rkyFriendMoreMenu button[data-a]') : null;
+    if(!b) return;
+    var a=b.getAttribute('data-a');
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(menu){ menu.classList.remove('show'); menu.style.setProperty('display','none','important'); }
+    e.preventDefault(); e.stopPropagation();
+    try{ window.rkyHandleFriendMenuAction(a); }catch(err){ console.error('Friend menu action error:',err); alert('❌ This option could not be opened.'); }
+  },true);
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var theme=localStorage.getItem('rkyChatTheme');
+    var chat=document.getElementById('chatBox');
+    if(chat && theme && theme!=='default'){
+      chat.setAttribute('data-rky-theme',theme);
+      var style=document.createElement('style'); style.id='rky-friend-theme-style';
+      style.textContent='#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important;}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important;}#chatBox[data-rky-theme="light"]{background:#f7f7f7!important;color:#111827!important;}';
+      document.head.appendChild(style);
+    }
+  });
+})();
+</script>
+</body>
+</html>
+

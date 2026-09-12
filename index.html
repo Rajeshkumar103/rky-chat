@@ -19083,37 +19083,33 @@ setInterval(function(){
       list.push({name:name,members:member?[member]:[],createdAt:Date.now()});
       localStorage.setItem('rkyLocalGroups',JSON.stringify(list));
       box.remove();
-      /* Show the saved group on the Friends page immediately. */
+      /* Return to Friends view without touching other chat features. */
       try{
-        if(typeof window.rkyCloseSelectedChatUI==='function'){
-          window.rkyCloseSelectedChatUI();
-        }
+        var chat=document.getElementById('chatBox');
+        if(chat) chat.classList.remove('rky-friend-chat-open');
+        ['rkyHeader','friendList','rkyCircleRequestsToggle','rkySentRequestsSection','rkyConnectionsSection'].forEach(function(id){
+          var el=document.getElementById(id);
+          if(el) el.style.removeProperty('display');
+        });
+        var fl=document.getElementById('friendList');
+        if(fl) fl.style.setProperty('display','block','important');
+        var bar=document.getElementById('rkyChatTopBarFriend');
+        if(bar) bar.remove();
+        var menu=document.getElementById('rkyFriendMoreMenu');
+        if(menu) menu.remove();
       }catch(e){}
-      setTimeout(function(){
-        try{if(typeof window.rkyV32RenderGroupsOnly==='function')window.rkyV32RenderGroupsOnly();}catch(e){}
-      },50);
+      try{if(typeof window.rkyV32RenderGroupsOnly==='function')window.rkyV32RenderGroupsOnly();}catch(e){}
       alert('👥 Group created: '+name);
     };
     setTimeout(function(){input.focus();},0);
   }
   window.rkyOpenNewGroup=openNewGroup;
 
-  /* Exact New Group button only. Capture phase prevents older conflicting handlers. */
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="group"]'):null;
-    if(!b)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    var menu=document.getElementById('rkyFriendMoreMenu');
-    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
-    openNewGroup();
-  },true);
-
 })();
 </script>
 
-<!-- RKY V39 TARGETED ROUTING: keep every Friend menu item working -->
-<script id="rky-v39-targeted-routing">
+<!-- RKY V40 TARGETED ROUTING: New Group + View Contact through the existing menu dispatcher -->
+<script id="rky-v40-targeted-routing">
 (function(){
   'use strict';
   /* The older capture handler calls this function dynamically. Re-route it here

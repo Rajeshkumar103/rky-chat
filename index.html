@@ -18503,7 +18503,6 @@ setInterval(function(){
 }
 #rkyFriendMoreMenu button[data-a="more"]>span:last-child{font-size:18px!important;margin-left:auto!important}
 </style>
-<!-- RKY V23 ROOT FIX: direct button binding to final friend-menu dispatcher -->
 <script id="rky-friend-menu-final-v2">
 (function(){
   'use strict';
@@ -18728,35 +18727,6 @@ setInterval(function(){
     if(a==='notifications')return mute(); if(a==='disappearing')return disappearing(); if(a==='theme')return theme();
     if(a==='more')return more(); if(a==='group')return group();
   }
-  // RKY V22 ROOT FIX: the menu listener runs outside this closure, so expose the FINAL dispatcher.
-  // This makes every friend-menu action use the functions in this same closure.
-  window.rkyFinalFriendAction = act;
-  window.rkyHandleFriendMenuAction = function(a){ return act(a); };
-
-  // RKY V23 ROOT FIX: bind the actual buttons directly to the final dispatcher.
-  // This bypasses all older friend-menu click handlers and closure-scope conflicts.
-  function bindFinalFriendMenu(){
-    var m=document.getElementById('rkyFriendMoreMenu');
-    if(!m) return;
-    m.querySelectorAll('button[data-a]').forEach(function(b){
-      if(b.__rkyV23Bound) return;
-      b.__rkyV23Bound=true;
-      b.onclick=function(e){
-        if(e){ e.preventDefault(); e.stopPropagation(); }
-        var a=b.getAttribute('data-a');
-        try{ closeMenu(); }catch(_e){}
-        try{ return window.rkyFinalFriendAction(a); }
-        catch(err){ console.error('RKY V23 action error:',err); alert('❌ This option could not be opened.'); }
-      };
-    });
-  }
-  bindFinalFriendMenu();
-  var v23Observer=new MutationObserver(function(){ bindFinalFriendMenu(); });
-  v23Observer.observe(document.body,{childList:true,subtree:true});
-  setTimeout(bindFinalFriendMenu,0);
-  setTimeout(bindFinalFriendMenu,100);
-  setTimeout(bindFinalFriendMenu,500);
-  setTimeout(bindFinalFriendMenu,1000);
   /* v6: removed duplicate friend-menu click handler to prevent false error alerts. */
 })();
 </script>
@@ -18802,3 +18772,116 @@ setInterval(function(){
 </body>
 </html>
 
+<!-- RKY ALL-FOUR ROOT FIX v26: Search + New Group + Blocked + Chat Themes/Gallery -->
+<style id="rky-all-four-v26-style">
+#rkyV26Overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
+#rkyV26Card{width:min(430px,100%);max-height:88vh;overflow:auto;background:#fff;color:#111827;border-radius:16px;padding:16px;box-sizing:border-box;box-shadow:0 18px 60px rgba(0,0,0,.3);}
+#rkyV26Card h3{margin:0 0 12px;}
+#rkyV26Card button{width:100%;border:0;border-radius:10px;padding:11px 12px;margin:4px 0;text-align:left;background:#f3f4f6;color:#111827;font-size:14px;cursor:pointer;}
+#rkyV26Card button:hover{background:#e5e7eb;}
+#rkyV26Card .rky-v26-close{background:#111827;color:#fff;text-align:center;}
+.rky-v26-theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.rky-v26-theme-grid button{margin:0;min-height:58px;}
+#rkyV26Gallery{display:none;}
+#rkyFriendMoreMenu [data-a="blocked"]{color:#b91c1c!important;}
+</style>
+<script id="rky-all-four-v26-script">
+(function(){
+  'use strict';
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  function friend(){
+    try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
+    var bar=document.getElementById('rkyChatTopBarFriend');
+    var el=bar&&bar.querySelector('.rky-friend-name');
+    return el?el.textContent.trim():'';
+  }
+  function overlay(title,body){
+    var old=document.getElementById('rkyV26Overlay');if(old)old.remove();
+    var o=document.createElement('div');o.id='rkyV26Overlay';
+    o.innerHTML='<div id="rkyV26Card"><h3>'+esc(title)+'</h3>'+body+'<button class="rky-v26-close" type="button">Close</button></div>';
+    document.body.appendChild(o);
+    o.querySelector('.rky-v26-close').onclick=function(){o.remove();};
+    o.addEventListener('click',function(e){if(e.target===o)o.remove();});
+    return o;
+  }
+  function doSearch(){
+    if(typeof window.rkyOpenSearchReal==='function'){try{return window.rkyOpenSearchReal();}catch(e){}}
+    var input=document.getElementById('searchMessage');
+    if(input){input.style.display='block';input.style.visibility='visible';try{input.focus();input.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){};return;}
+    var name=friend();
+    if(!name){alert('Please open a friend chat first.');return;}
+    overlay('Search messages','<input id="rkyV26SearchInput" placeholder="Search in this chat" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:9px;"><div id="rkyV26SearchOut" style="margin-top:10px;max-height:50vh;overflow:auto;opacity:.75;">Type to search…</div>');
+    var inp=document.getElementById('rkyV26SearchInput'),out=document.getElementById('rkyV26SearchOut');
+    inp.oninput=function(){var q=inp.value.trim().toLowerCase();var rows=[];try{rows=Array.isArray(chats)?chats:[];}catch(e){};rows=rows.filter(function(m){return q&&String(m.message||'').toLowerCase().indexOf(q)>=0;});out.innerHTML=rows.length?rows.map(function(m){return '<div style="padding:8px;border-bottom:1px solid #eee;"><b>'+esc(m.from||'')+'</b><br>'+esc(m.message||'')+'</div>';}).join(''):'<div style="padding:8px;opacity:.65;">No matching messages</div>';};
+  }
+  function doGroup(){
+    if(typeof createGroup==='function'){try{return createGroup();}catch(e){}}
+    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){}}
+    var o=overlay('New group','<p style="margin:0 0 10px;opacity:.72;">Create a local group list. Group messaging backend is not available yet.</p><input id="rkyV26GroupName" placeholder="Group name" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:9px;"><button id="rkyV26CreateGroup" type="button">👥 Create group</button>');
+    o.querySelector('#rkyV26CreateGroup').onclick=function(){var n=(o.querySelector('#rkyV26GroupName').value||'').trim();if(!n){alert('Enter group name.');return;}var list=[];try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){};list.push({name:n,members:[friend()].filter(Boolean),createdAt:Date.now()});localStorage.setItem('rkyLocalGroups',JSON.stringify(list));o.remove();alert('👥 Group created: '+n);};
+  }
+  function getBlocked(){var a=[];try{a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');}catch(e){};return Array.isArray(a)?a:[];}
+  function setBlocked(a){localStorage.setItem('rkyBlockedContacts',JSON.stringify(Array.from(new Set(a.filter(Boolean)))));}
+  function doBlocked(){
+    var blocked=getBlocked();
+    var html='<div style="opacity:.7;margin-bottom:8px;">Blocked contacts on this device</div><div id="rkyV26BlockedList">';
+    html+=blocked.length?blocked.map(function(n){return '<div style="display:flex;gap:8px;align-items:center;margin:6px 0;"><span style="flex:1;word-break:break-word;">🚫 '+esc(n)+'</span><button type="button" data-unblock="'+esc(n)+'" style="width:auto;margin:0;background:#fee2e2;">Unblock</button></div>';}).join(''):'<div style="padding:10px;background:#f3f4f6;border-radius:9px;opacity:.7;">No blocked contacts</div>';
+    html+='</div><button id="rkyV26BlockCurrent" type="button">🚫 Block current contact</button>';
+    var o=overlay('Blocked contacts',html);
+    o.querySelectorAll('[data-unblock]').forEach(function(b){b.onclick=function(){var n=b.getAttribute('data-unblock');setBlocked(getBlocked().filter(function(x){return x!==n;}));doBlocked();};});
+    o.querySelector('#rkyV26BlockCurrent').onclick=function(){var n=friend();if(!n){alert('Please open a friend chat first.');return;}var a=getBlocked();if(a.indexOf(n)<0)a.push(n);setBlocked(a);alert('🚫 '+n+' blocked on this device.');doBlocked();};
+  }
+  function applyTheme(name,theme,bg){
+    var chat=document.getElementById('chatBox'),msgs=document.getElementById('messages');if(!chat||!name)return;
+    chat.setAttribute('data-rky-theme',theme||'default');
+    if(msgs){msgs.style.setProperty('background-image',bg?'url("'+bg.replace(/"/g,'%22')+'")':'none','important');msgs.style.setProperty('background-size','cover','important');msgs.style.setProperty('background-position','center','important');msgs.style.setProperty('background-attachment','local','important');}
+    var styles={default:['#fff','#111827'],ocean:['#dff4ff','#0f172a'],sunset:['#fff0e5','#3f1d1d'],forest:['#e6f4ea','#17351f'],midnight:['#111827','#f9fafb']};var c=styles[theme]||styles.default;
+    if(msgs&&!bg){msgs.style.setProperty('background',c[0],'important');msgs.style.setProperty('color',c[1],'important');}
+    var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){};all[name]=theme||'default';localStorage.setItem('rkyChatThemeByFriend',JSON.stringify(all));
+  }
+  function doTheme(){
+    var name=friend();if(!name){alert('Please open a friend chat first.');return;}
+    var themes=[['default','🌐 Default'],['ocean','🌊 Ocean'],['sunset','🌅 Sunset'],['forest','🌲 Forest'],['midnight','🌙 Midnight']];
+    var html='<div class="rky-v26-theme-grid">'+themes.map(function(t){return '<button type="button" data-theme="'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div><button id="rkyV26GalleryBtn" type="button">🖼️ Gallery</button><input id="rkyV26Gallery" type="file" accept="image/*">';
+    var o=overlay('Chat theme',html);
+    o.querySelectorAll('[data-theme]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-theme');applyTheme(name,t,'');o.remove();};});
+    var gi=o.querySelector('#rkyV26Gallery'),gb=o.querySelector('#rkyV26GalleryBtn');
+    gb.onclick=function(){gi.click();};
+    gi.onchange=function(){var f=gi.files&&gi.files[0];if(!f)return;if(f.size>8*1024*1024){alert('Image must be 8 MB or smaller.');gi.value='';return;}var rd=new FileReader();rd.onload=function(){var bg=String(rd.result||'');var all={};try{all=JSON.parse(localStorage.getItem('rkyChatBackgroundByFriend')||'{}');}catch(e){};all[name]=bg;localStorage.setItem('rkyChatBackgroundByFriend',JSON.stringify(all));applyTheme(name,'default',bg);o.remove();};rd.readAsDataURL(f);};
+  }
+  function loadTheme(){var name=friend();if(!name)return;var all={},bg={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){};try{bg=JSON.parse(localStorage.getItem('rkyChatBackgroundByFriend')||'{}');}catch(e){};applyTheme(name,all[name]||'default',bg[name]||'');}
+  function dispatch(a){
+    if(a==='search')return doSearch();
+    if(a==='group')return doGroup();
+    if(a==='blocked')return doBlocked();
+    if(a==='theme')return doTheme();
+    if(a==='profile'){if(typeof window.rkyOpenContact==='function')return window.rkyOpenContact();if(typeof contact==='function')return contact();}
+    if(a==='media'){if(typeof window.rkyOpenMediaDocs==='function')return window.rkyOpenMediaDocs();}
+    if(a==='notifications'){var n=friend();if(!n)return alert('Please open a friend chat first.');var x=[];try{x=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){};var i=x.indexOf(n);if(i>=0){x.splice(i,1);alert('🔔 Notifications enabled for '+n);}else{x.push(n);alert('🔕 Notifications muted for '+n);}localStorage.setItem('rkyMutedNotifications',JSON.stringify(x));return;}
+    if(a==='disappearing'){var n2=friend();if(!n2)return alert('Please open a friend chat first.');var d={};try{d=JSON.parse(localStorage.getItem('rkyDisappearingMessages')||'{}');}catch(e){};d[n2]=!d[n2];localStorage.setItem('rkyDisappearingMessages',JSON.stringify(d));alert(d[n2]?'⏱️ Disappearing messages enabled':'⏱️ Disappearing messages disabled');return;}
+    if(a==='more'){if(typeof window.rkyOpenMoreActions==='function')return window.rkyOpenMoreActions();if(typeof rkyMoreAction==='function')return rkyMoreAction('more');return;}
+  }
+  window.rkyHandleFriendMenuAction=dispatch;
+  window.rkyOpenBlockedContacts=doBlocked;
+  window.rkyOpenChatTheme=doTheme;
+  window.rkyOpenNewGroup=doGroup;
+  window.rkyOpenFriendSearch=doSearch;
+  window.rkyLoadFriendTheme=loadTheme;
+  function addBlockedButton(){
+    var m=document.getElementById('rkyFriendMoreMenu');if(!m||m.querySelector('[data-a="blocked"]'))return;
+    var b=document.createElement('button');b.type='button';b.setAttribute('data-a','blocked');b.innerHTML='<span>🚫</span><span>Blocked</span>';m.appendChild(b);
+  }
+  function hook(){
+    addBlockedButton();
+    var page=document.getElementById('rkyRealContactPage');
+    if(page){var bb=page.querySelector('.rky-block-contact');if(bb&&!bb.dataset.v26){bb.dataset.v26='1';bb.onclick=function(){var n=friend();if(!n)return;var a=getBlocked();if(a.indexOf(n)<0)a.push(n);setBlocked(a);bb.textContent='🚫 Blocked on this device';bb.style.background='#6b7280';};}}
+    loadTheme();
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;if(b){var a=b.getAttribute('data-a');if(['search','group','blocked','theme'].indexOf(a)>=0){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();try{dispatch(a);}catch(err){console.error(err);alert('Action failed: '+(err&&err.message||err));}return;}}
+    var bp=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu'):null;if(!bp)setTimeout(addBlockedButton,0);
+  },true);
+  var obs=new MutationObserver(function(){setTimeout(hook,0);});obs.observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('DOMContentLoaded',hook);
+})();
+</script>

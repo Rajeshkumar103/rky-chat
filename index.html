@@ -19178,3 +19178,69 @@ window.rkyIsBlockedFriend=function(n){try{var a=JSON.parse(localStorage.getItem(
 </body>
 </html>
 
+<script id="rky-gallery-wallpaper-final-v50">
+(function(){
+  function rkyGalleryName(){
+    try{ if(typeof selectedFriend!=='undefined' && selectedFriend) return String(selectedFriend); }catch(e){}
+    try{var el=document.querySelector('#chatBox .rky-friend-name');if(el&&el.textContent.trim())return el.textContent.trim();}catch(e){}
+    return '';
+  }
+  function applyWallpaper(){
+    var chat=document.getElementById('chatBox'),msg=document.getElementById('messages'),name=rkyGalleryName();
+    if(!chat||!msg||!name)return;
+    var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeBgByFriend')||'{}');}catch(e){all={};}
+    var bg=all[name];
+    if(bg){
+      var u='url("'+bg.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'")';
+      chat.style.setProperty('background-image',u,'important');
+      chat.style.setProperty('background-size','cover','important');
+      chat.style.setProperty('background-position','center','important');
+      chat.style.setProperty('background-repeat','no-repeat','important');
+      msg.style.setProperty('background-image',u,'important');
+      msg.style.setProperty('background-size','cover','important');
+      msg.style.setProperty('background-position','center','important');
+      msg.style.setProperty('background-repeat','no-repeat','important');
+      msg.style.setProperty('background-color','transparent','important');
+    }
+  }
+  window.rkyApplyGalleryWallpaper=applyWallpaper;
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('[data-gallery]'):null;
+    if(!b)return;
+    setTimeout(function(){
+      var input=document.createElement('input');input.type='file';input.accept='image/*';input.style.position='fixed';input.style.left='-9999px';document.body.appendChild(input);
+      input.onchange=function(){
+        var file=input.files&&input.files[0];if(!file){input.remove();return;}
+        var name=rkyGalleryName();if(!name){input.remove();return;}
+        var reader=new FileReader();
+        reader.onload=function(){
+          var im=new Image();
+          im.onload=function(){
+            try{
+              var max=900,w=im.width,h=im.height;
+              if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
+              var c=document.createElement('canvas');c.width=w;c.height=h;
+              var ctx=c.getContext('2d');ctx.drawImage(im,0,0,w,h);
+              var data=c.toDataURL('image/jpeg',0.62);
+              var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeBgByFriend')||'{}');}catch(x){all={};}
+              all[name]=data;
+              localStorage.setItem('rkyChatThemeBgByFriend',JSON.stringify(all));
+              applyWallpaper();
+              var old=document.getElementById('rkyThemeChoice');if(old)old.remove();
+              alert('🖼️ Gallery wallpaper applied.');
+            }catch(err){console.error('Gallery wallpaper error',err);alert('❌ Gallery wallpaper could not be saved.');}
+            input.remove();
+          };
+          im.onerror=function(){input.remove();alert('❌ Could not read selected image.');};
+          im.src=reader.result;
+        };
+        reader.onerror=function(){input.remove();alert('❌ Could not read selected image.');};
+        reader.readAsDataURL(file);
+      };
+      input.click();
+    },0);
+  },true);
+  setInterval(applyWallpaper,700);
+  applyWallpaper();
+})();
+</script>

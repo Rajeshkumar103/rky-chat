@@ -11358,25 +11358,6 @@ async function loadRkyConnections(){
             list.appendChild(button);
         });
 
-        // RKY V27: show locally-created groups in the main friend list.
-        try{
-            var localGroups=JSON.parse(localStorage.getItem("rkyLocalGroups")||"[]");
-            if(Array.isArray(localGroups) && localGroups.length){
-                var gh=document.createElement("div");
-                gh.style.cssText="font-weight:700;padding:12px 6px 5px;font-size:15px;";
-                gh.textContent="👥 Groups";
-                list.appendChild(gh);
-                localGroups.forEach(function(g,idx){
-                    var gb=document.createElement("button");
-                    gb.type="button";
-                    gb.style.cssText="display:block;width:100%;margin:5px 0;padding:11px;text-align:left;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;";
-                    gb.innerHTML="<b>👥 "+escapeHTML(g.name||("Group "+(idx+1)))+"</b><br><small>Local group • "+escapeHTML((g.members||[]).join(", "))+"</small>";
-                    gb.onclick=function(){alert("👥 "+(g.name||"Group")+" created successfully. Group messaging backend is not available yet.");};
-                    list.appendChild(gb);
-                });
-            }
-        }catch(groupListError){ console.warn("Local group list error:",groupListError); }
-
     }catch(error){
 
         console.error(
@@ -11395,124 +11376,110 @@ async function loadRkyConnections(){
 async function loadFriends(){
 
     const list = document.getElementById("friendList");
-    if(!list || !currentUser){ return; }
 
-    /* RKY V30: keep the existing list visible while refreshing.
-       Re-render only when friend/group data actually changes. This stops
-       the login screen and friend list from visibly jumping every refresh. */
-    let response;
+
+
+    if(!list || !currentUser){
+        return;
+    }
+
+    list.innerHTML = "<p>Loading friends...</p>";
+
     try{
-        response = await fetch(
-            "/api/friends/" + encodeURIComponent(currentUser) +
-            "?t=" + Date.now(),
-            {cache:"no-store"}
+
+        const response = await fetch(
+            "/api/friends/" +
+            encodeURIComponent(currentUser) +
+            "?t=" + Date.now()
         );
-        if(!response.ok) throw new Error("HTTP " + response.status);
+
+        if(!response.ok){
+            throw new Error("HTTP " + response.status);
+        }
+
         const data = await response.json();
-        if(!data.success) throw new Error(data.message || "Could not load friends");
 
-        const friends = Array.isArray(data.friends) ? data.friends : [];
-        let groups = [];
-        try{
-            groups = JSON.parse(localStorage.getItem("rkyLocalGroups") || "[]");
-            if(!Array.isArray(groups)) groups=[];
-        }catch(e){ groups=[]; }
+        list.innerHTML = "";
 
-        const signature = JSON.stringify({
-            friends: friends.map(function(f){
-                return [f.username, f.profileName||"", f.photo||"", f.status||"", f.lastSeen||""];
-            }),
-            groups: groups.map(function(g){
-                return [g.name||"", Array.isArray(g.members)?g.members:[], g.createdAt||0];
-            })
-        });
-
-        if(list.getAttribute("data-rky-v30-signature") === signature){
+        if(!data.success){
+            list.innerHTML = "<p>Could not load friends.</p>";
             return;
         }
 
-        list.setAttribute("data-rky-v30-signature", signature);
-        list.innerHTML = "";
-
-        if(friends.length === 0 && groups.length === 0){
+        if(!Array.isArray(data.friends) || data.friends.length === 0){
             list.innerHTML = "<p>No friends yet.</p>";
             return;
         }
 
-        friends.forEach(function(friend){
+        data.friends.forEach(function(friend){
+
             const button = document.createElement("button");
+
             button.type = "button";
 
-            const profileName = friend.profileName || friend.username;
-            const photo = friend.photo || "https://via.placeholder.com/50";
+            const profileName =
+                friend.profileName || friend.username;
+
+            const photo =
+                friend.photo ||
+                "https://via.placeholder.com/50";
+
             let statusHTML = "";
 
             if(friend.status === "Online"){
-                statusHTML = "<span style='color:green;'>🟢 Online</span>";
+                statusHTML =
+                    "<span style='color:green;'>🟢 Online</span>";
             }else{
-                statusHTML = "<span style='color:red;'>🔴 Offline</span>";
+                statusHTML =
+                    "<span style='color:red;'>🔴 Offline</span>";
+
                 if(friend.lastSeen){
-                    statusHTML += "<br><small>Last Seen: " +
-                        escapeHTML(friend.lastSeen) + "</small>";
+                    statusHTML +=
+                        "<br><small>Last Seen: " +
+                        escapeHTML(friend.lastSeen) +
+                        "</small>";
                 }
             }
 
             button.innerHTML =
                 "<div style='display:flex;align-items:center;gap:10px;text-align:left;'>" +
-                "<img src='" + escapeHTML(photo) + "' width='50' height='50' style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
-                "<div style='min-width:0;'>" +
-                "<div style='font-weight:bold;font-size:16px;'>" + escapeHTML(profileName) + "</div>" +
-                "<div style='font-size:12px;margin-top:3px;'>" + statusHTML + "</div>" +
-                "</div></div>";
 
-            button.style.cssText = "display:block;width:100%;margin:5px 0;padding:10px;border:1px solid #ddd;border-radius:12px;background:#fff;cursor:pointer;box-sizing:border-box;";
-            button.onclick = function(){ selectFriend(friend.username); };
+                "<img src='" + escapeHTML(photo) + "'" +
+                " width='50' height='50'" +
+                " style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
+
+                "<div>" +
+
+                "<div style='font-weight:bold;font-size:16px;'>" +
+                escapeHTML(profileName) +
+                "</div>" +
+
+                "<div style='font-size:12px;margin-top:3px;'>" +
+                statusHTML +
+                "</div>" +
+
+                "</div>" +
+
+                "</div>";
+
+            button.onclick = function(){
+                selectFriend(friend.username);
+            };
+
+            button.style.display = "block";
+            button.style.width = "100%";
+            button.style.margin = "5px 0";
+            button.style.padding = "10px";
+
             list.appendChild(button);
         });
 
-        if(groups.length){
-            const section = document.createElement("div");
-            section.id = "rkyGroupsSection";
-            section.style.cssText = "display:block;width:100%;box-sizing:border-box;margin:12px 0 0;padding:0;clear:both;";
-
-            const title = document.createElement("div");
-            title.textContent = "👥 Groups";
-            title.style.cssText = "display:block;width:100%;box-sizing:border-box;padding:10px 4px 6px;font-weight:800;font-size:16px;";
-            section.appendChild(title);
-
-            groups.forEach(function(g,idx){
-                const gb = document.createElement("button");
-                gb.type = "button";
-                gb.style.cssText = "display:flex;align-items:center;width:100%;box-sizing:border-box;margin:5px 0;padding:11px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;text-align:left;cursor:pointer;gap:10px;";
-                const members = Array.isArray(g.members) ? g.members.filter(Boolean) : [];
-                gb.innerHTML =
-                    "<span style='font-size:25px;flex:0 0 auto;'>👥</span>" +
-                    "<span style='min-width:0;flex:1;display:block;'>" +
-                    "<b style='font-size:15px;'>" + escapeHTML(g.name || ("Group " + (idx+1))) + "</b><br>" +
-                    "<small style='color:#64748b;'>" + escapeHTML(members.length ? (members.length + " member" + (members.length===1?"":"s")) : "Local group") + "</small>" +
-                    "</span><span style='font-size:22px;color:#94a3b8;'>›</span>";
-                gb.onclick = function(){
-                    const old = document.getElementById("rkyV30GroupInfo");
-                    if(old) old.remove();
-                    const d = document.createElement("div");
-                    d.id = "rkyV30GroupInfo";
-                    d.style.cssText = "position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;";
-                    d.innerHTML = "<div style='width:min(420px,100%);background:#fff;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 18px 55px rgba(0,0,0,.3);'><h3 style='margin:0 0 8px;'>👥 " + escapeHTML(g.name||"Group") + "</h3><p style='color:#64748b;'>Local group</p><div style='padding:11px;background:#f8fafc;border-radius:10px;'><b>Members</b><div style='margin-top:6px;'>" + (members.length ? members.map(escapeHTML).join(", ") : "No members added") + "</div></div><button type='button' id='rkyV30GroupClose' style='width:100%;margin-top:14px;padding:11px;border:0;border-radius:10px;background:#111827;color:#fff;'>Close</button></div>";
-                    document.body.appendChild(d);
-                    document.getElementById("rkyV30GroupClose").onclick=function(){d.remove();};
-                    d.onclick=function(e){if(e.target===d)d.remove();};
-                };
-                section.appendChild(gb);
-            });
-            list.appendChild(section);
-        }
-
     }catch(error){
+
         console.error("loadFriends error:", error);
-        /* Do not replace a working list with an error every 10 seconds. */
-        if(!list.children.length){
-            list.innerHTML = "<p>Could not load friends.</p>";
-        }
+
+        list.innerHTML =
+            "<p>Could not load friends.</p>";
     }
 }
 
@@ -12105,13 +12072,6 @@ function openNotificationChat(sender){
     selectFriend(sender);
 
 }
-function rkyV27IsBlockedUser(username){
-    try{
-        var a=JSON.parse(localStorage.getItem("rkyBlockedContacts")||"[]");
-        return Array.isArray(a) && a.indexOf(String(username||""))>=0;
-    }catch(e){ return false; }
-}
-
 async function loadMessages(){
 let chats = [];
 
@@ -12138,9 +12098,7 @@ console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
         return;
     }
 
-    chats = data.messages.filter(function(msg){
-        return !rkyV27IsBlockedUser(msg.sender);
-    }).map(function(msg){
+    chats = data.messages.map(function(msg){
 
         return {
             id: msg.id,
@@ -12211,9 +12169,7 @@ console.log("CALLING SEEN API");
 
         if(seenData.success){
 
-            chats = seenData.messages.filter(function(msg){
-                return !rkyV27IsBlockedUser(msg.sender);
-            }).map(function(msg){
+            chats = seenData.messages.map(function(msg){
 
                 return {
                     id: msg.id,
@@ -15198,11 +15154,6 @@ async function checkNewMessagesForNotification(){
 
             const sender = item.sender;
             const unreadCount = Number(item.unread) || 0;
-
-            if(rkyV27IsBlockedUser(sender)){
-                knownUnreadCounts[sender] = unreadCount;
-                return;
-            }
 
             if(!sender || unreadCount <= 0){
                 return;
@@ -18735,7 +18686,6 @@ setInterval(function(){
       out.innerHTML=items.length?items.join(''):'<span class="rky-media-empty">No media shared yet</span>';
     }).catch(function(){out.innerHTML='<span class="rky-media-empty">Media unavailable</span>';});
   }
-  window.rkyOpenContact = contact;
   function mute(){
     var name=friendName();if(!name)return;
     var list=[];try{list=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){}
@@ -18820,158 +18770,274 @@ setInterval(function(){
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
 
-<!-- RKY V29: persistent visible Groups section, stable layout -->
-<style id="rky-v28-groups-style">
-#rkyGroupsSection{margin:8px 0 12px;padding:0 2px;display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;position:static!important;float:none!important;clear:both!important;flex:0 0 100%!important;grid-column:1/-1!important;}
-#rkyGroupsSection .rky-v28-title{font-weight:800;font-size:16px;padding:8px 6px 6px;color:#111827;}
-#rkyGroupsSection .rky-v28-group{
-  width:100%!important;max-width:100%!important;display:flex!important;align-items:center;gap:10px;text-align:left;
-  margin:5px 0;padding:11px 12px;border:1px solid #e5e7eb;border-radius:12px;
-  background:#f8fafc;box-sizing:border-box;cursor:pointer;
+
+
+<!-- RKY V33: targeted New Group + Friend Request layout correction only -->
+<style id="rky-v33-targeted-layout-fix">
+/* Friend Requests: force a single vertical column and normal horizontal text. */
+#rkyCircleRequestsContent,
+#rkyCircleRequestsContent #requestList{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  writing-mode:horizontal-tb !important;
+  column-count:1 !important;
+  columns:1 !important;
+  grid-template-columns:1fr !important;
 }
-#rkyGroupsSection .rky-v28-icon{
-  width:44px;height:44px;min-width:44px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:23px;
+#rkyCircleRequestsContent #requestList > div{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  float:none !important;
+  clear:both !important;
+  writing-mode:horizontal-tb !important;
 }
-#rkyGroupsSection .rky-v28-name{font-weight:700;font-size:15px;color:#111827;}
-#rkyGroupsSection .rky-v28-meta{font-size:11px;color:#64748b;margin-top:3px;}
-#friendList > #rkyGroupsSection,
-#friendList > #rkyGroupsSection *{
-  box-sizing:border-box!important;
+#rkyCircleRequestsContent #requestList > div > div:first-child{
+  display:block !important;
+  flex:1 1 auto !important;
+  width:auto !important;
+  min-width:0 !important;
+  max-width:none !important;
+  white-space:normal !important;
+  word-break:normal !important;
+  overflow-wrap:anywhere !important;
+  writing-mode:horizontal-tb !important;
+  direction:ltr !important;
 }
-#friendList > #rkyGroupsSection .rky-v28-group{
-  display:flex!important;
-  flex-direction:row!important;
-  align-items:center!important;
-  justify-content:flex-start!important;
-  min-width:0!important;
-  margin:6px 0!important;
+#rkyCircleRequestsContent #requestList .rky-request-actions{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  align-items:center !important;
+  justify-content:flex-end !important;
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:max-content !important;
+  writing-mode:horizontal-tb !important;
 }
-#rkyV28GroupInfo{
-  position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
-  justify-content:center;z-index:2147483647;padding:16px;box-sizing:border-box;
+#rkyCircleRequestsContent #requestList .rky-request-actions button{
+  display:inline-flex !important;
+  width:auto !important;
+  min-width:64px !important;
+  max-width:none !important;
+  white-space:nowrap !important;
+  writing-mode:horizontal-tb !important;
 }
-#rkyV28GroupInfo .card{
-  width:min(410px,100%);background:#fff;border-radius:16px;padding:18px;
-  box-shadow:0 15px 45px rgba(0,0,0,.35);box-sizing:border-box;
+/* The separate Friend Requests popup uses the same stable one-column layout. */
+#rkyFriendPopupBox #rkyFPIncoming,
+#rkyFriendPopupBox #rkyFPSent{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+}
+#rkyFriendPopupBox .rkyFPitem{
+  display:flex !important;
+  flex-direction:row !important;
+  flex-wrap:nowrap !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#rkyFriendPopupBox .rkyFPitem > span:first-child{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  white-space:normal !important;
+  word-break:normal !important;
+  overflow-wrap:anywhere !important;
+  writing-mode:horizontal-tb !important;
+}
+#rkyFriendPopupBox .rkyFPitem > span:last-child{
+  flex:0 0 auto !important;
+  white-space:nowrap !important;
+  writing-mode:horizontal-tb !important;
+}
+@media(max-width:520px){
+  #rkyCircleRequestsContent #requestList > div{gap:8px !important;padding:10px !important;}
+  #rkyCircleRequestsContent #requestList .rky-request-actions button{min-width:62px !important;padding:8px 8px !important;font-size:13px !important;}
+}
+
+/* New Group: only make the existing Groups section a stable full-width block. */
+#friendList #rkyV32GroupsSection{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:100% !important;
+  flex:0 0 100% !important;
+  grid-column:1 / -1 !important;
+  clear:both !important;
+  box-sizing:border-box !important;
+}
+#friendList #rkyV32GroupsSection button{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+  white-space:normal !important;
 }
 </style>
-<style id="rky-v30-stable-friend-list">
-#friendList{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;overflow:visible!important;position:relative!important;float:none!important;transform:none!important;}
-#friendList > button{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
-#rkyGroupsSection{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;clear:both!important;position:static!important;float:none!important;transform:none!important;}
+<!-- RKY V32 TARGETED FIX: New Group + Friend Requests only -->
+<style id="rky-v32-request-stable-style">
+/* Only the incoming request area: keep every request card full-width on mobile. */
+#requestList{
+  display:block !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  overflow:visible !important;
+}
+#requestList > div{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  width:100% !important;
+  max-width:100% !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+}
+#requestList > div > div:first-child{
+  flex:1 1 auto !important;
+  min-width:0 !important;
+  width:auto !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  word-break:normal !important;
+  writing-mode:horizontal-tb !important;
+}
+#requestList .rky-request-actions{
+  display:flex !important;
+  flex:0 0 auto !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  gap:6px !important;
+  width:auto !important;
+  min-width:max-content !important;
+  writing-mode:horizontal-tb !important;
+}
+#requestList .rky-request-actions button{
+  display:inline-flex !important;
+  width:auto !important;
+  min-width:72px !important;
+  max-width:none !important;
+  white-space:nowrap !important;
+  writing-mode:horizontal-tb !important;
+}
+@media(max-width:520px){
+  #requestList > div{
+    gap:8px !important;
+    padding:10px !important;
+  }
+  #requestList .rky-request-actions{gap:5px !important;}
+  #requestList .rky-request-actions button{min-width:64px !important;padding:8px 9px !important;font-size:13px !important;}
+}
 </style>
-<!-- RKY V30: removed MutationObserver group flicker; stable friend/group rendering -->
-<!-- RKY ALL-FOUR ROOT FIX v26 + V27: Contact export + visible local groups + blocked message filter -->
-<style id="rky-all-four-v26-style">
-#rkyV26Overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
-#rkyV26Card{width:min(430px,100%);max-height:88vh;overflow:auto;background:#fff;color:#111827;border-radius:16px;padding:16px;box-sizing:border-box;box-shadow:0 18px 60px rgba(0,0,0,.3);}
-#rkyV26Card h3{margin:0 0 12px;}
-#rkyV26Card button{width:100%;border:0;border-radius:10px;padding:11px 12px;margin:4px 0;text-align:left;background:#f3f4f6;color:#111827;font-size:14px;cursor:pointer;}
-#rkyV26Card button:hover{background:#e5e7eb;}
-#rkyV26Card .rky-v26-close{background:#111827;color:#fff;text-align:center;}
-.rky-v26-theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-.rky-v26-theme-grid button{margin:0;min-height:58px;}
-#rkyV26Gallery{display:none;}
-#rkyFriendMoreMenu [data-a="blocked"]{color:#b91c1c!important;}
-</style>
-<script id="rky-all-four-v26-script">
+
+<script id="rky-v32-targeted-fix-script">
 (function(){
   'use strict';
-  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-  function friend(){
-    try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
+
+  /* ---------------- NEW GROUP: only replace the group action ---------------- */
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function currentFriend(){
+    try{ if(typeof selectedFriend!=='undefined' && selectedFriend) return String(selectedFriend); }catch(e){}
     var bar=document.getElementById('rkyChatTopBarFriend');
     var el=bar&&bar.querySelector('.rky-friend-name');
     return el?el.textContent.trim():'';
   }
-  function overlay(title,body){
-    var old=document.getElementById('rkyV26Overlay');if(old)old.remove();
-    var o=document.createElement('div');o.id='rkyV26Overlay';
-    o.innerHTML='<div id="rkyV26Card"><h3>'+esc(title)+'</h3>'+body+'<button class="rky-v26-close" type="button">Close</button></div>';
+  function groupModal(){
+    var old=document.getElementById('rkyV32GroupModal'); if(old) old.remove();
+    var o=document.createElement('div');
+    o.id='rkyV32GroupModal';
+    o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:2147483647;padding:16px;box-sizing:border-box;';
+    o.innerHTML='<div style="width:min(420px,100%);background:#fff;color:#111827;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 18px 55px rgba(0,0,0,.32);">'+
+      '<h3 style="margin:0 0 10px;font-size:20px;">New group</h3>'+ 
+      '<p style="margin:0 0 12px;color:#64748b;font-size:13px;">Create a group and keep it visible in your Friends list.</p>'+ 
+      '<input id="rkyV32GroupName" type="text" placeholder="Group name" autocomplete="off" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;font-size:16px;">'+
+      '<div style="display:flex;gap:8px;margin-top:12px;">'+
+      '<button id="rkyV32CreateGroup" type="button" style="flex:1;border:0;border-radius:10px;padding:12px;background:#078f78;color:#fff;font-weight:700;font-size:15px;">👥 Create group</button>'+
+      '<button id="rkyV32CancelGroup" type="button" style="flex:1;border:0;border-radius:10px;padding:12px;background:#111827;color:#fff;font-weight:700;font-size:15px;">Close</button>'+
+      '</div></div>';
     document.body.appendChild(o);
-    o.querySelector('.rky-v26-close').onclick=function(){o.remove();};
+    var input=o.querySelector('#rkyV32GroupName');
+    o.querySelector('#rkyV32CancelGroup').onclick=function(){o.remove();};
     o.addEventListener('click',function(e){if(e.target===o)o.remove();});
-    return o;
+    o.querySelector('#rkyV32CreateGroup').onclick=function(){
+      var name=(input.value||'').trim();
+      if(!name){alert('Enter group name.');input.focus();return;}
+      var list=[];try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){list=[];}
+      if(!Array.isArray(list)) list=[];
+      if(list.some(function(g){return String(g&&g.name||'').toLowerCase()===name.toLowerCase();})){
+        alert('This group already exists.');return;
+      }
+      list.push({name:name,members:[currentFriend()].filter(Boolean),createdAt:Date.now()});
+      localStorage.setItem('rkyLocalGroups',JSON.stringify(list));
+      o.remove();
+      /* Refresh the existing Friends list once; do not add observers or polling. */
+      try{
+        if(typeof loadFriends==='function'){
+          var r=loadFriends();
+          if(r && typeof r.catch==='function') r.catch(function(){});
+        }
+      }catch(e){}
+      alert('👥 Group created: '+name);
+    };
+    setTimeout(function(){input.focus();},0);
   }
-  function doSearch(){
-    if(typeof window.rkyOpenSearchReal==='function'){try{return window.rkyOpenSearchReal();}catch(e){}}
-    var input=document.getElementById('searchMessage');
-    if(input){input.style.display='block';input.style.visibility='visible';try{input.focus();input.scrollIntoView({behavior:'smooth',block:'center'});}catch(e){};return;}
-    var name=friend();
-    if(!name){alert('Please open a friend chat first.');return;}
-    overlay('Search messages','<input id="rkyV26SearchInput" placeholder="Search in this chat" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:9px;"><div id="rkyV26SearchOut" style="margin-top:10px;max-height:50vh;overflow:auto;opacity:.75;">Type to search…</div>');
-    var inp=document.getElementById('rkyV26SearchInput'),out=document.getElementById('rkyV26SearchOut');
-    inp.oninput=function(){var q=inp.value.trim().toLowerCase();var rows=[];try{rows=Array.isArray(chats)?chats:[];}catch(e){};rows=rows.filter(function(m){return q&&String(m.message||'').toLowerCase().indexOf(q)>=0;});out.innerHTML=rows.length?rows.map(function(m){return '<div style="padding:8px;border-bottom:1px solid #eee;"><b>'+esc(m.from||'')+'</b><br>'+esc(m.message||'')+'</div>';}).join(''):'<div style="padding:8px;opacity:.65;">No matching messages</div>';};
-  }
-  function doGroup(){
-    if(typeof createGroup==='function'){try{return createGroup();}catch(e){}}
-    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){}}
-    var o=overlay('New group','<p style="margin:0 0 10px;opacity:.72;">Create a local group list. Group messaging backend is not available yet.</p><input id="rkyV26GroupName" placeholder="Group name" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:9px;"><button id="rkyV26CreateGroup" type="button">👥 Create group</button>');
-    o.querySelector('#rkyV26CreateGroup').onclick=function(){var n=(o.querySelector('#rkyV26GroupName').value||'').trim();if(!n){alert('Enter group name.');return;}var list=[];try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){};list.push({name:n,members:[friend()].filter(Boolean),createdAt:Date.now()});localStorage.setItem('rkyLocalGroups',JSON.stringify(list));o.remove();if(typeof loadFriends==='function'){try{loadFriends();}catch(_e){}}alert('👥 Group created: '+n);};
-  }
-  function getBlocked(){var a=[];try{a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');}catch(e){};return Array.isArray(a)?a:[];}
-  function setBlocked(a){localStorage.setItem('rkyBlockedContacts',JSON.stringify(Array.from(new Set(a.filter(Boolean)))));}
-  function doBlocked(){
-    var blocked=getBlocked();
-    var html='<div style="opacity:.7;margin-bottom:8px;">Blocked contacts on this device</div><div id="rkyV26BlockedList">';
-    html+=blocked.length?blocked.map(function(n){return '<div style="display:flex;gap:8px;align-items:center;margin:6px 0;"><span style="flex:1;word-break:break-word;">🚫 '+esc(n)+'</span><button type="button" data-unblock="'+esc(n)+'" style="width:auto;margin:0;background:#fee2e2;">Unblock</button></div>';}).join(''):'<div style="padding:10px;background:#f3f4f6;border-radius:9px;opacity:.7;">No blocked contacts</div>';
-    html+='</div><button id="rkyV26BlockCurrent" type="button">🚫 Block current contact</button>';
-    var o=overlay('Blocked contacts',html);
-    o.querySelectorAll('[data-unblock]').forEach(function(b){b.onclick=function(){var n=b.getAttribute('data-unblock');setBlocked(getBlocked().filter(function(x){return x!==n;}));doBlocked();};});
-    o.querySelector('#rkyV26BlockCurrent').onclick=function(){var n=friend();if(!n){alert('Please open a friend chat first.');return;}var a=getBlocked();if(a.indexOf(n)<0)a.push(n);setBlocked(a);alert('🚫 '+n+' blocked on this device.');doBlocked();};
-  }
-  function applyTheme(name,theme,bg){
-    var chat=document.getElementById('chatBox'),msgs=document.getElementById('messages');if(!chat||!name)return;
-    chat.setAttribute('data-rky-theme',theme||'default');
-    if(msgs){msgs.style.setProperty('background-image',bg?'url("'+bg.replace(/"/g,'%22')+'")':'none','important');msgs.style.setProperty('background-size','cover','important');msgs.style.setProperty('background-position','center','important');msgs.style.setProperty('background-attachment','local','important');}
-    var styles={default:['#fff','#111827'],ocean:['#dff4ff','#0f172a'],sunset:['#fff0e5','#3f1d1d'],forest:['#e6f4ea','#17351f'],midnight:['#111827','#f9fafb']};var c=styles[theme]||styles.default;
-    if(msgs&&!bg){msgs.style.setProperty('background',c[0],'important');msgs.style.setProperty('color',c[1],'important');}
-    var all={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){};all[name]=theme||'default';localStorage.setItem('rkyChatThemeByFriend',JSON.stringify(all));
-  }
-  function doTheme(){
-    var name=friend();if(!name){alert('Please open a friend chat first.');return;}
-    var themes=[['default','🌐 Default'],['ocean','🌊 Ocean'],['sunset','🌅 Sunset'],['forest','🌲 Forest'],['midnight','🌙 Midnight']];
-    var html='<div class="rky-v26-theme-grid">'+themes.map(function(t){return '<button type="button" data-theme="'+t[0]+'">'+t[1]+'</button>';}).join('')+'</div><button id="rkyV26GalleryBtn" type="button">🖼️ Gallery</button><input id="rkyV26Gallery" type="file" accept="image/*">';
-    var o=overlay('Chat theme',html);
-    o.querySelectorAll('[data-theme]').forEach(function(b){b.onclick=function(){var t=b.getAttribute('data-theme');applyTheme(name,t,'');o.remove();};});
-    var gi=o.querySelector('#rkyV26Gallery'),gb=o.querySelector('#rkyV26GalleryBtn');
-    gb.onclick=function(){gi.click();};
-    gi.onchange=function(){var f=gi.files&&gi.files[0];if(!f)return;if(f.size>8*1024*1024){alert('Image must be 8 MB or smaller.');gi.value='';return;}var rd=new FileReader();rd.onload=function(){var bg=String(rd.result||'');var all={};try{all=JSON.parse(localStorage.getItem('rkyChatBackgroundByFriend')||'{}');}catch(e){};all[name]=bg;localStorage.setItem('rkyChatBackgroundByFriend',JSON.stringify(all));applyTheme(name,'default',bg);o.remove();};rd.readAsDataURL(f);};
-  }
-  function loadTheme(){var name=friend();if(!name)return;var all={},bg={};try{all=JSON.parse(localStorage.getItem('rkyChatThemeByFriend')||'{}');}catch(e){};try{bg=JSON.parse(localStorage.getItem('rkyChatBackgroundByFriend')||'{}');}catch(e){};applyTheme(name,all[name]||'default',bg[name]||'');}
-  function dispatch(a){
-    if(a==='search')return doSearch();
-    if(a==='group')return doGroup();
-    if(a==='blocked')return doBlocked();
-    if(a==='theme')return doTheme();
-    if(a==='profile'){if(typeof window.rkyOpenContact==='function')return window.rkyOpenContact();if(typeof contact==='function')return contact();}
-    if(a==='media'){if(typeof window.rkyOpenMediaDocs==='function')return window.rkyOpenMediaDocs();}
-    if(a==='notifications'){var n=friend();if(!n)return alert('Please open a friend chat first.');var x=[];try{x=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){};var i=x.indexOf(n);if(i>=0){x.splice(i,1);alert('🔔 Notifications enabled for '+n);}else{x.push(n);alert('🔕 Notifications muted for '+n);}localStorage.setItem('rkyMutedNotifications',JSON.stringify(x));return;}
-    if(a==='disappearing'){var n2=friend();if(!n2)return alert('Please open a friend chat first.');var d={};try{d=JSON.parse(localStorage.getItem('rkyDisappearingMessages')||'{}');}catch(e){};d[n2]=!d[n2];localStorage.setItem('rkyDisappearingMessages',JSON.stringify(d));alert(d[n2]?'⏱️ Disappearing messages enabled':'⏱️ Disappearing messages disabled');return;}
-    if(a==='more'){if(typeof window.rkyOpenMoreActions==='function')return window.rkyOpenMoreActions();if(typeof rkyMoreAction==='function')return rkyMoreAction('more');return;}
-  }
-  window.rkyHandleFriendMenuAction=dispatch;
-  window.rkyOpenBlockedContacts=doBlocked;
-  window.rkyOpenChatTheme=doTheme;
-  window.rkyOpenNewGroup=doGroup;
-  window.rkyOpenFriendSearch=doSearch;
-  window.rkyLoadFriendTheme=loadTheme;
-  function addBlockedButton(){
-    var m=document.getElementById('rkyFriendMoreMenu');if(!m||m.querySelector('[data-a="blocked"]'))return;
-    var b=document.createElement('button');b.type='button';b.setAttribute('data-a','blocked');b.innerHTML='<span>🚫</span><span>Blocked</span>';m.appendChild(b);
-  }
-  function hook(){
-    addBlockedButton();
-    var page=document.getElementById('rkyRealContactPage');
-    if(page){var bb=page.querySelector('.rky-block-contact');if(bb&&!bb.dataset.v26){bb.dataset.v26='1';bb.onclick=function(){var n=friend();if(!n)return;var a=getBlocked();if(a.indexOf(n)<0)a.push(n);setBlocked(a);bb.textContent='🚫 Blocked on this device';bb.style.background='#6b7280';};}}
-    loadTheme();
-  }
+
+  /* One capture handler only for the exact New group button. */
   document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;if(b){var a=b.getAttribute('data-a');if(['search','group','blocked','theme'].indexOf(a)>=0){e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();try{dispatch(a);}catch(err){console.error(err);alert('Action failed: '+(err&&err.message||err));}return;}}
-    var bp=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu'):null;if(!bp)setTimeout(addBlockedButton,0);
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="group"]'):null;
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
+    groupModal();
   },true);
-  var obs=new MutationObserver(function(){setTimeout(hook,0);});obs.observe(document.documentElement,{childList:true,subtree:true});
-  document.addEventListener('DOMContentLoaded',hook);
+
+  /* Keep the already-created local groups visible without touching friend/request rendering. */
+  function renderGroupsOnly(){
+    var list=document.getElementById('friendList');
+    if(!list)return;
+    var groups=[];try{groups=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){groups=[];}
+    if(!Array.isArray(groups))groups=[];
+    var old=document.getElementById('rkyV32GroupsSection');if(old)old.remove();
+    if(!groups.length)return;
+    var section=document.createElement('div');section.id='rkyV32GroupsSection';
+    section.style.cssText='display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;clear:both!important;margin:12px 0!important;padding:0!important;';
+    var title=document.createElement('div');title.textContent='👥 Groups';title.style.cssText='font-weight:800;font-size:16px;padding:8px 6px;';section.appendChild(title);
+    groups.forEach(function(g,i){
+      var btn=document.createElement('button');btn.type='button';
+      btn.style.cssText='display:flex!important;align-items:center!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;gap:10px!important;margin:5px 0!important;padding:11px 12px!important;border:1px solid #e5e7eb!important;border-radius:12px!important;background:#f8fafc!important;text-align:left!important;';
+      btn.innerHTML='<span style="width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:22px;">👥</span><span style="min-width:0;flex:1;"><b style="display:block;font-size:15px;color:#111827;">'+esc(g.name||('Group '+(i+1)))+'</b><small style="display:block;margin-top:3px;color:#64748b;">'+esc((g.members||[]).join(', ')||'Local group')+'</small></span>';
+      btn.onclick=function(){alert('👥 '+(g.name||'Group')+' is created. Group messaging backend is not available yet.');};
+      section.appendChild(btn);
+    });
+    list.appendChild(section);
+  }
+  window.rkyV32RenderGroupsOnly=renderGroupsOnly;
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroupsOnly,50);});
 })();
 </script>
+
+</body>
+</html>
+

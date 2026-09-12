@@ -18395,8 +18395,7 @@ setInterval(function(){
   window.rkyFriendChangeTheme=changeTheme;
   window.rkyFriendMore=more;
 
-  /* V36: export the existing View Contact function without changing its implementation. */
-  window.rkyOpenContact=contact;
+  /* V47: View Contact is defined in the final friend-menu scope below. */
 
   function more(){
     var menu=document.getElementById('rkyMoreMenu');
@@ -18512,15 +18511,6 @@ setInterval(function(){
   }
   function friendName(){
     try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
-    try{
-      var bar=document.getElementById('rkyChatTopBarFriend');
-      var el=bar&&bar.querySelector('.rky-friend-name');
-      if(el){var n=el.textContent.trim();if(n)return n;}
-    }catch(e){}
-    try{
-      var top=document.querySelector('#chatBox .rky-friend-name');
-      if(top){var n2=top.textContent.trim();if(n2)return n2;}
-    }catch(e){}
     return '';
   }
   function openSearch(){
@@ -18678,6 +18668,9 @@ setInterval(function(){
       out.innerHTML=items.length?items.join(''):'<span class="rky-media-empty">No media shared yet</span>';
     }).catch(function(){out.innerHTML='<span class="rky-media-empty">Media unavailable</span>';});
   }
+  /* V47: export the actual View Contact function from this scope. */
+  window.rkyOpenContact=contact;
+
   function mute(){
     var name=friendName();if(!name)return;
     var list=[];try{list=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){}

@@ -18805,6 +18805,153 @@ setInterval(function(){
 })();
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
+
+<!-- RKY V28: persistent visible Groups section -->
+<style id="rky-v28-groups-style">
+#rkyGroupsSection{margin:8px 0 12px;padding:0 2px;}
+#rkyGroupsSection .rky-v28-title{font-weight:800;font-size:16px;padding:8px 6px 6px;color:#111827;}
+#rkyGroupsSection .rky-v28-group{
+  width:100%;display:flex;align-items:center;gap:10px;text-align:left;
+  margin:5px 0;padding:11px 12px;border:1px solid #e5e7eb;border-radius:12px;
+  background:#f8fafc;box-sizing:border-box;cursor:pointer;
+}
+#rkyGroupsSection .rky-v28-icon{
+  width:44px;height:44px;min-width:44px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:23px;
+}
+#rkyGroupsSection .rky-v28-name{font-weight:700;font-size:15px;color:#111827;}
+#rkyGroupsSection .rky-v28-meta{font-size:11px;color:#64748b;margin-top:3px;}
+#rkyV28GroupInfo{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
+  justify-content:center;z-index:2147483647;padding:16px;box-sizing:border-box;
+}
+#rkyV28GroupInfo .card{
+  width:min(410px,100%);background:#fff;border-radius:16px;padding:18px;
+  box-shadow:0 15px 45px rgba(0,0,0,.35);box-sizing:border-box;
+}
+</style>
+<script id="rky-v28-groups-script">
+(function(){
+  'use strict';
+
+  function esc(v){
+    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
+    });
+  }
+
+  function getGroups(){
+    var list=[];
+    try{ list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]'); }catch(e){ list=[]; }
+    return Array.isArray(list)?list:[];
+  }
+
+  function showGroupInfo(g){
+    var old=document.getElementById('rkyV28GroupInfo');
+    if(old)old.remove();
+    var members=Array.isArray(g.members)?g.members.filter(Boolean):[];
+    var d=document.createElement('div');
+    d.id='rkyV28GroupInfo';
+    d.innerHTML=
+      '<div class="card">'+
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'+
+          '<h3 style="margin:0;">👥 '+esc(g.name||'Group')+'</h3>'+
+          '<button type="button" data-v28-close style="border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px;font-size:19px;">×</button>'+
+        '</div>'+
+        '<p style="color:#64748b;margin:10px 0 14px;">Local group</p>'+
+        '<div style="padding:11px;background:#f8fafc;border-radius:10px;">'+
+          '<b>Members</b><div style="margin-top:6px;">'+
+          (members.length?members.map(esc).join(', '):'No members added')+
+          '</div>'+
+        '</div>'+
+        '<button type="button" data-v28-close style="width:100%;margin-top:14px;padding:11px;border:0;border-radius:10px;background:#111827;color:#fff;font-size:15px;">Close</button>'+
+      '</div>';
+    document.body.appendChild(d);
+    d.querySelectorAll('[data-v28-close]').forEach(function(b){b.onclick=function(){d.remove();};});
+    d.onclick=function(e){if(e.target===d)d.remove();};
+  }
+
+  function renderGroups(){
+    var list=document.getElementById('friendList');
+    if(!list)return;
+
+    var old=document.getElementById('rkyGroupsSection');
+    if(old)old.remove();
+
+    var groups=getGroups();
+    if(!groups.length)return;
+
+    var sec=document.createElement('div');
+    sec.id='rkyGroupsSection';
+
+    var title=document.createElement('div');
+    title.className='rky-v28-title';
+    title.textContent='👥 Groups';
+    sec.appendChild(title);
+
+    groups.forEach(function(g,idx){
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='rky-v28-group';
+      var members=Array.isArray(g.members)?g.members.filter(Boolean):[];
+      b.innerHTML=
+        '<span class="rky-v28-icon">👥</span>'+
+        '<span style="min-width:0;flex:1;">'+
+          '<span class="rky-v28-name">'+esc(g.name||('Group '+(idx+1)))+'</span><br>'+
+          '<span class="rky-v28-meta">'+
+            (members.length ? esc(members.length+' member'+(members.length===1?'':'s')) : 'Local group')+
+          '</span>'+
+        '</span>'+
+        '<span style="font-size:20px;color:#94a3b8;">›</span>';
+      b.onclick=function(){showGroupInfo(g);};
+      sec.appendChild(b);
+    });
+
+    list.insertBefore(sec,list.firstChild);
+  }
+
+  function hook(){
+    renderGroups();
+  }
+
+  /* Wrap the existing global loadFriends once, so groups reappear after every refresh. */
+  function install(){
+    if(typeof window.loadFriends!=='function')return false;
+    if(window.loadFriends.__rkyV28Wrapped)return true;
+    var old=window.loadFriends;
+    async function wrapped(){
+      var result;
+      try{result=await old.apply(this,arguments);}
+      finally{setTimeout(renderGroups,0);}
+      return result;
+    }
+    wrapped.__rkyV28Wrapped=true;
+    wrapped.__rkyV28Original=old;
+    window.loadFriends=wrapped;
+    return true;
+  }
+
+  function start(){
+    install();
+    setTimeout(renderGroups,150);
+    setTimeout(renderGroups,700);
+    setTimeout(renderGroups,1500);
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',start);
+  }else{
+    start();
+  }
+
+  var tries=0;
+  var timer=setInterval(function(){
+    tries++;
+    if(install()||tries>30)clearInterval(timer);
+    renderGroups();
+  },300);
+})();
+</script>
 </body>
 </html>
 

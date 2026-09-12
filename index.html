@@ -11358,6 +11358,8 @@ async function loadRkyConnections(){
             list.appendChild(button);
         });
 
+        try{ if(typeof window.rkyV32RenderGroupsOnly==='function') window.rkyV32RenderGroupsOnly(); }catch(e){}
+
     }catch(error){
 
         console.error(
@@ -11408,6 +11410,9 @@ async function loadFriends(){
 
         if(!Array.isArray(data.friends) || data.friends.length === 0){
             list.innerHTML = "<p>No friends yet.</p>";
+            try{
+                if(typeof window.rkyV32RenderGroupsOnly === "function") window.rkyV32RenderGroupsOnly();
+            }catch(e){}
             return;
         }
 
@@ -11473,6 +11478,11 @@ async function loadFriends(){
 
             list.appendChild(button);
         });
+
+        /* Keep local Groups visible after the server Friends list finishes rebuilding. */
+        try{
+            if(typeof window.rkyV32RenderGroupsOnly === "function") window.rkyV32RenderGroupsOnly();
+        }catch(e){}
 
     }catch(error){
 
@@ -16536,6 +16546,7 @@ setInterval(function(){
       if(data.friends.length === 0){
         list.innerHTML =
           '<div style="padding:12px;text-align:center;color:#777;">No friends yet.</div>';
+        try{ if(typeof window.rkyV32RenderGroupsOnly==='function') window.rkyV32RenderGroupsOnly(); }catch(e){}
         return;
       }
 
@@ -16590,6 +16601,9 @@ setInterval(function(){
 
         list.appendChild(card);
       });
+
+      /* Keep local Groups visible after the final friend renderer rebuilds friendList. */
+      try{ if(typeof window.rkyV32RenderGroupsOnly==='function') window.rkyV32RenderGroupsOnly(); }catch(e){}
 
     }catch(error){
       console.log("RKY friend display error:",error);
@@ -18414,6 +18428,12 @@ setInterval(function(){
     alert('👥 New group feature is not available.');
   }
 
+  /* Export the real local friend-menu actions so the global dispatcher can call the correct scope. */
+  window.rkyFriendToggleMute=toggleMute;
+  window.rkyFriendToggleDisappearing=toggleDisappearing;
+  window.rkyFriendChangeTheme=changeTheme;
+  window.rkyFriendMore=more;
+
   /* V36: export the existing View Contact function without changing its implementation. */
   window.rkyOpenContact=contact;
 
@@ -19011,17 +19031,6 @@ setInterval(function(){
     setTimeout(function(){input.focus();},0);
   }
 
-  /* One capture handler only for the exact New group button. */
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="group"]'):null;
-    if(!b)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    var menu=document.getElementById('rkyFriendMoreMenu');
-    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
-    groupModal();
-  },true);
-
   /* Keep the already-created local groups visible without touching friend/request rendering. */
   function renderGroupsOnly(){
     var list=document.getElementById('friendList');
@@ -19108,21 +19117,48 @@ setInterval(function(){
 })();
 </script>
 
-<!-- RKY V40 TARGETED ROUTING: New Group + View Contact through the existing menu dispatcher -->
-<script id="rky-v40-targeted-routing">
+<!-- RKY V43 TARGETED ROUTING: one dispatcher for every Friend 3-dot option -->
+<script id="rky-v43-targeted-routing">
 (function(){
   'use strict';
-  /* The older capture handler calls this function dynamically. Re-route it here
-     without replacing the existing Search/Media/Theme/etc implementations. */
+  /*
+   * There must be ONE capture handler for this menu. Older versions had a
+   * second New Group capture handler which could win the race and block the
+   * normal dispatcher. All eight buttons now use the already-exported action
+   * functions from their correct scope.
+   */
   window.rkyHandleFriendMenuAction=function(a){
     try{
-      if(a==='group' && typeof window.rkyOpenNewGroup==='function') return window.rkyOpenNewGroup();
-      if(a==='profile' && typeof window.rkyOpenContact==='function') return window.rkyOpenContact();
-      if(a==='search' && typeof window.rkyOpenSearchReal==='function') return window.rkyOpenSearchReal();
-      if(a==='media' && typeof window.rkyOpenMediaDocs==='function') return window.rkyOpenMediaDocs();
-      if((a==='notifications'||a==='disappearing'||a==='theme'||a==='more') && typeof window.rkyMoreAction==='function') return window.rkyMoreAction(a);
+      switch(String(a||'')){
+        case 'group':
+          if(typeof window.rkyOpenNewGroup==='function') return window.rkyOpenNewGroup();
+          return typeof window.rkyFriendNewGroup==='function' ? window.rkyFriendNewGroup() : undefined;
+        case 'profile':
+          if(typeof window.rkyOpenContact==='function') return window.rkyOpenContact();
+          return undefined;
+        case 'search':
+          if(typeof window.rkyOpenSearchReal==='function') return window.rkyOpenSearchReal();
+          return undefined;
+        case 'media':
+          if(typeof window.rkyOpenMediaDocs==='function') return window.rkyOpenMediaDocs();
+          return undefined;
+        case 'notifications':
+          if(typeof window.rkyFriendToggleMute==='function') return window.rkyFriendToggleMute();
+          return undefined;
+        case 'disappearing':
+          if(typeof window.rkyFriendToggleDisappearing==='function') return window.rkyFriendToggleDisappearing();
+          return undefined;
+        case 'theme':
+          if(typeof window.rkyFriendChangeTheme==='function') return window.rkyFriendChangeTheme();
+          return undefined;
+        case 'more':
+          if(typeof window.rkyFriendMore==='function') return window.rkyFriendMore();
+          return undefined;
+        default:
+          return undefined;
+      }
     }catch(err){
-      console.error('Friend menu action error:',err);
+      console.error('Friend 3-dot action error:',err);
       alert('❌ This option could not be opened.');
     }
   };

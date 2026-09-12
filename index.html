@@ -17085,23 +17085,20 @@ setInterval(function(){
         '<button type="button" data-a="more" style="display:flex;align-items:center;width:100%;min-height:46px;border:0;background:#fff;color:#111827;text-align:left;padding:7px 12px;margin:0;font-size:14px;font-weight:500;gap:15px;">' +
           '<span style="width:38px;height:38px;border-radius:50%;background:#eef2f7;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 38px;">•••</span><span style="flex:1;">More</span><span style="font-size:24px;color:#6b7280;">›</span></button>';
       document.body.appendChild(menu);
-      menu.addEventListener('click',function(e){
-        var b=e.target && e.target.closest ? e.target.closest('button[data-a]') : null;
-        if(!b || !menu.contains(b)) return;
-        var a=b.getAttribute('data-a');
-        e.preventDefault();
-        e.stopPropagation();
-        closeFriendMenu();
-        try{
-          if(typeof window.rkyHandleFriendMenuAction==='function'){
-            window.rkyHandleFriendMenuAction(a);
-          }else{
-            console.warn('Friend menu dispatcher not ready:',a);
+      Array.prototype.forEach.call(menu.querySelectorAll('button[data-a]'),function(btn){
+        btn.onclick=function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          var a=btn.getAttribute('data-a');
+          closeFriendMenu();
+          try{
+            if(typeof window.rkyHandleFriendMenuAction!=='function') throw new Error('dispatcher not ready');
+            return window.rkyHandleFriendMenuAction(a);
+          }catch(err){
+            console.error('Friend 3-dot action error:',a,err);
+            alert('❌ This option could not be opened.');
           }
-        }catch(err){
-          console.error('Friend menu action error:',err);
-          alert('❌ This option could not be opened.');
-        }
+        };
       });
     }
   }
@@ -18515,6 +18512,15 @@ setInterval(function(){
   }
   function friendName(){
     try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
+    try{
+      var bar=document.getElementById('rkyChatTopBarFriend');
+      var el=bar&&bar.querySelector('.rky-friend-name');
+      if(el){var n=el.textContent.trim();if(n)return n;}
+    }catch(e){}
+    try{
+      var top=document.querySelector('#chatBox .rky-friend-name');
+      if(top){var n2=top.textContent.trim();if(n2)return n2;}
+    }catch(e){}
     return '';
   }
   function openSearch(){
@@ -19085,40 +19091,18 @@ setInterval(function(){
    * functions from their correct scope.
    */
   window.rkyHandleFriendMenuAction=function(a){
-    try{
-      switch(String(a||'')){
-        case 'group':
-          if(typeof window.rkyOpenNewGroup==='function') return window.rkyOpenNewGroup();
-          return typeof window.rkyFriendNewGroup==='function' ? window.rkyFriendNewGroup() : undefined;
-        case 'profile':
-          if(typeof window.rkyOpenContact==='function') return window.rkyOpenContact();
-          return undefined;
-        case 'search':
-          if(typeof window.rkyOpenSearchReal==='function') return window.rkyOpenSearchReal();
-          return undefined;
-        case 'media':
-          if(typeof window.rkyOpenMediaDocs==='function') return window.rkyOpenMediaDocs();
-          return undefined;
-        case 'notifications':
-          if(typeof window.rkyFriendToggleMute==='function') return window.rkyFriendToggleMute();
-          return undefined;
-        case 'disappearing':
-          if(typeof window.rkyFriendToggleDisappearing==='function') return window.rkyFriendToggleDisappearing();
-          return undefined;
-        case 'theme':
-          if(typeof window.rkyFriendChangeTheme==='function') return window.rkyFriendChangeTheme();
-          return undefined;
-        case 'more':
-          if(typeof window.rkyFriendMore==='function') return window.rkyFriendMore();
-          return undefined;
-        default:
-          return undefined;
-      }
-    }catch(err){
-      console.error('Friend 3-dot action error:',err);
-      alert('❌ This option could not be opened.');
-    }
+    a=String(a||'');
+    if(a==='group') return window.rkyOpenNewGroup();
+    if(a==='profile') return window.rkyOpenContact();
+    if(a==='search') return window.rkyOpenSearchReal();
+    if(a==='media') return window.rkyOpenMediaDocs();
+    if(a==='notifications') return window.rkyFriendToggleMute();
+    if(a==='disappearing') return window.rkyFriendToggleDisappearing();
+    if(a==='theme') return window.rkyFriendChangeTheme();
+    if(a==='more') return window.rkyFriendMore();
+    throw new Error('Unknown friend 3-dot action: '+a);
   };
+
 })();
 </script>
 

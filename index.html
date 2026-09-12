@@ -19093,26 +19093,6 @@ setInterval(function(){
     openNewGroup();
   },true);
 
-  /* Exact View Contact button only. */
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="profile"]'):null;
-    if(!b)return;
-    e.preventDefault();
-    e.stopImmediatePropagation();
-    var menu=document.getElementById('rkyFriendMoreMenu');
-    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
-    try{
-      if(typeof window.rkyOpenContact==='function') window.rkyOpenContact();
-      else {
-        var name='';
-        try{if(typeof selectedFriend!=='undefined'&&selectedFriend)name=String(selectedFriend);}catch(_e){}
-        var bar=document.getElementById('rkyChatTopBarFriend');
-        var n=bar&&bar.querySelector('.rky-friend-name');
-        if(!name&&n)name=n.textContent.trim();
-        if(name&&typeof contact==='function')contact();
-      }
-    }catch(err){console.error('View contact error:',err);}
-  },true);
 })();
 </script>
 </body>

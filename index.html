@@ -11358,6 +11358,25 @@ async function loadRkyConnections(){
             list.appendChild(button);
         });
 
+        // RKY V27: show locally-created groups in the main friend list.
+        try{
+            var localGroups=JSON.parse(localStorage.getItem("rkyLocalGroups")||"[]");
+            if(Array.isArray(localGroups) && localGroups.length){
+                var gh=document.createElement("div");
+                gh.style.cssText="font-weight:700;padding:12px 6px 5px;font-size:15px;";
+                gh.textContent="👥 Groups";
+                list.appendChild(gh);
+                localGroups.forEach(function(g,idx){
+                    var gb=document.createElement("button");
+                    gb.type="button";
+                    gb.style.cssText="display:block;width:100%;margin:5px 0;padding:11px;text-align:left;border:1px solid #e5e7eb;border-radius:10px;background:#f8fafc;";
+                    gb.innerHTML="<b>👥 "+escapeHTML(g.name||("Group "+(idx+1)))+"</b><br><small>Local group • "+escapeHTML((g.members||[]).join(", "))+"</small>";
+                    gb.onclick=function(){alert("👥 "+(g.name||"Group")+" created successfully. Group messaging backend is not available yet.");};
+                    list.appendChild(gb);
+                });
+            }
+        }catch(groupListError){ console.warn("Local group list error:",groupListError); }
+
     }catch(error){
 
         console.error(
@@ -12072,6 +12091,13 @@ function openNotificationChat(sender){
     selectFriend(sender);
 
 }
+function rkyV27IsBlockedUser(username){
+    try{
+        var a=JSON.parse(localStorage.getItem("rkyBlockedContacts")||"[]");
+        return Array.isArray(a) && a.indexOf(String(username||""))>=0;
+    }catch(e){ return false; }
+}
+
 async function loadMessages(){
 let chats = [];
 
@@ -12098,7 +12124,9 @@ console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
         return;
     }
 
-    chats = data.messages.map(function(msg){
+    chats = data.messages.filter(function(msg){
+        return !rkyV27IsBlockedUser(msg.sender);
+    }).map(function(msg){
 
         return {
             id: msg.id,
@@ -12169,7 +12197,9 @@ console.log("CALLING SEEN API");
 
         if(seenData.success){
 
-            chats = seenData.messages.map(function(msg){
+            chats = seenData.messages.filter(function(msg){
+                return !rkyV27IsBlockedUser(msg.sender);
+            }).map(function(msg){
 
                 return {
                     id: msg.id,
@@ -15154,6 +15184,11 @@ async function checkNewMessagesForNotification(){
 
             const sender = item.sender;
             const unreadCount = Number(item.unread) || 0;
+
+            if(rkyV27IsBlockedUser(sender)){
+                knownUnreadCounts[sender] = unreadCount;
+                return;
+            }
 
             if(!sender || unreadCount <= 0){
                 return;
@@ -18686,6 +18721,7 @@ setInterval(function(){
       out.innerHTML=items.length?items.join(''):'<span class="rky-media-empty">No media shared yet</span>';
     }).catch(function(){out.innerHTML='<span class="rky-media-empty">Media unavailable</span>';});
   }
+  window.rkyOpenContact = contact;
   function mute(){
     var name=friendName();if(!name)return;
     var list=[];try{list=JSON.parse(localStorage.getItem('rkyMutedNotifications')||'[]');}catch(e){}
@@ -18772,7 +18808,7 @@ setInterval(function(){
 </body>
 </html>
 
-<!-- RKY ALL-FOUR ROOT FIX v26: Search + New Group + Blocked + Chat Themes/Gallery -->
+<!-- RKY ALL-FOUR ROOT FIX v26 + V27: Contact export + visible local groups + blocked message filter -->
 <style id="rky-all-four-v26-style">
 #rkyV26Overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}
 #rkyV26Card{width:min(430px,100%);max-height:88vh;overflow:auto;background:#fff;color:#111827;border-radius:16px;padding:16px;box-sizing:border-box;box-shadow:0 18px 60px rgba(0,0,0,.3);}
@@ -18818,7 +18854,7 @@ setInterval(function(){
     if(typeof createGroup==='function'){try{return createGroup();}catch(e){}}
     if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){}}
     var o=overlay('New group','<p style="margin:0 0 10px;opacity:.72;">Create a local group list. Group messaging backend is not available yet.</p><input id="rkyV26GroupName" placeholder="Group name" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #d1d5db;border-radius:9px;"><button id="rkyV26CreateGroup" type="button">👥 Create group</button>');
-    o.querySelector('#rkyV26CreateGroup').onclick=function(){var n=(o.querySelector('#rkyV26GroupName').value||'').trim();if(!n){alert('Enter group name.');return;}var list=[];try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){};list.push({name:n,members:[friend()].filter(Boolean),createdAt:Date.now()});localStorage.setItem('rkyLocalGroups',JSON.stringify(list));o.remove();alert('👥 Group created: '+n);};
+    o.querySelector('#rkyV26CreateGroup').onclick=function(){var n=(o.querySelector('#rkyV26GroupName').value||'').trim();if(!n){alert('Enter group name.');return;}var list=[];try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){};list.push({name:n,members:[friend()].filter(Boolean),createdAt:Date.now()});localStorage.setItem('rkyLocalGroups',JSON.stringify(list));o.remove();if(typeof loadFriends==='function'){try{loadFriends();}catch(_e){}}alert('👥 Group created: '+n);};
   }
   function getBlocked(){var a=[];try{a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');}catch(e){};return Array.isArray(a)?a:[];}
   function setBlocked(a){localStorage.setItem('rkyBlockedContacts',JSON.stringify(Array.from(new Set(a.filter(Boolean)))));}

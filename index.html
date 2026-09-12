@@ -18406,9 +18406,12 @@ setInterval(function(){
   }
 
   function newGroup(){
+    if(typeof window.rkyOpenNewGroup==='function'){
+      try{return window.rkyOpenNewGroup();}catch(e){}
+    }
     if(typeof createGroup==='function'){ try{return createGroup();}catch(e){} }
     if(typeof newGroupChat==='function'){ try{return newGroupChat();}catch(e){} }
-    alert('👥 New group feature is not connected to the current backend yet.');
+    alert('👥 New group feature is not available.');
   }
 
   /* V36: export the existing View Contact function without changing its implementation. */
@@ -18427,7 +18430,7 @@ setInterval(function(){
   }
 
   window.rkyHandleFriendMenuAction=function(a){
-    if(a==='profile') return (typeof window.rkyOpenContact==='function' ? window.rkyOpenContact() : viewContact());
+    if(a==='profile') return (typeof window.rkyOpenContact==='function' ? window.rkyOpenContact() : (typeof window.contact==='function' ? window.contact() : viewContact()));
     if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
     if(a==='media') return (typeof window.rkyOpenMediaDocs==='function' ? window.rkyOpenMediaDocs() : (typeof media==='function' ? media() : openMedia()));
     if(a==='notifications') return toggleMute();
@@ -19101,7 +19104,7 @@ setInterval(function(){
 })();
 </script>
 
-<!-- RKY V36 TARGETED ROUTING: New Group + View Contact only -->
+<!-- RKY V38 TARGETED ROUTING: New Group + View Contact only -->
 <script id="rky-v36-targeted-routing">
 (function(){
   'use strict';

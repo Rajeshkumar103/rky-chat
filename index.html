@@ -18806,12 +18806,12 @@ setInterval(function(){
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
 
-<!-- RKY V28: persistent visible Groups section -->
+<!-- RKY V29: persistent visible Groups section, stable layout -->
 <style id="rky-v28-groups-style">
-#rkyGroupsSection{margin:8px 0 12px;padding:0 2px;}
+#rkyGroupsSection{margin:8px 0 12px;padding:0 2px;display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;position:static!important;float:none!important;clear:both!important;flex:0 0 100%!important;grid-column:1/-1!important;}
 #rkyGroupsSection .rky-v28-title{font-weight:800;font-size:16px;padding:8px 6px 6px;color:#111827;}
 #rkyGroupsSection .rky-v28-group{
-  width:100%;display:flex;align-items:center;gap:10px;text-align:left;
+  width:100%!important;max-width:100%!important;display:flex!important;align-items:center;gap:10px;text-align:left;
   margin:5px 0;padding:11px 12px;border:1px solid #e5e7eb;border-radius:12px;
   background:#f8fafc;box-sizing:border-box;cursor:pointer;
 }
@@ -18821,6 +18821,18 @@ setInterval(function(){
 }
 #rkyGroupsSection .rky-v28-name{font-weight:700;font-size:15px;color:#111827;}
 #rkyGroupsSection .rky-v28-meta{font-size:11px;color:#64748b;margin-top:3px;}
+#friendList > #rkyGroupsSection,
+#friendList > #rkyGroupsSection *{
+  box-sizing:border-box!important;
+}
+#friendList > #rkyGroupsSection .rky-v28-group{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  min-width:0!important;
+  margin:6px 0!important;
+}
 #rkyV28GroupInfo{
   position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;
   justify-content:center;z-index:2147483647;padding:16px;box-sizing:border-box;
@@ -18944,12 +18956,56 @@ setInterval(function(){
     start();
   }
 
-  var tries=0;
-  var timer=setInterval(function(){
-    tries++;
-    if(install()||tries>30)clearInterval(timer);
-    renderGroups();
-  },300);
+  /* V29: do not continuously remove/reinsert the Groups section.
+     The old 300ms polling caused visible flicker/jhuk-jhuk on login. */
+  setTimeout(function(){ install(); renderGroups(); },250);
+  setTimeout(function(){ renderGroups(); },900);
+})();
+</script>
+<!-- RKY V29: stable friend/groups layout + no flicker -->
+<style id="rky-v29-stable-layout">
+#friendList{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+#friendList > #rkyGroupsSection{
+  display:block!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:8px 0 12px!important;
+  padding:0 2px!important;
+}
+#friendList > #rkyGroupsSection .rky-v28-group{
+  display:flex!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+}
+</style>
+<script id="rky-v29-stable-script">
+(function(){
+  function stabilize(){
+    var list=document.getElementById('friendList');
+    if(list){
+      ['display','width','max-width','height','max-height','overflow','position','float','transform'].forEach(function(k){
+        var v={display:'block',width:'100%', 'max-width':'100%',height:'auto','max-height':'none',overflow:'visible',position:'static',float:'none',transform:'none'}[k];
+        if(v) list.style.setProperty(k,v,'important');
+      });
+      var sec=document.getElementById('rkyGroupsSection');
+      if(sec){
+        sec.style.setProperty('display','block','important');
+        sec.style.setProperty('width','100%','important');
+        sec.style.setProperty('max-width','100%','important');
+      }
+    }
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',stabilize);
+  else stabilize();
+  setTimeout(stabilize,300);
+  setTimeout(stabilize,1000);
 })();
 </script>
 </body>

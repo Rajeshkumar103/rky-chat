@@ -17074,8 +17074,8 @@ setInterval(function(){
       menu.addEventListener('click',function(e){
         var b=e.target.closest('button');if(!b)return;var a=b.getAttribute('data-a');closeFriendMenu();
         if(a==='profile'){
-          /* TARGETED FIX: View contact must open the existing contact() page. */
-          try{ contact(); }catch(err){ console.error('View contact error:',err); }
+          /* V36: use the exported contact opener; fallback to the existing function. */
+          try{ if(typeof window.rkyOpenContact==='function') return window.rkyOpenContact(); contact(); }catch(err){ console.error('View contact error:',err); }
         }
         else if(a==='search'){
           var sm=document.getElementById('searchMessage');
@@ -17103,6 +17103,8 @@ setInterval(function(){
           }
         }
         else if(a==='group'){
+          /* V36: route to the working standalone New Group modal first. */
+          if(typeof window.rkyOpenNewGroup==='function')return window.rkyOpenNewGroup();
           if(typeof createGroup==='function')createGroup();
           else if(typeof newGroup==='function')newGroup();
           else if(typeof openCreateGroup==='function')openCreateGroup();
@@ -18409,6 +18411,9 @@ setInterval(function(){
     alert('👥 New group feature is not connected to the current backend yet.');
   }
 
+  /* V36: export the existing View Contact function without changing its implementation. */
+  window.rkyOpenContact=contact;
+
   function more(){
     var menu=document.getElementById('rkyMoreMenu');
     var btn=document.getElementById('rkyMoreButton');
@@ -18422,13 +18427,13 @@ setInterval(function(){
   }
 
   window.rkyHandleFriendMenuAction=function(a){
-    if(a==='profile') return viewContact();
+    if(a==='profile') return (typeof window.rkyOpenContact==='function' ? window.rkyOpenContact() : viewContact());
     if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
     if(a==='media') return (typeof window.rkyOpenMediaDocs==='function' ? window.rkyOpenMediaDocs() : (typeof media==='function' ? media() : openMedia()));
     if(a==='notifications') return toggleMute();
     if(a==='disappearing') return toggleDisappearing();
     if(a==='theme') return changeTheme();
-    if(a==='group') return newGroup();
+    if(a==='group') return (typeof window.rkyOpenNewGroup==='function' ? window.rkyOpenNewGroup() : newGroup());
     if(a==='more') return more();
   };
 
@@ -19095,6 +19100,28 @@ setInterval(function(){
 
 })();
 </script>
+
+<!-- RKY V36 TARGETED ROUTING: New Group + View Contact only -->
+<script id="rky-v36-targeted-routing">
+(function(){
+  'use strict';
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;
+    if(!b)return;
+    var a=b.getAttribute('data-a');
+    if(a!=='group' && a!=='profile')return;
+    if(a==='group' && typeof window.rkyOpenNewGroup==='function'){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      window.rkyOpenNewGroup(); return;
+    }
+    if(a==='profile' && typeof window.rkyOpenContact==='function'){
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      window.rkyOpenContact(); return;
+    }
+  },true);
+})();
+</script>
+
 </body>
 </html>
 

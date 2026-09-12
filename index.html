@@ -19083,7 +19083,15 @@ setInterval(function(){
       list.push({name:name,members:member?[member]:[],createdAt:Date.now()});
       localStorage.setItem('rkyLocalGroups',JSON.stringify(list));
       box.remove();
-      try{if(typeof window.rkyV32RenderGroupsOnly==='function')window.rkyV32RenderGroupsOnly();}catch(e){}
+      /* Show the saved group on the Friends page immediately. */
+      try{
+        if(typeof window.rkyCloseSelectedChatUI==='function'){
+          window.rkyCloseSelectedChatUI();
+        }
+      }catch(e){}
+      setTimeout(function(){
+        try{if(typeof window.rkyV32RenderGroupsOnly==='function')window.rkyV32RenderGroupsOnly();}catch(e){}
+      },50);
       alert('👥 Group created: '+name);
     };
     setTimeout(function(){input.focus();},0);
@@ -19104,24 +19112,24 @@ setInterval(function(){
 })();
 </script>
 
-<!-- RKY V38 TARGETED ROUTING: New Group + View Contact only -->
-<script id="rky-v36-targeted-routing">
+<!-- RKY V39 TARGETED ROUTING: keep every Friend menu item working -->
+<script id="rky-v39-targeted-routing">
 (function(){
   'use strict';
-  document.addEventListener('click',function(e){
-    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a]'):null;
-    if(!b)return;
-    var a=b.getAttribute('data-a');
-    if(a!=='group' && a!=='profile')return;
-    if(a==='group' && typeof window.rkyOpenNewGroup==='function'){
-      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-      window.rkyOpenNewGroup(); return;
+  /* The older capture handler calls this function dynamically. Re-route it here
+     without replacing the existing Search/Media/Theme/etc implementations. */
+  window.rkyHandleFriendMenuAction=function(a){
+    try{
+      if(a==='group' && typeof window.rkyOpenNewGroup==='function') return window.rkyOpenNewGroup();
+      if(a==='profile' && typeof window.rkyOpenContact==='function') return window.rkyOpenContact();
+      if(a==='search' && typeof window.rkyOpenSearchReal==='function') return window.rkyOpenSearchReal();
+      if(a==='media' && typeof window.rkyOpenMediaDocs==='function') return window.rkyOpenMediaDocs();
+      if((a==='notifications'||a==='disappearing'||a==='theme'||a==='more') && typeof window.rkyMoreAction==='function') return window.rkyMoreAction(a);
+    }catch(err){
+      console.error('Friend menu action error:',err);
+      alert('❌ This option could not be opened.');
     }
-    if(a==='profile' && typeof window.rkyOpenContact==='function'){
-      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-      window.rkyOpenContact(); return;
-    }
-  },true);
+  };
 })();
 </script>
 

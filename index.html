@@ -11395,110 +11395,124 @@ async function loadRkyConnections(){
 async function loadFriends(){
 
     const list = document.getElementById("friendList");
+    if(!list || !currentUser){ return; }
 
-
-
-    if(!list || !currentUser){
-        return;
-    }
-
-    list.innerHTML = "<p>Loading friends...</p>";
-
+    /* RKY V30: keep the existing list visible while refreshing.
+       Re-render only when friend/group data actually changes. This stops
+       the login screen and friend list from visibly jumping every refresh. */
+    let response;
     try{
-
-        const response = await fetch(
-            "/api/friends/" +
-            encodeURIComponent(currentUser) +
-            "?t=" + Date.now()
+        response = await fetch(
+            "/api/friends/" + encodeURIComponent(currentUser) +
+            "?t=" + Date.now(),
+            {cache:"no-store"}
         );
-
-        if(!response.ok){
-            throw new Error("HTTP " + response.status);
-        }
-
+        if(!response.ok) throw new Error("HTTP " + response.status);
         const data = await response.json();
+        if(!data.success) throw new Error(data.message || "Could not load friends");
 
-        list.innerHTML = "";
+        const friends = Array.isArray(data.friends) ? data.friends : [];
+        let groups = [];
+        try{
+            groups = JSON.parse(localStorage.getItem("rkyLocalGroups") || "[]");
+            if(!Array.isArray(groups)) groups=[];
+        }catch(e){ groups=[]; }
 
-        if(!data.success){
-            list.innerHTML = "<p>Could not load friends.</p>";
+        const signature = JSON.stringify({
+            friends: friends.map(function(f){
+                return [f.username, f.profileName||"", f.photo||"", f.status||"", f.lastSeen||""];
+            }),
+            groups: groups.map(function(g){
+                return [g.name||"", Array.isArray(g.members)?g.members:[], g.createdAt||0];
+            })
+        });
+
+        if(list.getAttribute("data-rky-v30-signature") === signature){
             return;
         }
 
-        if(!Array.isArray(data.friends) || data.friends.length === 0){
+        list.setAttribute("data-rky-v30-signature", signature);
+        list.innerHTML = "";
+
+        if(friends.length === 0 && groups.length === 0){
             list.innerHTML = "<p>No friends yet.</p>";
             return;
         }
 
-        data.friends.forEach(function(friend){
-
+        friends.forEach(function(friend){
             const button = document.createElement("button");
-
             button.type = "button";
 
-            const profileName =
-                friend.profileName || friend.username;
-
-            const photo =
-                friend.photo ||
-                "https://via.placeholder.com/50";
-
+            const profileName = friend.profileName || friend.username;
+            const photo = friend.photo || "https://via.placeholder.com/50";
             let statusHTML = "";
 
             if(friend.status === "Online"){
-                statusHTML =
-                    "<span style='color:green;'>🟢 Online</span>";
+                statusHTML = "<span style='color:green;'>🟢 Online</span>";
             }else{
-                statusHTML =
-                    "<span style='color:red;'>🔴 Offline</span>";
-
+                statusHTML = "<span style='color:red;'>🔴 Offline</span>";
                 if(friend.lastSeen){
-                    statusHTML +=
-                        "<br><small>Last Seen: " +
-                        escapeHTML(friend.lastSeen) +
-                        "</small>";
+                    statusHTML += "<br><small>Last Seen: " +
+                        escapeHTML(friend.lastSeen) + "</small>";
                 }
             }
 
             button.innerHTML =
                 "<div style='display:flex;align-items:center;gap:10px;text-align:left;'>" +
+                "<img src='" + escapeHTML(photo) + "' width='50' height='50' style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
+                "<div style='min-width:0;'>" +
+                "<div style='font-weight:bold;font-size:16px;'>" + escapeHTML(profileName) + "</div>" +
+                "<div style='font-size:12px;margin-top:3px;'>" + statusHTML + "</div>" +
+                "</div></div>";
 
-                "<img src='" + escapeHTML(photo) + "'" +
-                " width='50' height='50'" +
-                " style='border-radius:50%;object-fit:cover;flex-shrink:0;'>" +
-
-                "<div>" +
-
-                "<div style='font-weight:bold;font-size:16px;'>" +
-                escapeHTML(profileName) +
-                "</div>" +
-
-                "<div style='font-size:12px;margin-top:3px;'>" +
-                statusHTML +
-                "</div>" +
-
-                "</div>" +
-
-                "</div>";
-
-            button.onclick = function(){
-                selectFriend(friend.username);
-            };
-
-            button.style.display = "block";
-            button.style.width = "100%";
-            button.style.margin = "5px 0";
-            button.style.padding = "10px";
-
+            button.style.cssText = "display:block;width:100%;margin:5px 0;padding:10px;border:1px solid #ddd;border-radius:12px;background:#fff;cursor:pointer;box-sizing:border-box;";
+            button.onclick = function(){ selectFriend(friend.username); };
             list.appendChild(button);
         });
 
+        if(groups.length){
+            const section = document.createElement("div");
+            section.id = "rkyGroupsSection";
+            section.style.cssText = "display:block;width:100%;box-sizing:border-box;margin:12px 0 0;padding:0;clear:both;";
+
+            const title = document.createElement("div");
+            title.textContent = "👥 Groups";
+            title.style.cssText = "display:block;width:100%;box-sizing:border-box;padding:10px 4px 6px;font-weight:800;font-size:16px;";
+            section.appendChild(title);
+
+            groups.forEach(function(g,idx){
+                const gb = document.createElement("button");
+                gb.type = "button";
+                gb.style.cssText = "display:flex;align-items:center;width:100%;box-sizing:border-box;margin:5px 0;padding:11px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;text-align:left;cursor:pointer;gap:10px;";
+                const members = Array.isArray(g.members) ? g.members.filter(Boolean) : [];
+                gb.innerHTML =
+                    "<span style='font-size:25px;flex:0 0 auto;'>👥</span>" +
+                    "<span style='min-width:0;flex:1;display:block;'>" +
+                    "<b style='font-size:15px;'>" + escapeHTML(g.name || ("Group " + (idx+1))) + "</b><br>" +
+                    "<small style='color:#64748b;'>" + escapeHTML(members.length ? (members.length + " member" + (members.length===1?"":"s")) : "Local group") + "</small>" +
+                    "</span><span style='font-size:22px;color:#94a3b8;'>›</span>";
+                gb.onclick = function(){
+                    const old = document.getElementById("rkyV30GroupInfo");
+                    if(old) old.remove();
+                    const d = document.createElement("div");
+                    d.id = "rkyV30GroupInfo";
+                    d.style.cssText = "position:fixed;inset:0;z-index:2147483646;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;";
+                    d.innerHTML = "<div style='width:min(420px,100%);background:#fff;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 18px 55px rgba(0,0,0,.3);'><h3 style='margin:0 0 8px;'>👥 " + escapeHTML(g.name||"Group") + "</h3><p style='color:#64748b;'>Local group</p><div style='padding:11px;background:#f8fafc;border-radius:10px;'><b>Members</b><div style='margin-top:6px;'>" + (members.length ? members.map(escapeHTML).join(", ") : "No members added") + "</div></div><button type='button' id='rkyV30GroupClose' style='width:100%;margin-top:14px;padding:11px;border:0;border-radius:10px;background:#111827;color:#fff;'>Close</button></div>";
+                    document.body.appendChild(d);
+                    document.getElementById("rkyV30GroupClose").onclick=function(){d.remove();};
+                    d.onclick=function(e){if(e.target===d)d.remove();};
+                };
+                section.appendChild(gb);
+            });
+            list.appendChild(section);
+        }
+
     }catch(error){
-
         console.error("loadFriends error:", error);
-
-        list.innerHTML =
-            "<p>Could not load friends.</p>";
+        /* Do not replace a working list with an error every 10 seconds. */
+        if(!list.children.length){
+            list.innerHTML = "<p>Could not load friends.</p>";
+        }
     }
 }
 
@@ -18842,175 +18856,12 @@ setInterval(function(){
   box-shadow:0 15px 45px rgba(0,0,0,.35);box-sizing:border-box;
 }
 </style>
-<script id="rky-v28-groups-script">
-(function(){
-  'use strict';
-
-  function esc(v){
-    return String(v==null?'':v).replace(/[&<>"']/g,function(c){
-      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'};
-    });
-  }
-
-  function getGroups(){
-    var list=[];
-    try{ list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]'); }catch(e){ list=[]; }
-    return Array.isArray(list)?list:[];
-  }
-
-  function showGroupInfo(g){
-    var old=document.getElementById('rkyV28GroupInfo');
-    if(old)old.remove();
-    var members=Array.isArray(g.members)?g.members.filter(Boolean):[];
-    var d=document.createElement('div');
-    d.id='rkyV28GroupInfo';
-    d.innerHTML=
-      '<div class="card">'+
-        '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">'+
-          '<h3 style="margin:0;">👥 '+esc(g.name||'Group')+'</h3>'+
-          '<button type="button" data-v28-close style="border:0;background:#f1f5f9;border-radius:50%;width:32px;height:32px;font-size:19px;">×</button>'+
-        '</div>'+
-        '<p style="color:#64748b;margin:10px 0 14px;">Local group</p>'+
-        '<div style="padding:11px;background:#f8fafc;border-radius:10px;">'+
-          '<b>Members</b><div style="margin-top:6px;">'+
-          (members.length?members.map(esc).join(', '):'No members added')+
-          '</div>'+
-        '</div>'+
-        '<button type="button" data-v28-close style="width:100%;margin-top:14px;padding:11px;border:0;border-radius:10px;background:#111827;color:#fff;font-size:15px;">Close</button>'+
-      '</div>';
-    document.body.appendChild(d);
-    d.querySelectorAll('[data-v28-close]').forEach(function(b){b.onclick=function(){d.remove();};});
-    d.onclick=function(e){if(e.target===d)d.remove();};
-  }
-
-  function renderGroups(){
-    var list=document.getElementById('friendList');
-    if(!list)return;
-
-    var old=document.getElementById('rkyGroupsSection');
-    if(old)old.remove();
-
-    var groups=getGroups();
-    if(!groups.length)return;
-
-    var sec=document.createElement('div');
-    sec.id='rkyGroupsSection';
-
-    var title=document.createElement('div');
-    title.className='rky-v28-title';
-    title.textContent='👥 Groups';
-    sec.appendChild(title);
-
-    groups.forEach(function(g,idx){
-      var b=document.createElement('button');
-      b.type='button';
-      b.className='rky-v28-group';
-      var members=Array.isArray(g.members)?g.members.filter(Boolean):[];
-      b.innerHTML=
-        '<span class="rky-v28-icon">👥</span>'+
-        '<span style="min-width:0;flex:1;">'+
-          '<span class="rky-v28-name">'+esc(g.name||('Group '+(idx+1)))+'</span><br>'+
-          '<span class="rky-v28-meta">'+
-            (members.length ? esc(members.length+' member'+(members.length===1?'':'s')) : 'Local group')+
-          '</span>'+
-        '</span>'+
-        '<span style="font-size:20px;color:#94a3b8;">›</span>';
-      b.onclick=function(){showGroupInfo(g);};
-      sec.appendChild(b);
-    });
-
-    list.insertBefore(sec,list.firstChild);
-  }
-
-  function hook(){
-    renderGroups();
-  }
-
-  /* Wrap the existing global loadFriends once, so groups reappear after every refresh. */
-  function install(){
-    if(typeof window.loadFriends!=='function')return false;
-    if(window.loadFriends.__rkyV28Wrapped)return true;
-    var old=window.loadFriends;
-    async function wrapped(){
-      var result;
-      try{result=await old.apply(this,arguments);}
-      finally{setTimeout(renderGroups,0);}
-      return result;
-    }
-    wrapped.__rkyV28Wrapped=true;
-    wrapped.__rkyV28Original=old;
-    window.loadFriends=wrapped;
-    return true;
-  }
-
-  function start(){
-    install();
-    setTimeout(renderGroups,150);
-    setTimeout(renderGroups,700);
-    setTimeout(renderGroups,1500);
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',start);
-  }else{
-    start();
-  }
-
-  /* V29: do not continuously remove/reinsert the Groups section.
-     The old 300ms polling caused visible flicker/jhuk-jhuk on login. */
-  setTimeout(function(){ install(); renderGroups(); },250);
-  setTimeout(function(){ renderGroups(); },900);
-})();
-</script>
-<!-- RKY V29: stable friend/groups layout + no flicker -->
-<style id="rky-v29-stable-layout">
-#friendList{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  box-sizing:border-box!important;
-  overflow:visible!important;
-}
-#friendList > #rkyGroupsSection{
-  display:block!important;
-  width:100%!important;
-  max-width:100%!important;
-  margin:8px 0 12px!important;
-  padding:0 2px!important;
-}
-#friendList > #rkyGroupsSection .rky-v28-group{
-  display:flex!important;
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-}
+<style id="rky-v30-stable-friend-list">
+#friendList{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;overflow:visible!important;position:relative!important;float:none!important;transform:none!important;}
+#friendList > button{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;}
+#rkyGroupsSection{display:block!important;width:100%!important;max-width:100%!important;box-sizing:border-box!important;clear:both!important;position:static!important;float:none!important;transform:none!important;}
 </style>
-<script id="rky-v29-stable-script">
-(function(){
-  function stabilize(){
-    var list=document.getElementById('friendList');
-    if(list){
-      ['display','width','max-width','height','max-height','overflow','position','float','transform'].forEach(function(k){
-        var v={display:'block',width:'100%', 'max-width':'100%',height:'auto','max-height':'none',overflow:'visible',position:'static',float:'none',transform:'none'}[k];
-        if(v) list.style.setProperty(k,v,'important');
-      });
-      var sec=document.getElementById('rkyGroupsSection');
-      if(sec){
-        sec.style.setProperty('display','block','important');
-        sec.style.setProperty('width','100%','important');
-        sec.style.setProperty('max-width','100%','important');
-      }
-    }
-  }
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',stabilize);
-  else stabilize();
-  setTimeout(stabilize,300);
-  setTimeout(stabilize,1000);
-})();
-</script>
-</body>
-</html>
-
+<!-- RKY V30: removed MutationObserver group flicker; stable friend/group rendering -->
 <!-- RKY ALL-FOUR ROOT FIX v26 + V27: Contact export + visible local groups + blocked message filter -->
 <style id="rky-all-four-v26-style">
 #rkyV26Overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;box-sizing:border-box;}

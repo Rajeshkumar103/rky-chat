@@ -12135,6 +12135,11 @@ console.log("CHAT DEBUG:", currentUser, selectedFriend, chats.length, chats);
 
     });
 
+    /* RKY BLOCKED CONTACT: hide messages from a blocked friend on this device. */
+    if(window.rkyIsBlockedFriend(selectedFriend)){
+        chats=chats.filter(function(m){return String(m.from||'')!==String(selectedFriend||'');});
+    }
+
     /* RKY REAL DISAPPEARING MESSAGES: hide expired messages locally. */
     try{
         var dm={};
@@ -12796,6 +12801,7 @@ setInterval(function(){
 
 }, 1000);
 async function sendmessage(){
+    if(window.rkyIsBlockedFriend(selectedFriend)){ alert("🚫 This contact is blocked. Unblock to send messages."); return; }
     if(!currentUser){
         alert("Please login first");
         return;
@@ -15012,6 +15018,7 @@ async function uploadMediaMessage(file){
 }
 
 async function sendPhotoMessage(){
+    if(window.rkyIsBlockedFriend(selectedFriend)){ alert("🚫 This contact is blocked. Unblock to send media."); return; }
 
     const input = document.getElementById("photoMessage");
 
@@ -15042,6 +15049,7 @@ async function sendPhotoMessage(){
 
 
 async function sendVideoMessage(){
+    if(window.rkyIsBlockedFriend(selectedFriend)){ alert("🚫 This contact is blocked. Unblock to send media."); return; }
 
     const input = document.getElementById("videoMessage");
 
@@ -18709,8 +18717,8 @@ setInterval(function(){
       chat.setAttribute('data-rky-theme',t);
       var st=document.getElementById('rky-friend-theme-style');if(!st){st=document.createElement('style');st.id='rky-friend-theme-style';document.head.appendChild(st);}
       st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';
-      if(bgs[name]){chat.style.backgroundImage='url("'+bgs[name].replace(/"/g,'\\"')+'")';chat.style.backgroundSize='cover';chat.style.backgroundPosition='center';}
-      else chat.style.backgroundImage='';
+      if(bgs[name]){chat.style.backgroundImage='url("'+bgs[name].replace(/"/g,'\\"')+'")';chat.style.backgroundSize='cover';chat.style.backgroundPosition='center';chat.style.backgroundRepeat='no-repeat';chat.style.backgroundAttachment='fixed';var msg2=document.getElementById('messages');if(msg2)msg2.style.setProperty('background','transparent','important');}
+      else {chat.style.backgroundImage='';var msg3=document.getElementById('messages');if(msg3)msg3.style.removeProperty('background');}
       d.remove();
     };});
     var galleryBtn=d.querySelector('[data-gallery]');
@@ -18723,7 +18731,7 @@ setInterval(function(){
             var max=1280,w=im.width,h=im.height;if(w>max||h>max){if(w>=h){h=Math.round(h*max/w);w=max;}else{w=Math.round(w*max/h);h=max;}}
             var c=document.createElement('canvas');c.width=w;c.height=h;var ctx=c.getContext('2d');ctx.drawImage(im,0,0,w,h);
             var data=c.toDataURL('image/jpeg',.78);bgs[name]=data;localStorage.setItem(bgKey,JSON.stringify(bgs));
-            chat.style.backgroundImage='url("'+data.replace(/"/g,'\\"')+'")';chat.style.backgroundSize='cover';chat.style.backgroundPosition='center';
+            chat.style.backgroundImage='url("'+data.replace(/"/g,'\\"')+'")';chat.style.backgroundSize='cover';chat.style.backgroundPosition='center';chat.style.backgroundRepeat='no-repeat';chat.style.backgroundAttachment='fixed';var msg=document.getElementById('messages');if(msg)msg.style.setProperty('background','transparent','important');
             d.remove();alert('🖼️ Gallery background applied.');input.remove();
           };im.src=reader.result;
         };reader.readAsDataURL(file);
@@ -18790,6 +18798,19 @@ setInterval(function(){
     st.textContent=t==='dark'?'#chatBox[data-rky-theme="dark"]{background:#111827!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] #messages{background:#1f2937!important;color:#f9fafb!important}#chatBox[data-rky-theme="dark"] .wa-bottom-bar{background:#111827!important;color:#f9fafb!important}':t==='light'?'#chatBox[data-rky-theme="light"]{background:#f8fafc!important;color:#111827!important}#chatBox[data-rky-theme="light"] #messages{background:#f8fafc!important;color:#111827!important}':'';
   }
   setInterval(applyFriendTheme,500);applyFriendTheme();
+  function applyFriendGallery(){
+    var chat=document.getElementById('chatBox');if(!chat)return;
+    var name='';try{name=String(selectedFriend||'');}catch(e){}
+    if(!name)return;
+    var bgs={};try{bgs=JSON.parse(localStorage.getItem('rkyChatThemeBgByFriend')||'{}');}catch(e){bgs={};}
+    var msg=document.getElementById('messages');
+    if(bgs[name]){
+      chat.style.backgroundImage='url("'+bgs[name].replace(/"/g,'\"')+'")';
+      chat.style.backgroundSize='cover';chat.style.backgroundPosition='center';chat.style.backgroundRepeat='no-repeat';chat.style.backgroundAttachment='fixed';
+      if(msg)msg.style.setProperty('background','transparent','important');
+    }
+  }
+  setInterval(applyFriendGallery,500);applyFriendGallery();
 })();
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
@@ -19138,6 +19159,22 @@ setInterval(function(){
 })();
 </script>
 
+
+<script id="rky-block-reaction-v2">
+window.rkyIsBlockedFriend=function(n){try{var a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');return Array.isArray(a)&&a.indexOf(String(n||''))>=0;}catch(e){return false;}};
+(function(){
+  function sync(){
+    var name='';try{name=String(selectedFriend||'');}catch(e){}
+    var yes=window.rkyIsBlockedFriend(name);
+    var box=document.getElementById('chatBox');if(!box)return;
+    var old=document.getElementById('rkyBlockedBanner');
+    if(yes){
+      if(!old){old=document.createElement('div');old.id='rkyBlockedBanner';old.textContent='🚫 Contact blocked — messaging disabled';old.style.cssText='position:absolute;left:10px;right:10px;bottom:64px;z-index:9999;background:#ffe4e6;color:#9f1239;border-radius:10px;padding:8px;text-align:center;font-size:12px;font-weight:700;pointer-events:none;';box.style.position=box.style.position||'relative';box.appendChild(old);}
+    }else if(old)old.remove();
+  }
+  setInterval(sync,500);sync();
+})();
+</script>
 </body>
 </html>
 

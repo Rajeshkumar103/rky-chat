@@ -17074,7 +17074,8 @@ setInterval(function(){
       menu.addEventListener('click',function(e){
         var b=e.target.closest('button');if(!b)return;var a=b.getAttribute('data-a');closeFriendMenu();
         if(a==='profile'){
-          if(typeof openProfileSettings==='function')openProfileSettings();
+          /* TARGETED FIX: View contact must open the existing contact() page. */
+          try{ contact(); }catch(err){ console.error('View contact error:',err); }
         }
         else if(a==='search'){
           var sm=document.getElementById('searchMessage');
@@ -19038,6 +19039,82 @@ setInterval(function(){
 })();
 </script>
 
+<!-- RKY V34 TARGETED FIX: New Group + View Contact only -->
+<script id="rky-v34-group-contact-fix">
+(function(){
+  'use strict';
+
+  /* New Group: standalone modal, no changes to friends/requests/messages. */
+  function openNewGroup(){
+    var old=document.getElementById('rkyV34GroupModal');
+    if(old) old.remove();
+    var box=document.createElement('div');
+    box.id='rkyV34GroupModal';
+    box.style.cssText='position:fixed!important;inset:0!important;z-index:2147483647!important;background:rgba(0,0,0,.45)!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:16px!important;box-sizing:border-box!important;';
+    box.innerHTML='<div style="width:min(420px,100%);background:#fff;color:#111827;border-radius:16px;padding:18px;box-sizing:border-box;box-shadow:0 18px 55px rgba(0,0,0,.32);">'+
+      '<h3 style="margin:0 0 10px;font-size:20px;">New group</h3>'+
+      '<input id="rkyV34GroupName" type="text" placeholder="Group name" autocomplete="off" style="width:100%;padding:12px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;font-size:16px;">'+
+      '<div style="display:flex;gap:8px;margin-top:12px;">'+
+      '<button type="button" id="rkyV34Create" style="flex:1;border:0;border-radius:10px;padding:12px;background:#078f78;color:#fff;font-weight:700;">👥 Create group</button>'+
+      '<button type="button" id="rkyV34Cancel" style="flex:1;border:0;border-radius:10px;padding:12px;background:#111827;color:#fff;font-weight:700;">Close</button>'+
+      '</div></div>';
+    document.body.appendChild(box);
+    var input=box.querySelector('#rkyV34GroupName');
+    box.querySelector('#rkyV34Cancel').onclick=function(){box.remove();};
+    box.addEventListener('click',function(e){if(e.target===box)box.remove();});
+    box.querySelector('#rkyV34Create').onclick=function(){
+      var name=(input.value||'').trim();
+      if(!name){alert('Enter group name.');input.focus();return;}
+      var list=[];
+      try{list=JSON.parse(localStorage.getItem('rkyLocalGroups')||'[]');}catch(e){list=[];}
+      if(!Array.isArray(list))list=[];
+      if(list.some(function(g){return String(g&&g.name||'').trim().toLowerCase()===name.toLowerCase();})){alert('This group already exists.');return;}
+      var member='';
+      try{if(typeof selectedFriend!=='undefined'&&selectedFriend)member=String(selectedFriend);}catch(e){}
+      if(!member){var bar=document.getElementById('rkyChatTopBarFriend');var n=bar&&bar.querySelector('.rky-friend-name');if(n)member=n.textContent.trim();}
+      list.push({name:name,members:member?[member]:[],createdAt:Date.now()});
+      localStorage.setItem('rkyLocalGroups',JSON.stringify(list));
+      box.remove();
+      try{if(typeof window.rkyV32RenderGroupsOnly==='function')window.rkyV32RenderGroupsOnly();}catch(e){}
+      alert('👥 Group created: '+name);
+    };
+    setTimeout(function(){input.focus();},0);
+  }
+  window.rkyOpenNewGroup=openNewGroup;
+
+  /* Exact New Group button only. Capture phase prevents older conflicting handlers. */
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="group"]'):null;
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
+    openNewGroup();
+  },true);
+
+  /* Exact View Contact button only. */
+  document.addEventListener('click',function(e){
+    var b=e.target&&e.target.closest?e.target.closest('#rkyFriendMoreMenu button[data-a="profile"]'):null;
+    if(!b)return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    var menu=document.getElementById('rkyFriendMoreMenu');
+    if(menu){menu.classList.remove('show');menu.style.setProperty('display','none','important');}
+    try{
+      if(typeof window.rkyOpenContact==='function') window.rkyOpenContact();
+      else {
+        var name='';
+        try{if(typeof selectedFriend!=='undefined'&&selectedFriend)name=String(selectedFriend);}catch(_e){}
+        var bar=document.getElementById('rkyChatTopBarFriend');
+        var n=bar&&bar.querySelector('.rky-friend-name');
+        if(!name&&n)name=n.textContent.trim();
+        if(name&&typeof contact==='function')contact();
+      }
+    }catch(err){console.error('View contact error:',err);}
+  },true);
+})();
+</script>
 </body>
 </html>
 

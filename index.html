@@ -16637,18 +16637,24 @@ setInterval(function(){
 (function(){
   function enforceAuthVisibility(){
     var logged=!!((typeof currentUser !== "undefined" && typeof currentUser === "string") ? currentUser.trim() : "");
+    var savedUser="";
+    try{ savedUser=(localStorage.getItem("currentUser")||"").trim(); }catch(e){}
+    var effectiveLogged=!!(logged||savedUser);
     var chat=document.getElementById("chatBox");
     var friends=document.getElementById("rkyVisibleFriends");
     var login=document.getElementById("loginBox");
-    if(chat && !logged && !chat.classList.contains("rky-friend-chat-open")){
+
+    /* Never hide the already-authenticated chat just because the global
+       currentUser variable is briefly stale during a Friends/Group redraw. */
+    if(chat && !effectiveLogged && !chat.classList.contains("rky-friend-chat-open")){
       chat.style.setProperty("display","none","important");
     }
     if(friends){
-      friends.style.setProperty("display", logged ? "block" : "none", "important");
-      friends.style.setProperty("visibility", logged ? "visible" : "hidden", "important");
-      friends.style.setProperty("opacity", logged ? "1" : "0", "important");
+      friends.style.setProperty("display", effectiveLogged ? "block" : "none", "important");
+      friends.style.setProperty("visibility", effectiveLogged ? "visible" : "hidden", "important");
+      friends.style.setProperty("opacity", effectiveLogged ? "1" : "0", "important");
     }
-    if(login && !logged){
+    if(login && !effectiveLogged){
       login.style.setProperty("display","block","important");
     }
   }
@@ -17205,7 +17211,6 @@ setInterval(function(){
     };
   }
 
-  setInterval(cleanFriendChatView, 1000);
 })();
 </script>
 
@@ -17629,12 +17634,11 @@ setInterval(function(){
 
     var bar=document.getElementById('rkyChatTopBarFriend');
     if(bar) bar.remove();
-
     var menu=document.getElementById('rkyFriendMoreMenu');
     if(menu) menu.remove();
 
-    /* One deterministic Back state. No loadFriends(), no timers, no redraw race. */
-    chat.classList.remove('rky-friend-chat-open');
+    /* V66: atomic Friends restore. No redraw, no timers, no loadFriends(). */
+    chat.classList.remove('rky-friend-chat-open','rky-chat-open');
     chat.style.setProperty('display','block','important');
     chat.style.setProperty('visibility','visible','important');
     chat.style.setProperty('opacity','1','important');
@@ -19313,6 +19317,53 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 
+
+<!-- RKY V66 atomic group/friend return fix -->
+<style id="rky-v66-atomic-return-style">
+#chatBox.rky-friend-chat-open #rkyHeader,
+#chatBox.rky-friend-chat-open #friendList,
+#chatBox.rky-friend-chat-open #friendProfile,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsToggle,
+#chatBox.rky-friend-chat-open #rkyCircleRequestsContent,
+#chatBox.rky-friend-chat-open #rkySentRequestsSection,
+#chatBox.rky-friend-chat-open #rkyConnectionsSection,
+#chatBox.rky-friend-chat-open #rkyMoreButton,
+#chatBox.rky-friend-chat-open #rkyMoreMenu { display:none !important; }
+</style>
+<script id="rky-v66-atomic-return-script">
+(function(){
+  'use strict';
+  function restore(){
+    var chat=document.getElementById('chatBox');
+    if(!chat)return;
+    chat.classList.remove('rky-friend-chat-open','rky-chat-open');
+    chat.style.setProperty('display','block','important');
+    chat.style.setProperty('visibility','visible','important');
+    chat.style.setProperty('opacity','1','important');
+    ['rkyHeader','friendList','rkyCircleRequestsToggle','rkySentRequestsSection','rkyConnectionsSection'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){
+        el.style.setProperty('display','block','important');
+        el.style.setProperty('visibility','visible','important');
+        el.style.setProperty('opacity','1','important');
+      }
+    });
+    var profile=document.getElementById('friendProfile');
+    if(profile)profile.style.setProperty('display','none','important');
+    var msg=document.getElementById('messages');
+    if(msg){msg.style.setProperty('display','none','important');msg.style.setProperty('visibility','hidden','important');}
+    var comp=chat.querySelector('.wa-bottom-bar');
+    if(comp)comp.style.setProperty('display','none','important');
+    try{window.selectedFriend='';}catch(e){}
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('#rkyChatTopBarFriend .rky-friend-back');
+    if(!b)return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    restore();
+  },true);
+})();
+</script>
 </body>
 
 <script id="rky-v56-delete-old-local-groups">

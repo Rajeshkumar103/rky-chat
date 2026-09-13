@@ -18667,13 +18667,14 @@ setInterval(function(){
     page.querySelector('.rky-contact-back').onclick=page.querySelector('.rky-contact-close').onclick=function(){page.remove();};
     page.querySelectorAll('[data-copy]').forEach(function(b){b.onclick=function(){var txt=b.getAttribute('data-copy')||'';if(navigator.clipboard)navigator.clipboard.writeText(txt).then(function(){alert('Copied ✅');});else alert(txt);};});
     page.querySelectorAll('[data-ca]').forEach(function(b){b.onclick=function(){var a=b.getAttribute('data-ca');if(a==='message'){page.remove();return;}if(a==='video'){if(typeof startVideoCall==='function')startVideoCall();return;}if(a==='audio'){if(typeof startVoiceCall==='function')startVoiceCall();else if(typeof connectVoiceCallSocket==='function')connectVoiceCallSocket();return;}if(a==='more'){if(typeof more==='function')more();return;}if(a==='media'){if(typeof media==='function')media();return;}if(a==='notifications'){if(typeof mute==='function')mute();setTimeout(contact,150);return;}if(a==='disappearing'){if(typeof disappearing==='function')disappearing();setTimeout(contact,150);return;}if(a==='theme'){if(typeof theme==='function')theme();setTimeout(contact,150);return;}}});
-    try{var bl=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');if(Array.isArray(bl)&&bl.indexOf(name)>=0)page.querySelector('.rky-block-contact').textContent='✅ Unblock contact';}catch(e){}
+    try{var bl=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]'),me2=String(window.currentUser||currentUser||'');if(Array.isArray(bl)&&bl.some(function(x){return x&&typeof x==='object'&&String(x.blocker||'')===me2&&String(x.blocked||'')===String(name);}))page.querySelector('.rky-block-contact').textContent='✅ Unblock contact';}catch(e){}
     page.querySelector('.rky-block-contact').onclick=function(){
-      var key='rkyBlockedContacts',list=[];
+      var key='rkyBlockedContacts',list=[],me=String(window.currentUser||currentUser||'');
       try{list=JSON.parse(localStorage.getItem(key)||'[]');if(!Array.isArray(list))list=[];}catch(e){list=[];}
-      var i=list.indexOf(name);
+      list=list.filter(function(x){return x&&typeof x==='object';});
+      var i=list.findIndex(function(x){return String(x.blocker||'')===me&&String(x.blocked||'')===String(name);});
       if(i>=0){list.splice(i,1);localStorage.setItem(key,JSON.stringify(list));page.querySelector('.rky-block-contact').textContent='🚫 Block contact';alert('✅ Contact unblocked: '+name);}
-      else{list.push(name);localStorage.setItem(key,JSON.stringify(list));page.querySelector('.rky-block-contact').textContent='✅ Unblock contact';alert('🚫 Contact blocked: '+name);}
+      else{list.push({blocker:me,blocked:String(name)});localStorage.setItem(key,JSON.stringify(list));page.querySelector('.rky-block-contact').textContent='✅ Unblock contact';alert('🚫 Contact blocked: '+name);}
     };
 
     var out=page.querySelector('#rkyContactMediaPreview');
@@ -19161,7 +19162,7 @@ setInterval(function(){
 
 
 <script id="rky-block-reaction-v2">
-window.rkyIsBlockedFriend=function(n){try{var a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');return Array.isArray(a)&&a.indexOf(String(n||''))>=0;}catch(e){return false;}};
+window.rkyIsBlockedFriend=function(n){try{var me=String(window.currentUser||currentUser||''),target=String(n||'');if(!me||!target)return false;var a=JSON.parse(localStorage.getItem('rkyBlockedContacts')||'[]');return Array.isArray(a)&&a.some(function(x){return x&&typeof x==='object'&&String(x.blocker||'')===target&&String(x.blocked||'')===me;});}catch(e){return false;}};
 (function(){
   function sync(){
     var name='';try{name=String(selectedFriend||'');}catch(e){}

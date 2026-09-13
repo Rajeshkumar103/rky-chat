@@ -19244,3 +19244,41 @@ window.rkyIsBlockedFriend=function(n){try{var a=JSON.parse(localStorage.getItem(
   applyWallpaper();
 })();
 </script>
+
+<style id="rky-gallery-wallpaper-final-v51">
+#chatBox.rky-friend-chat-open #messages{
+  background-color:transparent !important;
+  background-repeat:no-repeat !important;
+  background-position:center center !important;
+  background-size:cover !important;
+  background-attachment:scroll !important;
+}
+#chatBox.rky-friend-chat-open #messages > *{position:relative;z-index:1;}
+</style>
+<script id="rky-gallery-wallpaper-apply-v51">
+(function(){
+  function getName(){
+    try{if(typeof selectedFriend!=='undefined'&&selectedFriend)return String(selectedFriend);}catch(e){}
+    try{var e=document.querySelector('#chatBox .rky-friend-name');if(e&&e.textContent.trim())return e.textContent.trim();}catch(e){}
+    return '';
+  }
+  function apply(){
+    var box=document.getElementById('chatBox'), msg=document.getElementById('messages'), name=getName();
+    if(!box||!msg||!name)return;
+    var all={};
+    try{all=JSON.parse(localStorage.getItem('rkyChatThemeBgByFriend')||'{}');}catch(e){all={};}
+    var data=all[name];
+    if(!data)return;
+    var url='url("'+String(data).replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'")';
+    msg.style.setProperty('background-image',url,'important');
+    msg.style.setProperty('background-size','cover','important');
+    msg.style.setProperty('background-position','center center','important');
+    msg.style.setProperty('background-repeat','no-repeat','important');
+    msg.style.setProperty('background-attachment','scroll','important');
+    msg.style.setProperty('background-color','transparent','important');
+  }
+  window.rkyApplyGalleryWallpaper=apply;
+  document.addEventListener('DOMContentLoaded',apply);
+  setInterval(apply,1000);
+})();
+</script>

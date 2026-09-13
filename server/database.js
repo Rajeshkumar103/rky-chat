@@ -199,6 +199,39 @@ try {
     }
 }
 
+
+
+// ========================================
+// 👥 Real Group Chat
+// ========================================
+db.exec(`
+    CREATE TABLE IF NOT EXISTS groups (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        created_by TEXT NOT NULL,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS group_members (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER NOT NULL,
+        username TEXT NOT NULL,
+        joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(group_id, username)
+    );
+
+    CREATE TABLE IF NOT EXISTS group_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER NOT NULL,
+        sender TEXT NOT NULL,
+        message TEXT,
+        time TEXT DEFAULT CURRENT_TIMESTAMP,
+        delivered INTEGER DEFAULT 1,
+        seen INTEGER DEFAULT 0,
+        deleted INTEGER DEFAULT 0
+    );
+`);
+
 console.log("Rky Chat Database Ready ✅");
 
 module.exports = db;

@@ -2675,6 +2675,20 @@ const onlineCallUsers = new Map();
 
 io.on("connection", socket => {
 
+    socket.on("join-group", data => {
+        const groupId=Number(data && data.groupId);
+        const username=String(data && data.username || '').trim();
+        if(!groupId || !username) return;
+        const member=db.prepare("SELECT id FROM group_members WHERE group_id=? AND username=?").get(groupId,username);
+        if(member) socket.join("rky-group-"+groupId);
+    });
+
+    socket.on("leave-group", data => {
+        const groupId=Number(data && data.groupId);
+        if(groupId) socket.leave("rky-group-"+groupId);
+    });
+
+
     console.log("📞 Call socket connected:", socket.id);
 
     socket.on("register-call-user", username => {
@@ -2970,6 +2984,109 @@ io.on("connection", socket => {
     });
 
 });
+
+
+// ========================================
+// 👥 REAL GROUP CHAT API
+// ========================================
+
+app.get("/api/groups/:username", (req, res) => {
+    const username = req.params.username;
+    const groups = db.prepare(`
+        SELECT g.id, g.name, g.created_by, g.created_at,
+               GROUP_CONCAT(gm.username, ', ') AS members
+        FROM groups g
+        JOIN group_members gm ON gm.group_id = g.id
+        WHERE EXISTS (
+            SELECT 1 FROM group_members me
+            WHERE me.group_id = g.id AND me.username = ?
+        )
+        GROUP BY g.id
+        ORDER BY g.id DESC
+    `).all(username);
+    res.json({
+        success: true,
+        groups: groups.map(g => ({
+            id: Number(g.id), name: g.name, createdBy: g.created_by,
+            createdAt: g.created_at,
+            members: g.members ? String(g.members).split(', ') : []
+        }))
+    });
+});
+
+app.post("/api/groups", (req, res) => {
+    const { name, created_by, members } = req.body || {};
+    const groupName = String(name || '').trim();
+    const creator = String(created_by || '').trim();
+    let memberList = Array.isArray(members) ? members.map(x => String(x || '').trim()).filter(Boolean) : [];
+    if (!groupName || !creator) return res.status(400).json({success:false,message:"Group name and creator are required"});
+    if (!db.prepare("SELECT id FROM users WHERE username=?").get(creator)) return res.status(404).json({success:false,message:"Creator not found"});
+    memberList = Array.from(new Set([creator, ...memberList]));
+    const valid=[];
+    for(const u of memberList){
+        if(db.prepare("SELECT id FROM users WHERE username=?").get(u)) valid.push(u);
+    }
+    if(valid.length < 2) return res.status(400).json({success:false,message:"Select at least one member"});
+    try{
+        db.exec("BEGIN");
+        const r=db.prepare("INSERT INTO groups (name,created_by,created_at) VALUES (?,?,?)").run(groupName,creator,new Date().toISOString());
+        const gid=Number(r.lastInsertRowid);
+        const ins=db.prepare("INSERT INTO group_members (group_id,username,joined_at) VALUES (?,?,?)");
+        for(const u of valid) ins.run(gid,u,new Date().toISOString());
+        db.exec("COMMIT");
+        res.json({success:true,group:{id:gid,name:groupName,createdBy:creator,members:valid}});
+    }catch(e){
+        console.error("Create group error:",e);
+        res.status(500).json({success:false,message:"Could not create group"});
+    }
+});
+
+app.get("/api/groups/:groupId/messages", (req, res) => {
+    const groupId=Number(req.params.groupId);
+    const username=String(req.query.username || '').trim();
+    if(!groupId || !username) return res.status(400).json({success:false,message:"Group and username are required"});
+    const member=db.prepare("SELECT id FROM group_members WHERE group_id=? AND username=?").get(groupId,username);
+    if(!member) return res.status(403).json({success:false,message:"You are not a member of this group"});
+    const messages=db.prepare(`SELECT id,group_id,sender,message,time,delivered,seen,deleted FROM group_messages WHERE group_id=? AND deleted=0 ORDER BY id ASC`).all(groupId);
+    res.json({success:true,messages});
+});
+
+app.post("/api/groups/:groupId/messages", async (req, res) => {
+    const groupId=Number(req.params.groupId);
+    const {sender,message}=req.body || {};
+    const user=String(sender || '').trim();
+    const text=String(message || '').trim();
+    if(!groupId || !user || !text) return res.status(400).json({success:false,message:"Group, sender and message are required"});
+    const member=db.prepare("SELECT id FROM group_members WHERE group_id=? AND username=?").get(groupId,user);
+    if(!member) return res.status(403).json({success:false,message:"You are not a member of this group"});
+    const time=new Date().toISOString();
+    const r=db.prepare("INSERT INTO group_messages (group_id,sender,message,time,delivered) VALUES (?,?,?,?,1)").run(groupId,user,text,time);
+    const msg={id:Number(r.lastInsertRowid),group_id:groupId,sender:user,message:text,time,delivered:1,seen:0,deleted:0};
+    try{
+        const members=db.prepare("SELECT username FROM group_members WHERE group_id=? AND username<>?").all(groupId,user);
+        for(const m of members){
+            const subs=db.prepare("SELECT endpoint,p256dh,auth FROM push_subscriptions WHERE username=?").all(m.username);
+            for(const sub of subs){
+                try{ await webpush.sendNotification({endpoint:sub.endpoint,keys:{p256dh:sub.p256dh,auth:sub.auth}},JSON.stringify({title:"Rky Chat",body:text,sender:user})); }catch(_e){}
+            }
+        }
+    }catch(_e){}
+    io.to("rky-group-"+groupId).emit("group-message",msg);
+    res.json({success:true,messageId:msg.id,time});
+});
+
+app.post("/api/groups/:groupId/members", (req, res) => {
+    const groupId=Number(req.params.groupId);
+    const {username,members}=req.body || {};
+    const actor=String(username || '').trim();
+    const list=Array.isArray(members)?members.map(x=>String(x||'').trim()).filter(Boolean):[];
+    if(!groupId || !actor || !db.prepare("SELECT id FROM group_members WHERE group_id=? AND username=?").get(groupId,actor)) return res.status(403).json({success:false,message:"Not a group member"});
+    const ins=db.prepare("INSERT OR IGNORE INTO group_members (group_id,username,joined_at) VALUES (?,?,?)");
+    let added=0;
+    for(const u of Array.from(new Set(list))){ if(db.prepare("SELECT id FROM users WHERE username=?").get(u)){ const r=ins.run(groupId,u,new Date().toISOString()); added+=Number(r.changes||0); } }
+    res.json({success:true,added});
+});
+
 
 httpServer.listen(PORT, "0.0.0.0", () => {
     console.log(`Rky Chat Server running on port ${PORT}`);

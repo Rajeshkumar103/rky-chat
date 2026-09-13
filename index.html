@@ -19176,6 +19176,69 @@ window.rkyIsBlockedFriend=function(n){try{var me=String(window.currentUser||curr
   setInterval(sync,500);sync();
 })();
 </script>
+
+<!-- RKY V53 REAL GROUP CHAT: isolated backend-backed implementation -->
+<style id="rky-v53-group-style">
+#rkyV53GroupModal{position:fixed;inset:0;z-index:2147483647;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;padding:14px;box-sizing:border-box}
+#rkyV53GroupModal .box{width:min(430px,100%);max-height:88vh;overflow:auto;background:#fff;color:#111827;border-radius:16px;padding:16px;box-sizing:border-box;box-shadow:0 18px 55px rgba(0,0,0,.35)}
+#rkyV53GroupModal input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;font-size:15px}
+#rkyV53GroupModal .member{display:flex;align-items:center;gap:9px;padding:9px 6px;border-bottom:1px solid #eef2f7}
+#rkyV53GroupModal .member input{width:18px;height:18px}
+#rkyV53GroupsSection{display:block!important;width:100%!important;box-sizing:border-box!important;margin:10px 0!important}
+#rkyV53GroupsSection .gitem{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;margin:5px 0;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;text-align:left;box-sizing:border-box}
+</style>
+<script id="rky-v53-real-group-chat">
+(function(){
+'use strict';
+var activeGroup=null;
+var originalSendMessage=window.sendmessage;
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function me(){try{return String(currentUser||'').trim();}catch(e){return '';}}
+async function getFriends(){
+  var u=me(); if(!u)return [];
+  try{var r=await fetch('/api/friends/'+encodeURIComponent(u)+'?t='+Date.now(),{cache:'no-store'});var d=await r.json();return d.success&&Array.isArray(d.friends)?d.friends:[];}catch(e){return [];}
+}
+async function openNewGroup(){
+  var old=document.getElementById('rkyV53GroupModal');if(old)old.remove();
+  var friends=await getFriends();
+  var o=document.createElement('div');o.id='rkyV53GroupModal';
+  var rows=friends.map(function(f){return '<label class="member"><input type="checkbox" value="'+esc(f.username)+'"><span>'+esc(f.profileName||f.username)+'</span></label>';}).join('');
+  o.innerHTML='<div class="box"><h3 style="margin:0 0 12px">👥 New group</h3><input id="rkyV53GroupName" placeholder="Group name" autocomplete="off"><div style="margin:12px 0 7px;font-weight:700">Select members</div><div style="max-height:42vh;overflow:auto;border:1px solid #e5e7eb;border-radius:10px">'+(rows||'<div style="padding:12px;color:#64748b">No accepted friends found.</div>')+'</div><div style="display:flex;gap:8px;margin-top:12px"><button id="rkyV53Create" style="flex:1;padding:11px;border:0;border-radius:10px;background:#078f78;color:#fff;font-weight:700">Create</button><button id="rkyV53Close" style="flex:1;padding:11px;border:0;border-radius:10px;background:#111827;color:#fff;font-weight:700">Close</button></div></div>';
+  document.body.appendChild(o);o.querySelector('#rkyV53Close').onclick=function(){o.remove();};o.onclick=function(e){if(e.target===o)o.remove();};
+  o.querySelector('#rkyV53Create').onclick=async function(){
+    var name=(o.querySelector('#rkyV53GroupName').value||'').trim();
+    var members=Array.prototype.map.call(o.querySelectorAll('input[type=checkbox]:checked'),function(x){return x.value;});
+    if(!name){alert('Enter group name.');return;} if(!members.length){alert('Select at least one member.');return;}
+    this.disabled=true;
+    try{var r=await fetch('/api/groups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,created_by:me(),members:members})});var d=await r.json();if(!r.ok||!d.success){alert(d.message||'Group creation failed.');this.disabled=false;return;}o.remove();renderGroups();alert('👥 Group created: '+name);}catch(e){alert('Server connection failed.');this.disabled=false;}
+  };
+}
+async function renderGroups(){
+  var list=document.getElementById('friendList');if(!list||!me())return;
+  var old=document.getElementById('rkyV53GroupsSection');if(old)old.remove();
+  try{var r=await fetch('/api/groups/'+encodeURIComponent(me())+'?t='+Date.now(),{cache:'no-store'});var d=await r.json();if(!d.success||!d.groups||!d.groups.length)return;
+    var sec=document.createElement('div');sec.id='rkyV53GroupsSection';var title=document.createElement('div');title.innerHTML='<b>👥 Groups</b>';title.style.cssText='padding:8px 6px;font-size:16px';sec.appendChild(title);
+    d.groups.forEach(function(g){var b=document.createElement('button');b.type='button';b.className='gitem';b.innerHTML='<span style="width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:22px">👥</span><span style="min-width:0;flex:1"><b style="display:block;color:#111827;font-size:15px">'+esc(g.name)+'</b><small style="color:#64748b">'+esc((g.members||[]).join(', '))+'</small></span>';b.onclick=function(){openGroup(g);};sec.appendChild(b);});list.appendChild(sec);
+  }catch(e){}
+}
+async function openGroup(g){
+  activeGroup={id:Number(g.id),name:String(g.name||'Group'),members:g.members||[]};
+  try{selectedFriend='';}catch(e){}
+  var chat=document.getElementById('chatBox');if(chat)chat.classList.add('rky-friend-chat-open');
+  var bar=document.getElementById('rkyChatTopBarFriend');if(bar){var n=bar.querySelector('.rky-friend-name');if(n)n.textContent=activeGroup.name;}
+  var msgs=document.getElementById('messages');if(msgs)msgs.innerHTML='<div style="padding:14px;text-align:center;color:#64748b">Loading group…</div>';
+  try{if(window.io){if(!window.rkyV53Socket)window.rkyV53Socket=window.io();window.rkyV53Socket.emit('join-group',{groupId:activeGroup.id,username:me()});window.rkyV53Socket.off('group-message.rkyV53');window.rkyV53Socket.on('group-message.rkyV53',function(m){if(activeGroup&&Number(m.group_id)===activeGroup.id)appendGroupMessage(m);});}}catch(e){}
+  await loadGroupMessages();
+}
+function appendGroupMessage(m){var box=document.getElementById('messages');if(!box)return;var item=document.createElement('div');item.className=String(m.sender)===me()?'myMessage':'friendMessage';item.style.cssText='display:block!important;visibility:visible!important;opacity:1!important;margin:8px 0;'+(String(m.sender)===me()?'text-align:right;':'text-align:left;');item.innerHTML='<span style="display:inline-block;max-width:75%;padding:8px 12px;border-radius:12px;background:'+(String(m.sender)===me()?'#dcf8c6':'#fff')+';color:#111;box-shadow:0 1px 2px rgba(0,0,0,.08)">'+(String(m.sender)!==me()?'<small style="display:block;color:#64748b;margin-bottom:3px">'+esc(m.sender)+'</small>':'')+esc(m.message||'')+'</span>';box.appendChild(item);box.scrollTop=box.scrollHeight;}
+async function loadGroupMessages(){if(!activeGroup)return;try{var r=await fetch('/api/groups/'+activeGroup.id+'/messages?username='+encodeURIComponent(me())+'&t='+Date.now(),{cache:'no-store'});var d=await r.json();if(!d.success)throw new Error(d.message||'Could not load group');var box=document.getElementById('messages');if(box)box.innerHTML='';(d.messages||[]).forEach(appendGroupMessage);}catch(e){var box=document.getElementById('messages');if(box)box.innerHTML='<div style="padding:14px;color:#b91c1c">'+esc(e.message)+'</div>';}}
+window.sendmessage=async function(){if(!activeGroup){return originalSendMessage.apply(this,arguments);}var input=document.getElementById('message'),text=input?String(input.value||'').trim():'';if(!text)return;try{var r=await fetch('/api/groups/'+activeGroup.id+'/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sender:me(),message:text})});var d=await r.json();if(!r.ok||!d.success){alert(d.message||'Group message failed.');return;}if(input)input.value='';}catch(e){alert('Server connection failed.');}};
+window.rkyOpenNewGroup=openNewGroup;
+window.rkyV53RenderGroups=renderGroups;
+window.rkyV53OpenGroup=openGroup;
+document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,120);});
+})();
+</script>
 </body>
 </html>
 

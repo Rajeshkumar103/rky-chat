@@ -16618,17 +16618,11 @@ setInterval(function(){
     }
   };
 
-  document.addEventListener("DOMContentLoaded",function(){
-    setTimeout(window.rkyFinalLoadFriends,800);
-    setTimeout(window.rkyFinalLoadFriends,2000);
-  });
+  /* V64: initial friend rendering is owned by the main loadFriends() path.
+     Do not schedule duplicate redraws here. */
 
-  /* Refresh after login / accept */
-  setInterval(function(){
-    if(localStorage.getItem("currentUser")){
-      window.rkyFinalLoadFriends();
-    }
-  },3000);
+  /* V64: no periodic friend-list redraw. It was replacing friendList repeatedly and
+     causing visible hide/show flicker after returning from a chat. */
 
 })();
 </script>
@@ -17479,12 +17473,9 @@ setInterval(function(){
     window.selectFriend=wrapped;
   }
 
-  var tries=0;
-  var timer=setInterval(function(){
-    install();
-    watch();
-    if(++tries>120) clearInterval(timer);
-  },100);
+  /* V64: install the final handlers, but DO NOT continuously re-render the Friends/Groups UI.
+     The old 100ms watch loop caused the visible Back-screen flicker. */
+  install();
 
   document.addEventListener('click',function(e){
     var b=e.target.closest && e.target.closest('#rkyChatTopBarFriend .rky-friend-back');
@@ -17642,31 +17633,53 @@ setInterval(function(){
     var menu=document.getElementById('rkyFriendMoreMenu');
     if(menu) menu.remove();
 
+    /* One deterministic Back state. No loadFriends(), no timers, no redraw race. */
     chat.classList.remove('rky-friend-chat-open');
+    chat.style.setProperty('display','block','important');
+    chat.style.setProperty('visibility','visible','important');
+    chat.style.setProperty('opacity','1','important');
 
-    /* Restore the original Friends page. */
-    Array.prototype.forEach.call(chat.children,function(el){
-      el.style.removeProperty('display');
-    });
-
-    ['rkyMoreMenu','starredMessages','callHistoryPanel'].forEach(function(id){
-      var el=document.getElementById(id);
-      if(el && id!=='rkyMoreMenu') el.style.removeProperty('display');
-    });
-
-    var input=document.getElementById('message');
-    if(input) input.value='';
-
+    var hdr=document.getElementById('rkyHeader');
+    var list=document.getElementById('friendList');
+    var profile=document.getElementById('friendProfile');
+    var messages=document.getElementById('messages');
+    var composer=chat.querySelector('.wa-bottom-bar');
     var reply=document.getElementById('replyBox');
-    if(reply) reply.style.display='none';
+    var typing=document.getElementById('typing');
+
+    if(hdr){
+      hdr.style.setProperty('display','block','important');
+      hdr.style.setProperty('visibility','visible','important');
+      hdr.style.setProperty('opacity','1','important');
+    }
+    if(list){
+      list.style.setProperty('display','block','important');
+      list.style.setProperty('visibility','visible','important');
+      list.style.setProperty('opacity','1','important');
+    }
+    if(profile) profile.style.setProperty('display','none','important');
+    if(messages){
+      messages.style.setProperty('display','none','important');
+      messages.style.removeProperty('visibility');
+      messages.innerHTML='';
+    }
+    if(composer) composer.style.setProperty('display','none','important');
+    if(reply) reply.style.setProperty('display','none','important');
+    if(typing) typing.style.setProperty('display','none','important');
+
+    ['rkyCircleRequestsContent','starredMessages','callHistoryPanel','rkyMoreMenu'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el) el.style.setProperty('display','none','important');
+    });
 
     try{
       window.selectedFriend='';
       if(typeof selectedFriend !== 'undefined') selectedFriend='';
     }catch(e){}
 
-    if(typeof window.loadFriends==='function'){
-      try{ window.loadFriends(); }catch(e){}
+    /* Groups are already backend data; refresh only the Groups section. */
+    if(typeof window.rkyV53RenderGroups==='function'){
+      try{ window.rkyV53RenderGroups(); }catch(e){}
     }
   }
 
@@ -19300,71 +19313,6 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 
-<!-- RKY V58 disabled in V62: replaced by single stable state owner -->
-<!-- RKY V62: SINGLE OWNER FRIEND RETURN / ZERO FLICKER -->
-<style id="rky-v62-single-owner-css">
-#chatBox.rky-friend-chat-open > #rkyHeader,
-#chatBox.rky-friend-chat-open > #friendList,
-#chatBox.rky-friend-chat-open > #friendProfile,
-#chatBox.rky-friend-chat-open > #rkyCircleRequestsToggle,
-#chatBox.rky-friend-chat-open > #rkySentRequestsSection,
-#chatBox.rky-friend-chat-open > #rkyConnectionsSection{display:none!important;}
-</style>
-<script id="rky-v62-single-owner-script">
-(function(){
-  'use strict';
-  var busy=false;
-
-  function restoreOnce(){
-    if(busy) return;
-    busy=true;
-    try{
-      var chat=document.getElementById('chatBox');
-      if(!chat) return;
-
-      chat.classList.remove('rky-friend-chat-open');
-      chat.style.setProperty('display','block','important');
-      chat.style.setProperty('visibility','visible','important');
-      chat.style.setProperty('opacity','1','important');
-
-      var top=document.getElementById('rkyChatTopBarFriend');
-      if(top) top.remove();
-      var menu=document.getElementById('rkyFriendMoreMenu');
-      if(menu) menu.remove();
-
-      var hdr=document.getElementById('rkyHeader');
-      var fl=document.getElementById('friendList');
-      var profile=document.getElementById('friendProfile');
-      var msg=document.getElementById('messages');
-      var composer=chat.querySelector('.wa-bottom-bar');
-
-      if(hdr) hdr.style.setProperty('display','block','important');
-      if(fl) fl.style.setProperty('display','block','important');
-      if(profile) profile.style.setProperty('display','none','important');
-      if(msg) msg.style.setProperty('display','none','important');
-      if(composer) composer.style.setProperty('display','none','important');
-
-      /* Render backend groups once, after the page state is stable. */
-      if(typeof window.rkyV53RenderGroups==='function'){
-        try{ window.rkyV53RenderGroups(); }catch(e){}
-      }
-    }finally{
-      busy=false;
-    }
-  }
-
-  function onBack(e){
-    var back=null;
-    try{ back=e.target && e.target.closest ? e.target.closest('#rkyChatTopBarFriend .rky-friend-back') : null; }catch(x){}
-    if(!back) return;
-    /* Existing handlers may close the chat; run exactly once after them. */
-    setTimeout(restoreOnce,0);
-  }
-
-  document.addEventListener('click',onBack,false);
-  window.rkyV62RestoreFriends=restoreOnce;
-})();
-</script>
 </body>
 
 <script id="rky-v56-delete-old-local-groups">
@@ -19411,35 +19359,19 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 
-<style id="rky-v59-friends-return-css">
+
+<style id="rky-v63-stable-friends-css">
 #chatBox:not(.rky-friend-chat-open) > #rkyHeader,
-#chatBox:not(.rky-friend-chat-open) > #friendList{
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-}
-#chatBox:not(.rky-friend-chat-open) > #friendProfile{
-  display:none !important;
-}
+#chatBox:not(.rky-friend-chat-open) > #friendList{display:block!important;visibility:visible!important;opacity:1!important;}
+#chatBox:not(.rky-friend-chat-open) > #friendProfile{display:none!important;}
+#chatBox:not(.rky-friend-chat-open) #messages,
+#chatBox:not(.rky-friend-chat-open) .wa-bottom-bar{display:none!important;}
 </style>
-<script id="rky-v59-final-group-return-guard">
+
+<!-- V64: stop duplicate Friends/Groups redraw loops -->
+<script id="rky-v64-no-flicker">
 (function(){
-  'use strict';
-  function guard(){
-    var chat=document.getElementById('chatBox');
-    if(!chat || chat.classList.contains('rky-friend-chat-open')) return;
-    var fl=document.getElementById('friendList');
-    var hdr=document.getElementById('rkyHeader');
-    if(fl) fl.style.setProperty('display','block','important');
-    if(hdr) hdr.style.setProperty('display','block','important');
-    if(typeof window.rkyV53RenderGroups==='function' && fl && !document.getElementById('rkyV53GroupsSection')){
-      try{window.rkyV53RenderGroups();}catch(e){}
-    }
-  }
-  setTimeout(guard,150);
-  setTimeout(guard,500);
-  setTimeout(guard,1000);
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(guard,200);});
+  /* Intentionally empty: the actual duplicate timers were removed at source above. */
 })();
 </script>
 </html>
@@ -19549,125 +19481,4 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 
-<!-- RKY V61: STABLE FRIEND RETURN / NO FLICKER -->
-<style id="rky-v61-stable-friends-css">
-/* One stable state: once friend chat is closed, keep the Friends page visible. */
-#chatBox:not(.rky-friend-chat-open) > #rkyHeader,
-#chatBox:not(.rky-friend-chat-open) > #friendList{
-  display:block !important;
-  visibility:visible !important;
-  opacity:1 !important;
-}
-#chatBox:not(.rky-friend-chat-open) > #friendProfile{
-  display:none !important;
-}
-#chatBox:not(.rky-friend-chat-open) #messages{
-  display:none !important;
-}
-#chatBox:not(.rky-friend-chat-open) .wa-bottom-bar{
-  display:none !important;
-}
-</style>
-<script id="rky-v61-stable-friends-return">
-(function(){
-  'use strict';
-
-  function loggedIn(){
-    try{
-      if(typeof currentUser!=='undefined' && currentUser) return true;
-    }catch(e){}
-    try{
-      var keys=['currentUser','loggedInUser','rkyCurrentUser','username'];
-      for(var i=0;i<keys.length;i++){
-        var v=localStorage.getItem(keys[i]);
-        if(v && v!=='null' && v!=='undefined' && String(v).trim()) return true;
-      }
-    }catch(e){}
-    return false;
-  }
-
-  var restoring=false;
-  var lastRestore=0;
-
-  function restoreStable(){
-    if(restoring) return;
-    var now=Date.now();
-    if(now-lastRestore<120) return;
-    restoring=true;
-    lastRestore=now;
-    try{
-      var chat=document.getElementById('chatBox');
-      if(!chat) return;
-
-      chat.classList.remove('rky-friend-chat-open');
-      if(loggedIn()){
-        chat.style.setProperty('display','block','important');
-        chat.style.setProperty('visibility','visible','important');
-        chat.style.setProperty('opacity','1','important');
-      }
-
-      var top=document.getElementById('rkyChatTopBarFriend');
-      if(top) top.remove();
-      var menu=document.getElementById('rkyFriendMoreMenu');
-      if(menu) menu.remove();
-
-      var hdr=document.getElementById('rkyHeader');
-      var fl=document.getElementById('friendList');
-      var profile=document.getElementById('friendProfile');
-      var msg=document.getElementById('messages');
-      var composer=chat.querySelector('.wa-bottom-bar');
-
-      if(hdr){
-        hdr.style.setProperty('display','block','important');
-        hdr.style.setProperty('visibility','visible','important');
-        hdr.style.setProperty('opacity','1','important');
-      }
-      if(fl){
-        fl.style.setProperty('display','block','important');
-        fl.style.setProperty('visibility','visible','important');
-        fl.style.setProperty('opacity','1','important');
-      }
-      if(profile) profile.style.setProperty('display','none','important');
-      if(msg){
-        msg.style.setProperty('display','none','important');
-        msg.style.setProperty('visibility','hidden','important');
-      }
-      if(composer) composer.style.setProperty('display','none','important');
-
-      /* Keep the request content collapsed; do not toggle the request UI. */
-      var req=document.getElementById('rkyCircleRequestsContent');
-      if(req) req.style.setProperty('display','none','important');
-
-      /* Do NOT call loadFriends here: it was causing the 1-second flicker. */
-      if(typeof window.rkyV53RenderGroups==='function'){
-        try{ window.rkyV53RenderGroups(); }catch(e){}
-      }
-    }catch(e){
-      console.error('V61 restore error',e);
-    }finally{
-      restoring=false;
-    }
-  }
-
-  function backHandler(e){
-    var t=e.target, back=null;
-    try{ back=t && t.closest ? t.closest('.rky-friend-back') : null; }catch(x){}
-    if(!back) return;
-    /* Let the existing Back handler finish first, then apply one stable state. */
-    setTimeout(restoreStable,40);
-  }
-
-  document.addEventListener('click',backHandler,false);
-
-  function install(){
-    /* V62: no MutationObserver restore loop. The Back click is the single owner. */
-  }
-
-  function start(){ install(); }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',start);
-  }else start();
-  setTimeout(start,500);
-})();
-</script>
 

@@ -11768,6 +11768,8 @@ async function login(){
 
         document.getElementById("loginBox").style.setProperty("display", "none", "important");
         document.getElementById("chatBox").style.setProperty("display", "block", "important");
+        document.body.classList.remove("rky-logged-out");
+        if(typeof window.rkySyncAuthVisibility === "function") window.rkySyncAuthVisibility();
 
         if(typeof connectVoiceCallSocket === "function"){
             connectVoiceCallSocket();
@@ -11810,6 +11812,36 @@ async function login(){
 
         loadMessages();
         loadFriends();
+
+        /* V70: final deterministic post-login UI state.
+           No auth interval/timer is allowed to hide the chat after login. */
+        document.body.classList.remove("rky-logged-out");
+        var postLoginChat=document.getElementById("chatBox");
+        var postLoginHeader=document.getElementById("rkyHeader");
+        var postLoginFriends=document.getElementById("friendList");
+        var postLoginVisibleFriends=document.getElementById("rkyVisibleFriends");
+        if(postLoginChat){
+            postLoginChat.classList.remove("rky-friend-chat-open","rky-chat-open");
+            postLoginChat.style.setProperty("display","block","important");
+            postLoginChat.style.setProperty("visibility","visible","important");
+            postLoginChat.style.setProperty("opacity","1","important");
+            postLoginChat.style.setProperty("pointer-events","auto","important");
+        }
+        if(postLoginHeader){
+            postLoginHeader.style.setProperty("display","block","important");
+            postLoginHeader.style.setProperty("visibility","visible","important");
+            postLoginHeader.style.setProperty("opacity","1","important");
+        }
+        if(postLoginFriends){
+            postLoginFriends.style.setProperty("display","block","important");
+            postLoginFriends.style.setProperty("visibility","visible","important");
+            postLoginFriends.style.setProperty("opacity","1","important");
+        }
+        if(postLoginVisibleFriends){
+            postLoginVisibleFriends.style.setProperty("display","none","important");
+            postLoginVisibleFriends.style.setProperty("visibility","hidden","important");
+            postLoginVisibleFriends.style.setProperty("opacity","0","important");
+        }
 
         startStatusHeartbeat();
 
@@ -16628,57 +16660,45 @@ setInterval(function(){
 </script>
 
 
-<!-- RKY FINAL AUTH VISIBILITY GUARD -->
-<style id="rky-final-auth-visibility-guard">
-  #chatBox{display:none !important;}
-  #rkyVisibleFriends{display:none !important;}
-</style>
-<script>
+<!-- RKY V70 LOGIN VISIBILITY FIX -->
+<script id="rky-v70-login-visibility-fix">
 (function(){
-  function enforceAuthVisibility(){
-    var logged=!!((typeof currentUser !== "undefined" && typeof currentUser === "string") ? currentUser.trim() : "");
-    var savedUser="";
-    try{ savedUser=(localStorage.getItem("currentUser")||"").trim(); }catch(e){}
-    var effectiveLogged=!!(logged||savedUser);
+  function hideBeforeLogin(){
+    var login=document.getElementById("loginBox");
     var chat=document.getElementById("chatBox");
     var friends=document.getElementById("rkyVisibleFriends");
-    var login=document.getElementById("loginBox");
-
-    /* Login screen is the source of truth for what is visible.
-       If Login/Register is visible, Friends must NEVER appear underneath it,
-       even when localStorage/currentUser is stale. */
-    var loginVisible=false;
-    try{
-      loginVisible=!!(login && window.getComputedStyle(login).display !== "none");
-    }catch(e){
-      loginVisible=!!login;
+    var saved="";
+    try{ saved=(localStorage.getItem("currentUser")||"").trim(); }catch(e){}
+    if(saved) return;
+    if(login){
+      login.style.setProperty("display","block","important");
+      login.style.setProperty("visibility","visible","important");
+      login.style.setProperty("opacity","1","important");
+      login.style.setProperty("pointer-events","auto","important");
     }
-    var authenticated=!!(effectiveLogged && !loginVisible);
-
-    if(chat && !authenticated && !chat.classList.contains("rky-friend-chat-open")){
+    if(chat){
       chat.style.setProperty("display","none","important");
       chat.style.setProperty("visibility","hidden","important");
       chat.style.setProperty("opacity","0","important");
       chat.style.setProperty("pointer-events","none","important");
     }
     if(friends){
-      friends.style.setProperty("display", authenticated ? "block" : "none", "important");
-      friends.style.setProperty("visibility", authenticated ? "visible" : "hidden", "important");
-      friends.style.setProperty("opacity", authenticated ? "1" : "0", "important");
-      friends.style.setProperty("pointer-events", authenticated ? "auto" : "none", "important");
+      friends.style.setProperty("display","none","important");
+      friends.style.setProperty("visibility","hidden","important");
+      friends.style.setProperty("opacity","0","important");
+      friends.style.setProperty("pointer-events","none","important");
     }
-    if(login && !authenticated){
-      login.style.setProperty("display","block","important");
-      login.style.setProperty("visibility","visible","important");
-      login.style.setProperty("opacity","1","important");
-      login.style.setProperty("pointer-events","auto","important");
-    }
+    document.body.classList.add("rky-logged-out");
   }
-  enforceAuthVisibility();
-  window.addEventListener("load", enforceAuthVisibility);
-  setInterval(enforceAuthVisibility, 500);
+  window.rkySyncAuthVisibility=hideBeforeLogin;
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",hideBeforeLogin);
+  else hideBeforeLogin();
 })();
 </script>
+<style id="rky-v70-auth-state-css">
+body.rky-logged-out #chatBox{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important;}
+body.rky-logged-out #rkyVisibleFriends{display:none !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important;}
+</style>
 
 <!-- RKY VISIBLE FRIENDS FINAL -->
 <style>
@@ -18374,13 +18394,14 @@ setInterval(function(){
 #rkyFriendMoreMenu button > span:nth-child(2){font-size:12px!important;}
 </style>
 <style id="rky-final-auth-visibility-fix">
-/* Keep Chat UI hidden while the login form is visible. */
-#loginBox:not([style*="display: none"]) ~ #chatBox,
-#loginBox:not([style*="display: none"]) ~ #rkyVisibleFriends {
+/* Login visibility is controlled by the auth guard script.
+   Do not use a sibling CSS rule here because loginBox keeps an inline
+   "display: none" marker after login and that would hide chat forever. */
+#loginBox.rky-auth-hidden{
   display:none !important;
-  visibility:hidden !important;
-  opacity:0 !important;
-  pointer-events:none !important;
+}
+#registerButton.rky-auth-hidden{
+  display:none !important;
 }
 </style>
 

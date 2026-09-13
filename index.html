@@ -17383,9 +17383,8 @@ setInterval(function(){
     window.selectedFriend='';
     if(typeof selectedFriend !== 'undefined') selectedFriend='';
 
-    if(typeof window.loadFriends==='function'){
-      try{ window.loadFriends(); }catch(e){ console.error(e); }
-    }
+    /* V62: do not call loadFriends during Back; it causes visible list flicker.
+       The real backend groups are rendered once by restoreFriendsView(). */
 
     /* RKY V59: force the Friends page back on after every Back click.
        This is inside the actual closeFriendChatFinal() used by the
@@ -17436,11 +17435,8 @@ setInterval(function(){
       }catch(err){ console.error('V59 friends restore:',err); }
     }
 
+    /* V62: one restore only; repeated timers caused flicker. */
     restoreFriendsView();
-    setTimeout(restoreFriendsView,100);
-    setTimeout(restoreFriendsView,300);
-    setTimeout(restoreFriendsView,700);
-    setTimeout(restoreFriendsView,1200);
   }
 
   window.rkyCloseSelectedChatUI=closeFriendChatFinal;
@@ -19304,95 +19300,69 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 
-<!-- RKY V58: real group return/list state fix -->
-<script id="rky-v58-real-group-return-fix">
+<!-- RKY V58 disabled in V62: replaced by single stable state owner -->
+<!-- RKY V62: SINGLE OWNER FRIEND RETURN / ZERO FLICKER -->
+<style id="rky-v62-single-owner-css">
+#chatBox.rky-friend-chat-open > #rkyHeader,
+#chatBox.rky-friend-chat-open > #friendList,
+#chatBox.rky-friend-chat-open > #friendProfile,
+#chatBox.rky-friend-chat-open > #rkyCircleRequestsToggle,
+#chatBox.rky-friend-chat-open > #rkySentRequestsSection,
+#chatBox.rky-friend-chat-open > #rkyConnectionsSection{display:none!important;}
+</style>
+<script id="rky-v62-single-owner-script">
 (function(){
   'use strict';
+  var busy=false;
 
-  function showFriendsAndGroups(){
+  function restoreOnce(){
+    if(busy) return;
+    busy=true;
     try{
       var chat=document.getElementById('chatBox');
-      if(chat) chat.classList.remove('rky-friend-chat-open');
+      if(!chat) return;
 
-      ['rkyHeader','friendList','rkyCircleRequestsToggle','rkySentRequestsSection','rkyConnectionsSection'].forEach(function(id){
-        var el=document.getElementById(id);
-        if(el) el.style.setProperty('display','block','important');
-      });
+      chat.classList.remove('rky-friend-chat-open');
+      chat.style.setProperty('display','block','important');
+      chat.style.setProperty('visibility','visible','important');
+      chat.style.setProperty('opacity','1','important');
 
-      var profile=document.getElementById('friendProfile');
-      if(profile) profile.style.setProperty('display','none','important');
-
-      var bar=document.getElementById('rkyChatTopBarFriend');
-      if(bar) bar.remove();
-
+      var top=document.getElementById('rkyChatTopBarFriend');
+      if(top) top.remove();
       var menu=document.getElementById('rkyFriendMoreMenu');
       if(menu) menu.remove();
 
+      var hdr=document.getElementById('rkyHeader');
       var fl=document.getElementById('friendList');
+      var profile=document.getElementById('friendProfile');
+      var msg=document.getElementById('messages');
+      var composer=chat.querySelector('.wa-bottom-bar');
+
+      if(hdr) hdr.style.setProperty('display','block','important');
       if(fl) fl.style.setProperty('display','block','important');
+      if(profile) profile.style.setProperty('display','none','important');
+      if(msg) msg.style.setProperty('display','none','important');
+      if(composer) composer.style.setProperty('display','none','important');
 
+      /* Render backend groups once, after the page state is stable. */
       if(typeof window.rkyV53RenderGroups==='function'){
-        window.rkyV53RenderGroups();
+        try{ window.rkyV53RenderGroups(); }catch(e){}
       }
-    }catch(e){
-      console.error('V58 friends/group return error',e);
+    }finally{
+      busy=false;
     }
   }
 
-  /* The last friend-chat state handler owns this function, so wrap it once. */
-  function installClose(){
-    var fn=window.rkyCloseSelectedChatUI;
-    if(typeof fn!=='function' || fn.__rkyV58Wrapped) return false;
-
-    function wrapped(){
-      try{ fn.apply(this,arguments); }catch(e){ console.error(e); }
-      showFriendsAndGroups();
-      setTimeout(showFriendsAndGroups,150);
-      setTimeout(showFriendsAndGroups,500);
-      setTimeout(showFriendsAndGroups,1000);
-    }
-    wrapped.__rkyV58Wrapped=true;
-    window.rkyCloseSelectedChatUI=wrapped;
-    return true;
+  function onBack(e){
+    var back=null;
+    try{ back=e.target && e.target.closest ? e.target.closest('#rkyChatTopBarFriend .rky-friend-back') : null; }catch(x){}
+    if(!back) return;
+    /* Existing handlers may close the chat; run exactly once after them. */
+    setTimeout(restoreOnce,0);
   }
 
-  /* Refresh real backend groups after any normal Friends-list reload. */
-  function installLoadFriends(){
-    var fn=window.loadFriends;
-    if(typeof fn!=='function' || fn.__rkyV58Wrapped) return false;
-
-    function wrapped(){
-      var result;
-      try{ result=fn.apply(this,arguments); }catch(e){ console.error(e); throw e; }
-
-      function refresh(){
-        try{
-          var fl=document.getElementById('friendList');
-          if(fl && !document.getElementById('rkyV53GroupsSection') &&
-             typeof window.rkyV53RenderGroups==='function'){
-            window.rkyV53RenderGroups();
-          }
-        }catch(e){}
-      }
-
-      setTimeout(refresh,150);
-      setTimeout(refresh,500);
-      return result;
-    }
-    wrapped.__rkyV58Wrapped=true;
-    window.loadFriends=wrapped;
-    return true;
-  }
-
-  function install(){
-    installClose();
-    installLoadFriends();
-  }
-
-  install();
-  setTimeout(install,100);
-  setTimeout(install,400);
-  setTimeout(install,1000);
+  document.addEventListener('click',onBack,false);
+  window.rkyV62RestoreFriends=restoreOnce;
 })();
 </script>
 </body>
@@ -19690,19 +19660,7 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
   document.addEventListener('click',backHandler,false);
 
   function install(){
-    var chat=document.getElementById('chatBox');
-    if(!chat || !window.MutationObserver || chat.__rkyV61Observer) return;
-    var ob=new MutationObserver(function(muts){
-      if(chat.classList.contains('rky-friend-chat-open')) return;
-      for(var i=0;i<muts.length;i++){
-        if(muts[i].type==='attributes' && muts[i].attributeName==='class'){
-          setTimeout(restoreStable,40);
-          break;
-        }
-      }
-    });
-    ob.observe(chat,{attributes:true,attributeFilter:['class']});
-    chat.__rkyV61Observer=ob;
+    /* V62: no MutationObserver restore loop. The Back click is the single owner. */
   }
 
   function start(){ install(); }

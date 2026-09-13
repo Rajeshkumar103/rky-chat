@@ -16644,18 +16644,34 @@ setInterval(function(){
     var friends=document.getElementById("rkyVisibleFriends");
     var login=document.getElementById("loginBox");
 
-    /* Never hide the already-authenticated chat just because the global
-       currentUser variable is briefly stale during a Friends/Group redraw. */
-    if(chat && !effectiveLogged && !chat.classList.contains("rky-friend-chat-open")){
+    /* Login screen is the source of truth for what is visible.
+       If Login/Register is visible, Friends must NEVER appear underneath it,
+       even when localStorage/currentUser is stale. */
+    var loginVisible=false;
+    try{
+      loginVisible=!!(login && window.getComputedStyle(login).display !== "none");
+    }catch(e){
+      loginVisible=!!login;
+    }
+    var authenticated=!!(effectiveLogged && !loginVisible);
+
+    if(chat && !authenticated && !chat.classList.contains("rky-friend-chat-open")){
       chat.style.setProperty("display","none","important");
+      chat.style.setProperty("visibility","hidden","important");
+      chat.style.setProperty("opacity","0","important");
+      chat.style.setProperty("pointer-events","none","important");
     }
     if(friends){
-      friends.style.setProperty("display", effectiveLogged ? "block" : "none", "important");
-      friends.style.setProperty("visibility", effectiveLogged ? "visible" : "hidden", "important");
-      friends.style.setProperty("opacity", effectiveLogged ? "1" : "0", "important");
+      friends.style.setProperty("display", authenticated ? "block" : "none", "important");
+      friends.style.setProperty("visibility", authenticated ? "visible" : "hidden", "important");
+      friends.style.setProperty("opacity", authenticated ? "1" : "0", "important");
+      friends.style.setProperty("pointer-events", authenticated ? "auto" : "none", "important");
     }
-    if(login && !effectiveLogged){
+    if(login && !authenticated){
       login.style.setProperty("display","block","important");
+      login.style.setProperty("visibility","visible","important");
+      login.style.setProperty("opacity","1","important");
+      login.style.setProperty("pointer-events","auto","important");
     }
   }
   enforceAuthVisibility();

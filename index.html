@@ -19210,16 +19210,25 @@ async function openNewGroup(){
     var members=Array.prototype.map.call(o.querySelectorAll('input[type=checkbox]:checked'),function(x){return x.value;});
     if(!name){alert('Enter group name.');return;} if(!members.length){alert('Select at least one member.');return;}
     this.disabled=true;
-    try{var r=await fetch('/api/groups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,created_by:me(),members:members})});var d=await r.json();if(!r.ok||!d.success){alert(d.message||'Group creation failed.');this.disabled=false;return;}o.remove();renderGroups();alert('👥 Group created: '+name);}catch(e){alert('Server connection failed.');this.disabled=false;}
+    try{var r=await fetch('/api/groups',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,created_by:me(),members:members})});var d=await r.json();if(!r.ok||!d.success){alert(d.message||'Group creation failed.');this.disabled=false;return;}o.remove();try{var chat=document.getElementById('chatBox');if(chat)chat.classList.remove('rky-friend-chat-open');var bar=document.getElementById('rkyChatTopBarFriend');if(bar)bar.remove();var menu=document.getElementById('rkyFriendMoreMenu');if(menu)menu.remove();var fl=document.getElementById('friendList');if(fl)fl.style.setProperty('display','block','important');}catch(e){}await renderGroups(d.group||{id:d.groupId,name:name,members:[me()].concat(members)});alert('👥 Group created: '+name);}catch(e){alert('Server connection failed.');this.disabled=false;}
   };
 }
-async function renderGroups(){
+async function renderGroups(preferredGroup){
   var list=document.getElementById('friendList');if(!list||!me())return;
   var old=document.getElementById('rkyV53GroupsSection');if(old)old.remove();
-  try{var r=await fetch('/api/groups/'+encodeURIComponent(me())+'?t='+Date.now(),{cache:'no-store'});var d=await r.json();if(!d.success||!d.groups||!d.groups.length)return;
-    var sec=document.createElement('div');sec.id='rkyV53GroupsSection';var title=document.createElement('div');title.innerHTML='<b>👥 Groups</b>';title.style.cssText='padding:8px 6px;font-size:16px';sec.appendChild(title);
-    d.groups.forEach(function(g){var b=document.createElement('button');b.type='button';b.className='gitem';b.innerHTML='<span style="width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:22px">👥</span><span style="min-width:0;flex:1"><b style="display:block;color:#111827;font-size:15px">'+esc(g.name)+'</b><small style="color:#64748b">'+esc((g.members||[]).join(', '))+'</small></span>';b.onclick=function(){openGroup(g);};sec.appendChild(b);});list.appendChild(sec);
+  var groups=[];
+  try{
+    var r=await fetch('/api/groups/'+encodeURIComponent(me())+'?t='+Date.now(),{cache:'no-store'});
+    var d=await r.json();
+    if(d&&d.success&&Array.isArray(d.groups)) groups=d.groups;
   }catch(e){}
+  if(preferredGroup&&preferredGroup.id){
+    var exists=groups.some(function(g){return Number(g.id)===Number(preferredGroup.id);});
+    if(!exists) groups.unshift(preferredGroup);
+  }
+  if(!groups.length)return;
+  var sec=document.createElement('div');sec.id='rkyV53GroupsSection';var title=document.createElement('div');title.innerHTML='<b>👥 Groups</b>';title.style.cssText='padding:8px 6px;font-size:16px';sec.appendChild(title);
+  groups.forEach(function(g){var b=document.createElement('button');b.type='button';b.className='gitem';var members=Array.isArray(g.members)?g.members:(g.members?String(g.members).split(',').map(function(x){return x.trim();}):[]);b.innerHTML='<span style="width:42px;height:42px;min-width:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#dbeafe;font-size:22px">👥</span><span style="min-width:0;flex:1"><b style="display:block;color:#111827;font-size:15px">'+esc(g.name)+'</b><small style="color:#64748b">'+esc(members.join(', '))+'</small></span>';b.onclick=function(){openGroup({id:Number(g.id),name:String(g.name||'Group'),members:members});};sec.appendChild(b);});list.appendChild(sec);
 }
 async function openGroup(g){
   activeGroup={id:Number(g.id),name:String(g.name||'Group'),members:g.members||[]};
@@ -19240,6 +19249,50 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 })();
 </script>
 </body>
+
+<script id="rky-v56-delete-old-local-groups">
+(function(){
+  function removeOldLocalGroups(){
+    try{
+      var old=document.getElementById('rkyV32GroupsSection');
+      if(old) old.remove();
+    }catch(e){}
+  }
+  window.rkyDeleteOldLocalGroups=function(){
+    try{
+      localStorage.removeItem('rkyLocalGroups');
+      removeOldLocalGroups();
+      alert('🗑️ Old local groups deleted. Real backend groups are unchanged.');
+    }catch(e){
+      alert('❌ Could not delete old local groups.');
+    }
+  };
+  function addButton(){
+    var list=document.getElementById('friendList');
+    if(!list)return;
+    removeOldLocalGroups();
+    var b=document.getElementById('rkyDeleteOldLocalGroupsBtn');
+    if(!b){
+      b=document.createElement('button');
+      b.id='rkyDeleteOldLocalGroupsBtn';
+      b.type='button';
+      b.textContent='🗑️ Delete old local groups';
+      b.onclick=window.rkyDeleteOldLocalGroups;
+      b.style.cssText='display:block!important;width:calc(100% - 16px)!important;margin:6px 8px 8px!important;padding:7px 9px!important;border:1px solid #fecaca!important;border-radius:9px!important;background:#fff1f2!important;color:#b91c1c!important;font-size:12px!important;font-weight:700!important;box-sizing:border-box!important;';
+      list.insertBefore(b,list.firstChild);
+    }else if(b.parentNode!==list){
+      list.insertBefore(b,list.firstChild);
+    }
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    addButton();
+    setTimeout(addButton,300);
+    setTimeout(addButton,1000);
+    setTimeout(addButton,2000);
+  });
+  setInterval(addButton,1500);
+})();
+</script>
 </html>
 
 <script id="rky-gallery-wallpaper-final-v50">

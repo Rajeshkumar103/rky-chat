@@ -256,11 +256,24 @@ function rkyMoreAction(action){
 
 
         if(connectionsSection){
-            connectionsSection.style.display = "block";
+            connectionsSection.style.setProperty("display","block","important");
+            connectionsSection.style.setProperty("visibility","visible","important");
+            connectionsSection.style.setProperty("opacity","1","important");
+            connectionsSection.style.setProperty("pointer-events","auto","important");
             if(typeof loadRkyConnections === "function"){
                 loadRkyConnections();
             }
         }
+
+        ["rkyCircleRequestsContent","rkySentRequestsSection"].forEach(function(id){
+            var el=document.getElementById(id);
+            if(el){
+                el.style.setProperty("display","block","important");
+                el.style.setProperty("visibility","visible","important");
+                el.style.setProperty("opacity","1","important");
+                el.style.setProperty("pointer-events","auto","important");
+            }
+        });
 
 
         if(connectHeader){
@@ -19399,6 +19412,36 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
     e.preventDefault(); e.stopImmediatePropagation();
     restore();
   },true);
+})();
+</script>
+
+<!-- RKY V72: keep Circle panels hidden from the normal Friends list; open them only from Requests -->
+<style id="rky-v72-circle-panels-fix">
+#rkyCircleRequestsContent,
+#rkySentRequestsSection,
+#rkyConnectionsSection{
+  display:none !important;
+  visibility:hidden !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+</style>
+<script id="rky-v72-circle-panels-fix-js">
+(function(){
+  function hideCirclePanels(){
+    ['rkyCircleRequestsContent','rkySentRequestsSection','rkyConnectionsSection'].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el){
+        el.style.setProperty('display','none','important');
+        el.style.setProperty('visibility','hidden','important');
+        el.style.setProperty('opacity','0','important');
+        el.style.setProperty('pointer-events','none','important');
+      }
+    });
+  }
+  window.rkyV72HideCirclePanels=hideCirclePanels;
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hideCirclePanels);
+  else hideCirclePanels();
 })();
 </script>
 </body>

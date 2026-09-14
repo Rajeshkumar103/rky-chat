@@ -19570,3 +19570,87 @@ document.addEventListener('DOMContentLoaded',function(){setTimeout(renderGroups,
 </script>
 
 
+
+
+<!-- RKY V71 FINAL AUTH STATE: single source of truth -->
+<style id="rky-v71-auth-final">
+body.rky-v71-logged-out #chatBox,
+body.rky-v71-logged-out #rkyVisibleFriends{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+body.rky-v71-logged-in #chatBox{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+/* This is a duplicate/alternate friends surface. The real list is inside #rkyHeader. */
+#rkyVisibleFriends{
+  display:none!important;
+  visibility:hidden!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+</style>
+<script id="rky-v71-auth-final-js">
+(function(){
+  function isLoginVisible(){
+    var login=document.getElementById('loginBox');
+    if(!login) return !localStorage.getItem('currentUser');
+    try{
+      return window.getComputedStyle(login).display !== 'none';
+    }catch(e){
+      return login.style.display !== 'none';
+    }
+  }
+
+  function applyAuthState(){
+    var body=document.body;
+    var chat=document.getElementById('chatBox');
+    var friends=document.getElementById('rkyVisibleFriends');
+    var loggedIn=!isLoginVisible() && !!String(localStorage.getItem('currentUser')||'').trim();
+
+    body.classList.toggle('rky-v71-logged-in',loggedIn);
+    body.classList.toggle('rky-v71-logged-out',!loggedIn);
+
+    if(friends){
+      friends.style.setProperty('display','none','important');
+      friends.style.setProperty('visibility','hidden','important');
+      friends.style.setProperty('opacity','0','important');
+      friends.style.setProperty('pointer-events','none','important');
+    }
+
+    if(chat){
+      if(loggedIn){
+        chat.style.setProperty('display','block','important');
+        chat.style.setProperty('visibility','visible','important');
+        chat.style.setProperty('opacity','1','important');
+        chat.style.setProperty('pointer-events','auto','important');
+      }else if(!chat.classList.contains('rky-friend-chat-open')){
+        chat.style.setProperty('display','none','important');
+        chat.style.setProperty('visibility','hidden','important');
+        chat.style.setProperty('opacity','0','important');
+        chat.style.setProperty('pointer-events','none','important');
+      }
+    }
+  }
+
+  window.rkyV71ApplyAuthState=applyAuthState;
+
+  function start(){
+    applyAuthState();
+    var login=document.getElementById('loginBox');
+    if(login){
+      var obs=new MutationObserver(function(){ applyAuthState(); });
+      obs.observe(login,{attributes:true,attributeFilter:['style','class']});
+    }
+    window.addEventListener('storage',applyAuthState);
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start);
+  else start();
+})();
+</script>

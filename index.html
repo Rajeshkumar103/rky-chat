@@ -18654,10 +18654,98 @@ rkySentRequestsSection,
     d.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){d.remove();var a=b.getAttribute('data-act');if(a==='starred')return starred();if(a==='history'&&typeof rkyMoreAction==='function')return rkyMoreAction('callHistory');if(a==='clear'&&typeof clearCurrentChat==='function')return clearCurrentChat();};});
   }
   window.rkyFriendNewGroup=function(){return group();};
-  function group(){
-    if(typeof createGroup==='function'){try{return createGroup();}catch(e){console.error(e);}}
-    if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){console.error(e);}}
-    alert('👥 Group chat needs a backend group API. No fake group was created.');
+  async function group(){
+    var friends=[];
+    try{
+      var r=await fetch('/api/friends/'+encodeURIComponent(currentUser));
+      var data=await r.json();
+      if(!r.ok || !data.success) throw new Error(data.message||'Could not load friends');
+      friends=Array.isArray(data.friends)?data.friends:[];
+    }catch(e){
+      alert('❌ Could not load friends.');
+      console.error('New group friends error:',e);
+      return;
+    }
+
+    if(!friends.length){
+      alert('👥 Add at least one friend before creating a group.');
+      return;
+    }
+
+    var d=modal(
+      'rkyNewGroupChoice',
+      'New group',
+      '<input id="rkyNewGroupName" placeholder="Group name" style="width:100%;box-sizing:border-box;padding:11px;border:1px solid #ddd;border-radius:9px;margin-bottom:10px;">'+
+      '<div style="max-height:280px;overflow:auto;display:grid;gap:6px;">'+
+      friends.map(function(u){
+        var username=typeof u==='string'?u:(u.username||'');
+        var label=typeof u==='string'?u:(u.profileName||u.username||'');
+        return '<label style="display:flex;align-items:center;gap:9px;padding:9px;border-radius:9px;background:#f5f5f5;">'+
+          '<input type="checkbox" data-group-user="'+escapeRkyText(username)+'">'+
+          '<span>'+escapeRkyText(label)+'</span>'+
+        '</label>';
+      }).join('')+
+      '</div>'+
+      '<button id="rkyCreateGroupBtn" type="button" style="width:100%;margin-top:12px;padding:11px;border:0;border-radius:9px;background:#2196f3;color:white;font-weight:600;">Create group</button>'
+    );
+
+    var btn=d.querySelector('#rkyCreateGroupBtn');
+
+    btn.onclick=async function(){
+      var name=(d.querySelector('#rkyNewGroupName').value||'').trim();
+      var members=Array.from(d.querySelectorAll('[data-group-user]:checked')).map(function(x){
+        return x.getAttribute('data-group-user');
+      });
+
+      if(!name){
+        alert('Enter a group name.');
+        return;
+      }
+
+      if(!members.length){
+        alert('Select at least one member.');
+        return;
+      }
+
+      btn.disabled=true;
+      btn.textContent='Creating...';
+
+      try{
+        var r=await fetch('/api/groups',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({
+            name:name,
+            created_by:currentUser,
+            members:members
+          })
+        });
+
+        var data=await r.json();
+
+        if(!r.ok || !data.success){
+          throw new Error(data.message||'Could not create group');
+        }
+
+        d.remove();
+
+        if(typeof window.rkyV53RenderGroups==='function'){
+          try{ await window.rkyV53RenderGroups(); }catch(e){}
+        }
+
+        if(typeof window.rkyV53OpenGroup==='function' && data.group){
+          try{ window.rkyV53OpenGroup(data.group.id); }catch(e){}
+        }else{
+          alert('👥 Group created successfully.');
+        }
+
+      }catch(e){
+        console.error('Create group error:',e);
+        alert('❌ '+(e.message||'Could not create group'));
+        btn.disabled=false;
+        btn.textContent='Create group';
+      }
+    };
   }
   function act(a){
     if(a==='profile')return contact(); if(a==='search')return search(); if(a==='media')return media();

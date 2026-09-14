@@ -246,6 +246,11 @@ function rkyMoreAction(action){
     }
 
     if(action === "requests"){
+        const circleToggle = document.getElementById("rkyCircleRequestsToggle");
+        if(circleToggle){
+            circleToggle.style.setProperty("display","flex","important");
+        }
+
         const requestHeading = Array.from(
             document.querySelectorAll("#chatBox h3")
         ).find(el => el.textContent.trim() === "Friend Requests");
@@ -1321,7 +1326,8 @@ style="display:none;visibility:visible;opacity:1;height:auto;max-height:none;ove
 
 <!-- 📤 Sent Rky Circle Requests -->
 <div id="rkySentRequestsSection"
-style="
+style="display:none;
+
 margin:14px 0 10px;
 padding:14px;
 border:1px solid #e5e5ee;
@@ -1374,7 +1380,8 @@ box-shadow:0 3px 10px rgba(0,0,0,.06);
 
 <!-- 👥 Your Rky Connections -->
 <div id="rkyConnectionsSection"
-style="
+style="display:none;
+
 margin:14px 0 10px;
 padding:14px;
 border:1px solid #e5e5ee;
@@ -15961,72 +15968,7 @@ setInterval(function(){
 
 <script>
 // 🔐 Restore saved login session
-<!-- RKY FINAL FRIEND REQUEST FIX -->
-(function(){
-  function fixFriendRequests(){
-    const ids=[
-      "rkyCircleRequestsContent",
-      "rkyCircleRequestsArrow",
-      "friendUsername"
-    ];
 
-    const content=document.getElementById("rkyCircleRequestsContent");
-    if(!content) return;
-
-    /* Make the Friend Requests area visible */
-    content.style.setProperty("display","block","important");
-    content.style.setProperty("visibility","visible","important");
-    content.style.setProperty("opacity","1","important");
-    content.style.setProperty("height","auto","important");
-    content.style.setProperty("max-height","none","important");
-    content.style.setProperty("overflow","visible","important");
-
-    /* Make every hidden parent visible */
-    let p=content.parentElement;
-    let count=0;
-    while(p && count<8){
-      const cs=getComputedStyle(p);
-      if(cs.display==="none") p.style.setProperty("display","block","important");
-      if(cs.visibility==="hidden") p.style.setProperty("visibility","visible","important");
-      if(cs.opacity==="0") p.style.setProperty("opacity","1","important");
-      p=p.parentElement;
-      count++;
-    }
-
-    const arrow=document.getElementById("rkyCircleRequestsArrow");
-    if(arrow){
-      const btn=arrow.closest("button");
-      if(btn){
-        btn.type="button";
-        btn.onclick=function(e){
-          e.preventDefault();
-          e.stopPropagation();
-
-          const open=content.style.display==="none";
-          content.style.setProperty("display",open?"block":"none","important");
-          arrow.textContent=open?"⌄":"›";
-
-          if(open && typeof window.loadRequests==="function"){
-            window.loadRequests();
-          }
-        };
-      }
-    }
-
-    if(typeof window.loadRequests==="function"){
-      try{ window.loadRequests(); }catch(e){}
-    }
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",fixFriendRequests);
-  }else{
-    fixFriendRequests();
-  }
-
-
-})();
-</script>
 
 
 <!-- RKY AUTH VISIBILITY FINAL FIX -->
@@ -17349,7 +17291,6 @@ rkySentRequestsSection,
 
     [
       'rkyHeader','friendList',
-      'rkyCircleRequestsToggle',
     ].forEach(function(id){ setHidden(id,false); });
 
     /* Friend Requests content must stay hidden on the main Friends page. */

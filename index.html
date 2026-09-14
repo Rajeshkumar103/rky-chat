@@ -650,12 +650,6 @@ html,body{
 <link rel="stylesheet" href="whatsapp.css">
 
 <style id="rky-friends-page-red-circle-cleanup">
-#rkyConnectHeader,
-#rkyCircleRequestsToggle,
-#rkyCircleRequestsContent,
-#rkyCircleRequestsToggle + script + #rkyCircleRequestsContent + button,
-#rkySentRequestsSection,
-#rkyConnectionsSection,
 #searchMessage,
 #searchMessage + button,
 #starredMessages,
@@ -17238,7 +17232,8 @@ setInterval(function(){
 #chatBox.rky-friend-chat-open > #friendProfile,
 #chatBox.rky-friend-chat-open #rkyCircleRequestsToggle,
 #chatBox.rky-friend-chat-open #rkyCircleRequestsContent,
-#chatBox.rky-friend-chat-open #rkySentRequestsSection,
+#chatBox.rky-friend-chat-open #
+rkySentRequestsSection,
 #chatBox.rky-friend-chat-open #rkyConnectionsSection,
 #chatBox.rky-friend-chat-open #searchMessage,
 #chatBox.rky-friend-chat-open #starredMessages,
@@ -17355,7 +17350,6 @@ setInterval(function(){
     [
       'rkyHeader','friendList',
       'rkyCircleRequestsToggle',
-      'rkySentRequestsSection','rkyConnectionsSection'
     ].forEach(function(id){ setHidden(id,false); });
 
     /* Friend Requests content must stay hidden on the main Friends page. */
@@ -18771,19 +18765,8 @@ setInterval(function(){
 <!-- Rky Chat Media / Documents upload v7 -->
 
 <!-- RKY V73 circle state fix -->
-<style id="rky-v73-circle-state">
-body:not(.rky-v73-circle-open) #rkyCircleRequestsContent,body:not(.rky-v73-circle-open) #rkySentRequestsSection,body:not(.rky-v73-circle-open) #rkyConnectionsSection{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-#chatBox.rky-friend-chat-open #rkyCircleRequestsContent,#chatBox.rky-friend-chat-open #rkySentRequestsSection,#chatBox.rky-friend-chat-open #rkyConnectionsSection{display:none!important;visibility:hidden!important;opacity:0!important;pointer-events:none!important}
-body.rky-v73-circle-open #rkyCircleRequestsContent,body.rky-v73-circle-open #rkySentRequestsSection,body.rky-v73-circle-open #rkyConnectionsSection{display:block!important;visibility:visible!important;opacity:1!important;pointer-events:auto!important}
-</style>
-<script id="rky-v73-circle-state-script">
 (function(){
 function els(){return ['rkyCircleRequestsContent','rkySentRequestsSection','rkyConnectionsSection'].map(function(id){return document.getElementById(id)}).filter(Boolean)}
-function closeCircle(){document.body.classList.remove('rky-v73-circle-open');els().forEach(function(e){e.style.setProperty('display','none','important');e.style.setProperty('visibility','hidden','important');e.style.setProperty('opacity','0','important');e.style.setProperty('pointer-events','none','important')})}
-function openCircle(){document.body.classList.add('rky-v73-circle-open');els().forEach(function(e){e.style.setProperty('display','block','important');e.style.setProperty('visibility','visible','important');e.style.setProperty('opacity','1','important');e.style.setProperty('pointer-events','auto','important')})}
-window.rkyV73CloseCircle=closeCircle;window.rkyV73OpenCircle=openCircle;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',closeCircle);else closeCircle();
-var ob=new MutationObserver(function(){if(!document.body.classList.contains('rky-v73-circle-open')){els().forEach(function(e){e.style.setProperty('display','none','important');e.style.setProperty('visibility','hidden','important');e.style.setProperty('opacity','0','important');e.style.setProperty('pointer-events','none','important')})}});
 ob.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
 var old=window.rkyMoreAction;if(typeof old==='function'){window.rkyMoreAction=function(action){var r=old.apply(this,arguments);setTimeout(function(){if(action==='requests')openCircle();else closeCircle()},0);return r}}
 })();

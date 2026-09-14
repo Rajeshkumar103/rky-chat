@@ -18356,13 +18356,13 @@ rkySentRequestsSection,
   }
 
   window.rkyHandleFriendMenuAction=function(a){
-    if(a==='profile') return contact();
+    if(a==='profile') return window.rkyFriendViewContact();
     if(a==='search') return (typeof window.rkyOpenSearchReal==='function' ? window.rkyOpenSearchReal() : openSearch());
     if(a==='media') return (typeof window.rkyOpenMediaDocs==='function' ? window.rkyOpenMediaDocs() : (typeof media==='function' ? media() : openMedia()));
     if(a==='notifications') return mute();
     if(a==='disappearing') return disappearing();
     if(a==='theme') return theme();
-    if(a==='group') return group();
+    if(a==='group') return window.rkyFriendNewGroup();
     if(a==='more') return more();
   };
 
@@ -18520,6 +18520,7 @@ rkySentRequestsSection,
   }
   window.rkyOpenMediaDocs=openMediaDocs;
   function media(){ return openMediaDocs(); }
+  window.rkyFriendViewContact=function(){return contact();};
   function contact(){
     var name=friendName();if(!name)return;
     var u=null;try{u=(Array.isArray(users)?users:[]).find(function(x){return x.username===name;});}catch(e){}
@@ -18652,6 +18653,7 @@ rkySentRequestsSection,
     var d=modal('rkyFriendMoreActions','More','<div style="display:grid;gap:7px;"><button data-act="starred" style="padding:12px;border:0;border-radius:10px;text-align:left;">⭐ Starred messages</button><button data-act="history" style="padding:12px;border:0;border-radius:10px;text-align:left;">📋 Call history</button><button data-act="clear" style="padding:12px;border:0;border-radius:10px;text-align:left;">🗑️ Clear chat</button></div>');
     d.querySelectorAll('[data-act]').forEach(function(b){b.onclick=function(){d.remove();var a=b.getAttribute('data-act');if(a==='starred')return starred();if(a==='history'&&typeof rkyMoreAction==='function')return rkyMoreAction('callHistory');if(a==='clear'&&typeof clearCurrentChat==='function')return clearCurrentChat();};});
   }
+  window.rkyFriendNewGroup=function(){return group();};
   function group(){
     if(typeof createGroup==='function'){try{return createGroup();}catch(e){console.error(e);}}
     if(typeof openCreateGroup==='function'){try{return openCreateGroup();}catch(e){console.error(e);}}

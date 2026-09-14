@@ -18763,14 +18763,6 @@ rkySentRequestsSection,
 })();
 </script>
 <!-- Rky Chat Media / Documents upload v7 -->
-
-<!-- RKY V73 circle state fix -->
-(function(){
-function els(){return ['rkyCircleRequestsContent','rkySentRequestsSection','rkyConnectionsSection'].map(function(id){return document.getElementById(id)}).filter(Boolean)}
-ob.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class']});
-var old=window.rkyMoreAction;if(typeof old==='function'){window.rkyMoreAction=function(action){var r=old.apply(this,arguments);setTimeout(function(){if(action==='requests')openCircle();else closeCircle()},0);return r}}
-})();
-</script>
 </body>
 </html>
 

@@ -823,6 +823,120 @@ html,body{
 }
 </style>
 
+<style id="rky-premium-voice-call-v2">
+#voiceCallControls.rky-call-active{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    margin:0!important;
+    padding:0!important;
+    z-index:999999!important;
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto 1fr auto auto!important;
+    align-items:center!important;
+    justify-items:center!important;
+    background:
+        radial-gradient(circle at 50% 25%,rgba(45,70,110,.55),transparent 35%),
+        linear-gradient(180deg,#101827 0%,#05080e 100%)!important;
+    color:#fff!important;
+    border-radius:0!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallProfile{
+    display:flex!important;
+    grid-row:2!important;
+    flex-direction:column!important;
+    align-items:center!important;
+    justify-content:center!important;
+    gap:12px!important;
+    width:100%!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallProfilePhoto{
+    width:150px!important;
+    height:150px!important;
+    min-width:150px!important;
+    border-radius:50%!important;
+    object-fit:cover!important;
+    border:4px solid rgba(255,255,255,.18)!important;
+    box-shadow:0 15px 45px rgba(0,0,0,.45)!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallProfileName{
+    font-size:28px!important;
+    font-weight:700!important;
+    color:#fff!important;
+    text-align:center!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallProfileStatus{
+    font-size:15px!important;
+    color:#b9c4d5!important;
+    text-align:center!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallStatus{
+    grid-row:3!important;
+    margin:0!important;
+    font-size:15px!important;
+    color:#cbd5e1!important;
+}
+
+#voiceCallControls.rky-call-active #speakerVoiceCallButton,
+#voiceCallControls.rky-call-active #muteVoiceCallButton,
+#voiceCallControls.rky-call-active #endVoiceCallButton{
+    position:relative!important;
+    z-index:2!important;
+}
+
+#voiceCallControls.rky-call-active #speakerVoiceCallButton,
+#voiceCallControls.rky-call-active #muteVoiceCallButton{
+    grid-row:4!important;
+    margin:0 5px!important;
+    min-width:105px!important;
+    height:46px!important;
+    border:1px solid rgba(255,255,255,.15)!important;
+    border-radius:24px!important;
+    background:rgba(255,255,255,.10)!important;
+    color:#fff!important;
+    font-size:14px!important;
+}
+
+#voiceCallControls.rky-call-active #endVoiceCallButton{
+    grid-row:5!important;
+    margin:12px 0 24px!important;
+    width:64px!important;
+    height:64px!important;
+    border:0!important;
+    border-radius:50%!important;
+    background:#ef4444!important;
+    color:#fff!important;
+    font-size:24px!important;
+    box-shadow:0 8px 25px rgba(239,68,68,.35)!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallAudioDeviceControl,
+#voiceCallControls.rky-call-active #voiceCallVolumeControl,
+#voiceCallControls.rky-call-active #voiceCallQuality{
+    display:none!important;
+}
+
+@media(max-width:600px){
+    #voiceCallControls.rky-call-active #voiceCallProfilePhoto{
+        width:130px!important;
+        height:130px!important;
+        min-width:130px!important;
+    }
+
+    #voiceCallControls.rky-call-active #voiceCallProfileName{
+        font-size:24px!important;
+    }
+}
+</style>
 </head>  
 <body>  
 <h1>Welcome to Rky Chat</h1>  
@@ -977,9 +1091,12 @@ style="display:none; margin:10px 0; padding:12px; background:#f2f2f2; border-rad
 
 </div>
 
-<div id="voiceCallControls"
-style="display:none; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
-
+<div id="voiceCallControls" style="display:none; margin:10px 0; padding:10px; background:#f2f2f2; border-radius:10px;">
+    <div id="voiceCallProfile" style="display:none;">
+        <img id="voiceCallProfilePhoto" src="" alt="Profile">
+        <div id="voiceCallProfileName"></div>
+        <div id="voiceCallProfileStatus">Calling...</div>
+    </div>
     <button
         id="startVoiceCallButton"
         onclick="startVoiceCall()"
@@ -9515,6 +9632,18 @@ async function acceptVoiceCall(){
                 video: false
             });
 
+        updateVoiceCallProfile(
+            currentCallUser,
+            "🔊 Connected"
+        );
+
+        const voiceCallControls =
+            document.getElementById("voiceCallControls");
+
+        if(voiceCallControls){
+            voiceCallControls.classList.add("rky-call-active");
+        }
+
         peerConnection =
             new RTCPeerConnection(
                 voiceCallConfig
@@ -9767,7 +9896,40 @@ function rejectVoiceCall(){
 }
 
 
+function updateVoiceCallProfile(username, statusText){
+    const profile = document.getElementById("voiceCallProfile");
+    const photoEl = document.getElementById("voiceCallProfilePhoto");
+    const nameEl = document.getElementById("voiceCallProfileName");
+    const statusEl = document.getElementById("voiceCallProfileStatus");
+
+    let photo = "https://via.placeholder.com/160";
+    let profileName = username || "Unknown";
+
+    if(Array.isArray(users)){
+        for(let i=0;i<users.length;i++){
+            if(users[i].username === username){
+                if(users[i].photo){
+                    photo = users[i].photo;
+                }
+                if(users[i].profileName){
+                    profileName = users[i].profileName;
+                }
+                break;
+            }
+        }
+    }
+
+    if(photoEl) photoEl.src = photo;
+    if(nameEl) nameEl.innerText = profileName;
+    if(statusEl) statusEl.innerText = statusText || "Calling...";
+
+    if(profile){
+        profile.style.display = "flex";
+    }
+}
+
 /* 📞 Start Voice Call */
+
 
 async function startVoiceCall(){
 
@@ -9840,6 +10002,16 @@ async function startVoiceCall(){
             });
 
         currentCallUser = selectedFriend;
+
+        updateVoiceCallProfile(
+            selectedFriend,
+            "📞 Calling..."
+        );
+
+        const voiceCallControls = document.getElementById("voiceCallControls");
+        if(voiceCallControls){
+            voiceCallControls.classList.add("rky-call-active");
+        }
 
         peerConnection =
             new RTCPeerConnection(
@@ -10750,6 +10922,20 @@ function stopVoiceCallQualityMonitor(){
 
 
 function endVoiceCall(){
+
+    const voiceCallControls =
+        document.getElementById("voiceCallControls");
+
+    if(voiceCallControls){
+        voiceCallControls.classList.remove("rky-call-active");
+    }
+
+    const voiceCallProfile =
+        document.getElementById("voiceCallProfile");
+
+    if(voiceCallProfile){
+        voiceCallProfile.style.display = "none";
+    }
 
     showVoiceCallAdvancedStats();
 
@@ -19731,3 +19917,6 @@ rkySentRequestsSection,
 <!-- Rky Chat Media / Documents upload v7 -->
 </body>
 </html>
+
+
+

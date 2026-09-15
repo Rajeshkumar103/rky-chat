@@ -8439,9 +8439,554 @@ let peerConnection = null;
 let currentCallUser = "";
 let incomingCallOffer = null;
 let callSocketHandlersReady = false;
-let pendingIceCandidates = [];
-let remoteDescriptionSet = false;
 
+/* 👥 Group Call State */
+let groupCallGroupId = null;
+let groupCallMembers = [];
+let groupAudioActive = false;
+let groupVideoActive = false;
+let groupAudioLocalStream = null;
+let groupVideoLocalStream = null;
+let groupAudioPeers = {};
+
+/* 👥 GROUP AUDIO CALL */
+
+async function startGroupAudioCall(groupId){
+
+  var gid = Number(groupId || groupCallGroupId);
+
+  if(!gid || !currentUser){
+    alert("Group call unavailable.");
+    return;
+  }
+
+  groupCallGroupId = gid;
+
+  if(groupAudioActive){
+    return;
+  }
+
+  try{
+
+    if(typeof io === "undefined"){
+      throw new Error("Socket.IO is not loaded.");
+    }
+
+    if(!callSocket || !callSocket.connected){
+      connectVoiceCallSocket();
+    }
+
+    if(!callSocket){
+      throw new Error("Call socket unavailable.");
+    }
+
+    groupAudioLocalStream =
+      await navigator.mediaDevices.getUserMedia({
+        audio:true,
+        video:false
+      });
+
+    groupAudioActive = true;
+
+    await loadGroupCallMembers(gid);
+
+    callSocket.emit("group-call-join", {
+      groupId:gid,
+      username:currentUser
+    });
+
+    console.log(
+      "🎤 Group audio call started:",
+      gid
+    );
+
+    for(const username of groupCallMembers){
+
+      if(String(username) === String(currentUser)){
+        continue;
+      }
+
+      await createGroupAudioPeer(username, true);
+    }
+
+  }catch(error){
+
+    console.error(
+      "Group audio call start error:",
+      error
+    );
+
+    groupAudioActive = false;
+
+    if(groupAudioLocalStream){
+      groupAudioLocalStream
+        .getTracks()
+        .forEach(function(track){
+          track.stop();
+        });
+
+      groupAudioLocalStream = null;
+    }
+
+    alert(
+      "Group audio call failed: " +
+      (error.message || "Unknown error")
+    );
+  }
+}
+
+
+async function createGroupAudioPeer(username, makeOffer){
+
+  username = String(username || "").trim();
+
+  if(!username || username === String(currentUser)){
+    return;
+  }
+
+  if(groupAudioPeers[username]){
+    return groupAudioPeers[username];
+  }
+
+  var peer = new RTCPeerConnection({
+    iceServers:[
+      {urls:"stun:stun.l.google.com:19302"}
+    ]
+  });
+
+  groupAudioPeers[username] = peer;
+
+  if(groupAudioLocalStream){
+
+    groupAudioLocalStream
+      .getTracks()
+      .forEach(function(track){
+        peer.addTrack(
+          track,
+          groupAudioLocalStream
+        );
+      });
+
+  }
+
+  peer.onicecandidate = function(event){
+
+    if(!event.candidate) return;
+    if(!callSocket) return;
+
+    callSocket.emit("group-audio-ice", {
+      groupId:groupCallGroupId,
+      from:currentUser,
+      to:username,
+      candidate:event.candidate
+    });
+
+  };
+
+  peer.ontrack = function(event){
+
+    var stream = event.streams && event.streams[0];
+
+    if(!stream) return;
+
+    var audioId =
+      "rkyGroupAudioRemote_" +
+      String(username).replace(/[^a-zA-Z0-9_-]/g,"_");
+
+    var audio =
+      document.getElementById(audioId);
+
+    if(!audio){
+
+      audio = document.createElement("audio");
+
+      audio.id = audioId;
+      audio.autoplay = true;
+      audio.playsInline = true;
+
+      audio.style.display = "none";
+
+      document.body.appendChild(audio);
+    }
+
+    audio.srcObject = stream;
+
+    audio.play().catch(function(){});
+
+  };
+
+  if(makeOffer){
+
+    var offer = await peer.createOffer();
+
+    await peer.setLocalDescription(offer);
+
+    callSocket.emit("group-audio-offer", {
+      groupId:groupCallGroupId,
+      from:currentUser,
+      to:username,
+      offer:peer.localDescription
+    });
+
+  }
+
+  return peer;
+}
+
+
+async function endGroupAudioCall(){
+
+  if(!groupCallGroupId){
+    return;
+  }
+
+  var gid = groupCallGroupId;
+
+  if(callSocket){
+
+    callSocket.emit("group-call-leave", {
+      groupId:gid,
+      username:currentUser
+    });
+
+    callSocket.emit("group-call-end", {
+      groupId:gid,
+      from:currentUser
+    });
+
+  }
+
+  Object.keys(groupAudioPeers).forEach(function(username){
+
+    var peer = groupAudioPeers[username];
+
+    if(peer){
+      try{
+        peer.close();
+      }catch(e){}
+    }
+
+  });
+
+  groupAudioPeers = {};
+
+  if(groupAudioLocalStream){
+
+    groupAudioLocalStream
+      .getTracks()
+      .forEach(function(track){
+        track.stop();
+      });
+
+  }
+
+  groupAudioLocalStream = null;
+  groupAudioActive = false;
+
+  console.log(
+    "🔴 Group audio call ended:",
+    gid
+  );
+}
+
+
+window.startGroupAudioCall = startGroupAudioCall;
+window.endGroupAudioCall = endGroupAudioCall;
+
+let groupVideoPeers = {};
+let groupCallHandlersReady = false;
+
+
+/* 👥 Load Group Call Members */
+async function loadGroupCallMembers(groupId){
+  const gid = Number(groupId);
+
+  if(!gid || !currentUser){
+    groupCallMembers = [];
+    return [];
+  }
+
+  try{
+    const response = await fetch(
+      "/api/groups/" + encodeURIComponent(gid) +
+      "/members?username=" + encodeURIComponent(currentUser) +
+      "&t=" + Date.now()
+    );
+
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    if(!data.success){
+      throw new Error(data.message || "Could not load group members");
+    }
+
+    groupCallMembers = Array.isArray(data.members)
+      ? data.members.filter(function(username){
+          return String(username || "").trim() &&
+                 String(username) !== String(currentUser);
+        })
+      : [];
+
+    console.log(
+      "👥 Group call members:",
+      gid,
+      groupCallMembers
+    );
+
+    return groupCallMembers;
+
+  }catch(error){
+    console.error("Group call members load error:", error);
+    groupCallMembers = [];
+    return [];
+  }
+}
+
+/* 👥 Group Call Socket Handlers */
+function setupGroupCallSocketHandlers(){
+  if(groupCallHandlersReady) return;
+
+  if(!callSocket){
+    console.warn("Group call socket is not ready");
+    return;
+  }
+
+  callSocket.on("group-call-user-joined", async function(data){
+    if(!data) return;
+
+    const gid = Number(data.groupId);
+    const username = String(data.username || "").trim();
+
+    if(!gid || !username) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+    if(username === String(currentUser)) return;
+
+    console.log(
+      "👥 Group call user joined:",
+      username,
+      "group:",
+      gid
+    );
+
+    if(!groupAudioActive) return;
+
+    try{
+
+      await createGroupAudioPeer(username, true);
+
+      console.log(
+        "🎤 Group audio offer sent to new member:",
+        username
+      );
+
+    }catch(error){
+
+      console.error(
+        "Group audio new-member offer error:",
+        error
+      );
+
+    }
+  });
+
+  callSocket.on("group-call-user-left", function(data){
+    if(!data) return;
+
+    const gid = Number(data.groupId);
+    const username = String(data.username || "").trim();
+
+    if(!gid || !username) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+
+    console.log(
+      "👋 Group call user left:",
+      username,
+      "group:",
+      gid
+    );
+  });
+
+  callSocket.on("group-audio-offer", async function(data){
+    if(!data) return;
+
+    var gid = Number(data.groupId);
+    var from = String(data.from || "").trim();
+    var offer = data.offer;
+
+    if(!gid || !from || !offer) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+    if(from === String(currentUser)) return;
+
+    try{
+
+      if(!groupAudioActive){
+        groupCallGroupId = gid;
+
+        groupAudioLocalStream =
+          await navigator.mediaDevices.getUserMedia({
+            audio:true,
+            video:false
+          });
+
+        groupAudioActive = true;
+      }
+
+      var peer = groupAudioPeers[from];
+
+      if(!peer){
+        peer = await createGroupAudioPeer(from, false);
+      }
+
+      await peer.setRemoteDescription(
+        new RTCSessionDescription(offer)
+      );
+
+      var answer = await peer.createAnswer();
+
+      await peer.setLocalDescription(answer);
+
+      if(callSocket){
+
+        callSocket.emit("group-audio-answer", {
+          groupId:gid,
+          from:currentUser,
+          to:from,
+          answer:peer.localDescription
+        });
+
+      }
+
+      console.log(
+        "🎤 Group audio answer sent:",
+        from
+      );
+
+    }catch(error){
+
+      console.error(
+        "Group audio offer error:",
+        error
+      );
+
+    }
+  });
+
+
+  callSocket.on("group-audio-answer", async function(data){
+    if(!data) return;
+
+    var gid = Number(data.groupId);
+    var from = String(data.from || "").trim();
+    var answer = data.answer;
+
+    if(!gid || !from || !answer) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+
+    var peer = groupAudioPeers[from];
+
+    if(!peer) return;
+
+    try{
+
+      await peer.setRemoteDescription(
+        new RTCSessionDescription(answer)
+      );
+
+      console.log(
+        "🎤 Group audio answer applied:",
+        from
+      );
+
+    }catch(error){
+
+      console.error(
+        "Group audio answer error:",
+        error
+      );
+
+    }
+  });
+
+
+  callSocket.on("group-audio-ice", async function(data){
+    if(!data) return;
+
+    var gid = Number(data.groupId);
+    var from = String(data.from || "").trim();
+    var candidate = data.candidate;
+
+    if(!gid || !from || !candidate) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+
+    var peer = groupAudioPeers[from];
+
+    if(!peer) return;
+
+    try{
+
+      await peer.addIceCandidate(
+        new RTCIceCandidate(candidate)
+      );
+
+    }catch(error){
+
+      console.error(
+        "Group audio ICE error:",
+        error
+      );
+
+    }
+  });
+
+  callSocket.on("group-video-offer", function(data){
+    if(!data) return;
+
+    console.log(
+      "📹 Group video offer received:",
+      data.from
+    );
+  });
+
+  callSocket.on("group-video-answer", function(data){
+    if(!data) return;
+
+    console.log(
+      "📹 Group video answer received:",
+      data.from
+    );
+  });
+
+  callSocket.on("group-video-ice", function(data){
+    if(!data) return;
+
+    console.log(
+      "📹 Group video ICE received:",
+      data.from
+    );
+  });
+
+  callSocket.on("group-call-ended", function(data){
+    if(!data) return;
+
+    const gid = Number(data.groupId);
+
+    if(!gid) return;
+    if(String(gid) !== String(groupCallGroupId)) return;
+
+    console.log(
+      "🔴 Group call ended:",
+      gid,
+      data.from || ""
+    );
+  });
+
+  groupCallHandlersReady = true;
+
+  console.log("👥 Group call socket handlers ready");
+}
 
 /* 📹 Video Call State */
 
@@ -9254,11 +9799,10 @@ async function startVoiceCall(){
         pendingIceCandidates = [];
         remoteDescriptionSet = false;
 
-        if(!callSocket){
-            connectVoiceCallSocket();
-        }
-
-        if(!callSocket || !callSocket.connected){
+        try{
+            await waitForCallSocketConnection();
+        }catch(error){
+            console.error("❌ Voice call socket connection failed:", error);
             alert("❌ Voice call server is not connected.");
             return;
         }
@@ -10305,6 +10849,38 @@ function endVoiceCall(){
 
 }
 
+function waitForCallSocketConnection(timeout){
+    return new Promise(function(resolve, reject){
+
+        timeout = timeout || 8000;
+
+        if(callSocket && callSocket.connected){
+            resolve(callSocket);
+            return;
+        }
+
+        connectVoiceCallSocket();
+
+        var start = Date.now();
+
+        var timer = setInterval(function(){
+
+            if(callSocket && callSocket.connected){
+                clearInterval(timer);
+                resolve(callSocket);
+                return;
+            }
+
+            if(Date.now() - start >= timeout){
+                clearInterval(timer);
+                reject(new Error("Call server connection timeout."));
+            }
+
+        }, 100);
+
+    });
+}
+
 function connectVoiceCallSocket(){
 
     if(typeof io === "undefined"){
@@ -10319,6 +10895,7 @@ function connectVoiceCallSocket(){
     callSocket = io();
 
         setupVoiceCallHandlers();
+        setupGroupCallSocketHandlers();
 
     callSocket.on("connect", function(){
 
@@ -10717,19 +11294,11 @@ async function startVideoCall(){
 
     try{
 
-        if(!callSocket){
-            connectVoiceCallSocket();
-        }
-
-        if(
-            !callSocket ||
-            !callSocket.connected
-        ){
-
-            alert(
-                "❌ Call server is not connected."
-            );
-
+        try{
+            await waitForCallSocketConnection();
+        }catch(error){
+            console.error("❌ Video call socket connection failed:", error);
+            alert("❌ Call server is not connected.");
             return;
         }
 
@@ -11411,6 +11980,7 @@ async function rkyV53RenderGroups(){
     groups.forEach(function(g){
       var button = document.createElement("button");
       button.type = "button";
+
       button.style.cssText =
         "display:flex;align-items:center;width:100%;box-sizing:border-box;" +
         "padding:10px;margin:5px 0;border:0;border-radius:10px;" +
@@ -11428,21 +11998,274 @@ async function rkyV53RenderGroups(){
           '</div>' +
         '</span>';
 
-      button.onclick = function(){
-        alert("👥 Group: " + (g.name || "Group"));
-      };
+      button.addEventListener("pointerdown", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("GROUP POINTER:", g);
+      });
+
+      button.addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        console.log("GROUP CLICKED:", g);
+        alert("GROUP CLICKED: " + g.id);
+        if(typeof window.rkyV53OpenGroup === "function"){
+          window.rkyV53OpenGroup(Number(g.id));
+        }else{
+          alert("rkyV53OpenGroup missing");
+        }
+      });
 
       box.appendChild(button);
     });
 
   }catch(error){
     console.error("rkyV53RenderGroups error:", error);
+
     box.innerHTML =
       '<div style="padding:10px;color:#d33;background:#fff0f0;border-radius:10px;">' +
       'Could not load groups.' +
       '</div>';
   }
 }
+
+async function rkyV53OpenGroup(groupId){
+
+  if(!groupId) return;
+
+  console.log("Opening group:", groupId);
+
+  var old = document.getElementById("rkyActiveGroupChat");
+  if(old) old.remove();
+
+  var chat = document.createElement("div");
+  chat.id = "rkyActiveGroupChat";
+
+  chat.style.cssText =
+    "position:fixed;inset:0;background:#fff;z-index:99999;" +
+    "display:flex;flex-direction:column;";
+
+  chat.innerHTML =
+    '<div style="height:56px;display:flex;align-items:center;' +
+      'padding:0 12px;background:#075e54;color:#fff;">' +
+
+      '<button id="rkyGroupBackBtn" type="button" ' +
+        'style="border:0;background:transparent;color:#fff;' +
+        'font-size:25px;margin-right:10px;cursor:pointer;">' +
+        '‹' +
+      '</button>' +
+
+      '<div style="font-weight:bold;flex:1;">Group</div>' +
+
+      '<button id="rkyGroupAudioCallBtn" type="button" ' +
+        'style="border:0;background:transparent;color:#fff;' +
+        'font-size:20px;margin-left:8px;cursor:pointer;" ' +
+        'title="Group Audio Call">' +
+        '📞' +
+      '</button>' +
+
+      '<button id="rkyGroupVideoCallBtn" type="button" ' +
+        'style="border:0;background:transparent;color:#fff;' +
+        'font-size:20px;margin-left:8px;cursor:pointer;" ' +
+        'title="Group Video Call">' +
+        '📹' +
+      '</button>' +
+
+    '</div>' +
+
+    '<div id="rkyGroupMessages" ' +
+      'style="flex:1;overflow-y:auto;padding:12px;background:#efeae2;">' +
+      '<div style="text-align:center;color:#777;padding:20px;">' +
+        'Loading messages...' +
+      '</div>' +
+    '</div>' +
+
+    '<div style="display:flex;padding:8px;border-top:1px solid #ddd;background:#fff;">' +
+
+      '<input id="rkyGroupMessageInput" type="text" ' +
+        'placeholder="Type a message..." ' +
+        'style="flex:1;padding:10px;border:1px solid #ccc;' +
+        'border-radius:20px;outline:none;">' +
+
+      '<button id="rkyGroupSendBtn" type="button" ' +
+        'style="margin-left:7px;border:0;border-radius:20px;' +
+        'padding:0 16px;background:#075e54;color:#fff;cursor:pointer;">' +
+        'Send' +
+      '</button>' +
+
+    '</div>';
+
+  document.body.appendChild(chat);
+
+  document.getElementById("rkyGroupBackBtn").onclick = function(){
+    chat.remove();
+  };
+
+  document.getElementById("rkyGroupAudioCallBtn").onclick = function(){
+    if(typeof startGroupAudioCall === "function"){
+      startGroupAudioCall(groupId);
+    }else{
+      alert("Group audio call is not ready.");
+    }
+  };
+
+  async function loadGroupMessages(){
+
+    var box = document.getElementById("rkyGroupMessages");
+    if(!box) return;
+
+    try{
+
+      var response = await fetch(
+        "/api/groups/" + encodeURIComponent(groupId) +
+        "/messages?username=" + encodeURIComponent(currentUser) +
+        "&t=" + Date.now()
+      );
+
+      if(!response.ok){
+        throw new Error("HTTP " + response.status);
+      }
+
+      var data = await response.json();
+      var messages = Array.isArray(data.messages) ? data.messages : [];
+
+      box.innerHTML = "";
+
+      if(!messages.length){
+        box.innerHTML =
+          '<div style="text-align:center;color:#777;padding:20px;">' +
+          'No messages yet.' +
+          '</div>';
+        return;
+      }
+
+      messages.forEach(function(msg){
+
+        var row = document.createElement("div");
+
+        var mine = String(msg.sender) === String(currentUser);
+
+        row.style.cssText =
+          "display:flex;margin:6px 0;" +
+          (mine ? "justify-content:flex-end;" : "justify-content:flex-start;");
+
+        var bubble = document.createElement("div");
+
+        bubble.style.cssText =
+          "max-width:78%;padding:8px 10px;border-radius:10px;" +
+          "background:" + (mine ? "#d9fdd3" : "#fff") + ";" +
+          "box-shadow:0 1px 1px rgba(0,0,0,.08);";
+
+        bubble.innerHTML =
+          '<div style="font-size:11px;color:#777;margin-bottom:2px;">' +
+          escapeHTML(msg.sender || "") +
+          '</div>' +
+          '<div style="font-size:14px;white-space:pre-wrap;word-break:break-word;">' +
+          escapeHTML(msg.message || "") +
+          '</div>';
+
+        row.appendChild(bubble);
+        box.appendChild(row);
+      });
+
+      box.scrollTop = box.scrollHeight;
+
+    }catch(error){
+
+      console.error("Group messages load error:", error);
+
+      box.innerHTML =
+        '<div style="text-align:center;color:#d33;padding:20px;">' +
+        'Could not load messages.' +
+        '</div>';
+    }
+  }
+
+  async function sendGroupMessage(){
+
+    var input = document.getElementById("rkyGroupMessageInput");
+    var sendBtn = document.getElementById("rkyGroupSendBtn");
+
+    if(!input) return;
+
+    var text = String(input.value || "").trim();
+
+    if(!text) return;
+
+    if(!currentUser){
+      alert("Please login again.");
+      return;
+    }
+
+    input.disabled = true;
+    if(sendBtn) sendBtn.disabled = true;
+
+    try{
+
+      var response = await fetch(
+        "/api/groups/" + encodeURIComponent(groupId) + "/messages",
+        {
+          method:"POST",
+          headers:{
+            "Content-Type":"application/json"
+          },
+          body:JSON.stringify({
+            sender:currentUser,
+            message:text
+          })
+        }
+      );
+
+      var data = await response.json();
+
+      if(!response.ok || !data.success){
+        throw new Error(data.message || ("HTTP " + response.status));
+      }
+
+      input.value = "";
+
+      await loadGroupMessages();
+
+    }catch(error){
+
+      console.error("Group send error:", error);
+
+      alert(
+        "Message send failed: " +
+        (error.message || "Unknown error")
+      );
+
+    }finally{
+
+      input.disabled = false;
+      if(sendBtn) sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  document.getElementById("rkyGroupSendBtn").onclick =
+    sendGroupMessage;
+
+  document.getElementById("rkyGroupMessageInput").addEventListener(
+    "keydown",
+    function(e){
+      if(e.key === "Enter"){
+        e.preventDefault();
+        sendGroupMessage();
+      }
+    }
+  );
+
+  await loadGroupMessages();
+
+  console.log("Group chat opened:", groupId);
+}
+
+window.rkyV53OpenGroup = rkyV53OpenGroup;
+
+window.rkyV53RenderGroups = rkyV53RenderGroups;
+
+    
 
 window.rkyV53RenderGroups = rkyV53RenderGroups;
 

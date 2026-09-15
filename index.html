@@ -9157,6 +9157,7 @@ function setupVoiceCallHandlers(){
     callSocket.on(
         "incoming-call",
         function(data){
+            alert("📞 INCOMING CALL EVENT RECEIVED");
 
             if(!data || !data.from || !data.offer){
                 return;

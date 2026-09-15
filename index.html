@@ -10889,6 +10889,10 @@ function connectVoiceCallSocket(){
     }
 
     if(callSocket && callSocket.connected){
+        if(currentUser){
+            callSocket.emit("register-call-user", currentUser);
+            console.log("📞 Call user re-registered:", currentUser);
+        }
         return;
     }
 

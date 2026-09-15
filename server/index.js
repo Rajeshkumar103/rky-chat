@@ -2963,6 +2963,228 @@ io.on("connection", socket => {
     });
 
 
+
+    /* 👥 GROUP CALL SIGNALING */
+
+    socket.on("group-call-join", data => {
+        const groupId = Number(data && data.groupId);
+        const username = String(data && data.username || "").trim();
+
+        if(!groupId || !username) return;
+
+        const member = db.prepare(
+            "SELECT id FROM group_members WHERE group_id=? AND username=?"
+        ).get(groupId, username);
+
+        if(!member) return;
+
+        const room = "rky-group-" + groupId;
+
+        socket.join(room);
+        socket.data.groupCallGroupId = groupId;
+        socket.data.groupCallUsername = username;
+
+        socket.to(room).emit("group-call-user-joined", {
+            groupId: groupId,
+            username: username
+        });
+
+        console.log(
+            "👥 Group call joined:",
+            username,
+            "group:",
+            groupId
+        );
+    });
+
+    socket.on("group-call-leave", data => {
+        const groupId = Number(data && data.groupId);
+        const username = String(
+            data && data.username ||
+            socket.data.groupCallUsername ||
+            ""
+        ).trim();
+
+        if(!groupId) return;
+
+        const room = "rky-group-" + groupId;
+
+        socket.to(room).emit("group-call-user-left", {
+            groupId: groupId,
+            username: username
+        });
+
+        socket.data.groupCallGroupId = null;
+        socket.data.groupCallUsername = null;
+
+        console.log(
+            "👥 Group call left:",
+            username,
+            "group:",
+            groupId
+        );
+    });
+
+    /* 🎤 GROUP AUDIO OFFER */
+    socket.on("group-audio-offer", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const offer = data && data.offer;
+
+        if(!groupId || !from || !to || !offer) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-audio-offer",
+                {
+                    groupId: groupId,
+                    from: from,
+                    offer: offer
+                }
+            );
+        }
+    });
+
+    /* 🎤 GROUP AUDIO ANSWER */
+    socket.on("group-audio-answer", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const answer = data && data.answer;
+
+        if(!groupId || !from || !to || !answer) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-audio-answer",
+                {
+                    groupId: groupId,
+                    from: from,
+                    answer: answer
+                }
+            );
+        }
+    });
+
+    /* 🎤 GROUP AUDIO ICE */
+    socket.on("group-audio-ice", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const candidate = data && data.candidate;
+
+        if(!groupId || !from || !to || !candidate) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-audio-ice",
+                {
+                    groupId: groupId,
+                    from: from,
+                    candidate: candidate
+                }
+            );
+        }
+    });
+
+    /* 📹 GROUP VIDEO OFFER */
+    socket.on("group-video-offer", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const offer = data && data.offer;
+
+        if(!groupId || !from || !to || !offer) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-video-offer",
+                {
+                    groupId: groupId,
+                    from: from,
+                    offer: offer
+                }
+            );
+        }
+    });
+
+    /* 📹 GROUP VIDEO ANSWER */
+    socket.on("group-video-answer", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const answer = data && data.answer;
+
+        if(!groupId || !from || !to || !answer) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-video-answer",
+                {
+                    groupId: groupId,
+                    from: from,
+                    answer: answer
+                }
+            );
+        }
+    });
+
+    /* 📹 GROUP VIDEO ICE */
+    socket.on("group-video-ice", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+        const to = String(data && data.to || "").trim();
+        const candidate = data && data.candidate;
+
+        if(!groupId || !from || !to || !candidate) return;
+
+        const receiverSocket =
+            onlineCallUsers.get(to);
+
+        if(receiverSocket){
+            io.to(receiverSocket).emit(
+                "group-video-ice",
+                {
+                    groupId: groupId,
+                    from: from,
+                    candidate: candidate
+                }
+            );
+        }
+    });
+
+    /* 🔴 GROUP CALL END */
+    socket.on("group-call-end", data => {
+        const groupId = Number(data && data.groupId);
+        const from = String(data && data.from || "").trim();
+
+        if(!groupId) return;
+
+        socket.to("rky-group-" + groupId).emit(
+            "group-call-ended",
+            {
+                groupId: groupId,
+                from: from
+            }
+        );
+    });
+
     socket.on("disconnect", () => {
 
         const username =
@@ -3039,6 +3261,38 @@ app.post("/api/groups", (req, res) => {
         console.error("Create group error:",e);
         res.status(500).json({success:false,message:"Could not create group"});
     }
+});
+
+app.get("/api/groups/:groupId/members", (req, res) => {
+    const groupId = Number(req.params.groupId);
+    const username = String(req.query.username || '').trim();
+
+    if(!groupId || !username){
+        return res.status(400).json({
+            success:false,
+            message:"Group and username are required"
+        });
+    }
+
+    const member = db.prepare(
+        "SELECT id FROM group_members WHERE group_id=? AND username=?"
+    ).get(groupId, username);
+
+    if(!member){
+        return res.status(403).json({
+            success:false,
+            message:"You are not a member of this group"
+        });
+    }
+
+    const members = db.prepare(
+        "SELECT username FROM group_members WHERE group_id=? ORDER BY id ASC"
+    ).all(groupId);
+
+    res.json({
+        success:true,
+        members:members.map(x => x.username)
+    });
 });
 
 app.get("/api/groups/:groupId/messages", (req, res) => {

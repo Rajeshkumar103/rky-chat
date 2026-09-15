@@ -948,6 +948,13 @@ Cancel
 <h3>Friends</h3>
 
 <div id="friendList"></div>
+
+<div id="rkyGroupsSection" style="margin:12px 0;">
+  <h3 style="margin:10px 0;">👥 Groups</h3>
+  <div id="rkyGroupsList"></div>
+</div>
+
+
 <div id="friendProfile"></div>
 
 
@@ -11372,6 +11379,79 @@ async function loadRkyConnections(){
             '</div>';
     }
 }
+
+
+
+async function rkyV53RenderGroups(){
+  var box = document.getElementById("rkyGroupsList");
+  if(!box || !currentUser) return;
+
+  box.innerHTML = '<div style="padding:10px;color:#777;">Loading groups...</div>';
+
+  try{
+    var response = await fetch(
+      "/api/groups/" + encodeURIComponent(currentUser) + "?t=" + Date.now()
+    );
+
+    if(!response.ok){
+      throw new Error("HTTP " + response.status);
+    }
+
+    var data = await response.json();
+    var groups = Array.isArray(data.groups) ? data.groups : [];
+
+    if(!groups.length){
+      box.innerHTML =
+        '<div style="padding:10px;color:#888;background:#f5f5f5;border-radius:10px;">No groups yet.</div>';
+      return;
+    }
+
+    box.innerHTML = "";
+
+    groups.forEach(function(g){
+      var button = document.createElement("button");
+      button.type = "button";
+      button.style.cssText =
+        "display:flex;align-items:center;width:100%;box-sizing:border-box;" +
+        "padding:10px;margin:5px 0;border:0;border-radius:10px;" +
+        "background:#f2f2f2;text-align:left;cursor:pointer;";
+
+      button.innerHTML =
+        '<span style="font-size:24px;margin-right:10px;">👥</span>' +
+        '<span>' +
+          '<div style="font-weight:bold;font-size:15px;">' +
+            escapeHTML(g.name || "Group") +
+          '</div>' +
+          '<div style="font-size:11px;color:#777;margin-top:2px;">' +
+            (Array.isArray(g.members) ? g.members.length : 0) +
+            ' members' +
+          '</div>' +
+        '</span>';
+
+      button.onclick = function(){
+        alert("👥 Group: " + (g.name || "Group"));
+      };
+
+      box.appendChild(button);
+    });
+
+  }catch(error){
+    console.error("rkyV53RenderGroups error:", error);
+    box.innerHTML =
+      '<div style="padding:10px;color:#d33;background:#fff0f0;border-radius:10px;">' +
+      'Could not load groups.' +
+      '</div>';
+  }
+}
+
+window.rkyV53RenderGroups = rkyV53RenderGroups;
+
+setTimeout(function(){
+  if(typeof window.rkyV53RenderGroups === "function"){
+    window.rkyV53RenderGroups();
+  }
+}, 500);
+
 
 
 async function loadFriends(){

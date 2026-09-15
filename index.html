@@ -9209,6 +9209,16 @@ function setupVoiceCallHandlers(){
 
             if(popup){
                 popup.style.display = "block";
+
+                alert(
+                    "📞 POPUP AFTER DISPLAY BLOCK\\n" +
+                    "display=" + popup.style.display +
+                    "\\ncomputed=" + getComputedStyle(popup).display +
+                    "\\nvisibility=" + getComputedStyle(popup).visibility +
+                    "\\nzIndex=" + getComputedStyle(popup).zIndex
+                );
+            } else {
+                alert("❌ incomingVoiceCall ELEMENT NOT FOUND");
             }
 
         }

@@ -2724,7 +2724,9 @@ io.on("connection", socket => {
             });
             return;
         }
-
+console.log("📞 CALL RECEIVED:", from, "->", to);
+console.log("📞 RECEIVER SOCKET:", receiverSocket);
+console.log("📞 SENDING incoming-call to:", to);
         io.to(receiverSocket).emit(
             "incoming-call",
             {

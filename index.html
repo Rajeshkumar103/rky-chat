@@ -9157,7 +9157,20 @@ function setupVoiceCallHandlers(){
     callSocket.on(
         "incoming-call",
         function(data){
-            alert("📞 INCOMING CALL EVENT RECEIVED");
+            alert(
+    "📞 INCOMING CALL EVENT RECEIVED\\n" +
+    "popup=" + !!document.getElementById("incomingVoiceCall") +
+    "\\ndisplay=" + (
+        document.getElementById("incomingVoiceCall")
+        ? document.getElementById("incomingVoiceCall").style.display
+        : "NULL"
+    ) +
+    "\\ncomputed=" + (
+        document.getElementById("incomingVoiceCall")
+        ? getComputedStyle(document.getElementById("incomingVoiceCall")).display
+        : "NULL"
+    )
+);
 
             if(!data || !data.from || !data.offer){
                 return;

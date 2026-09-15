@@ -11880,9 +11880,17 @@ async function login(){
         subscribeToPushNotifications();
 
         loadMessages();
-        loadFriends();
+loadFriends();
 
-        startStatusHeartbeat();
+if(typeof window.rkyV53RenderGroups === "function"){
+    try{
+        await window.rkyV53RenderGroups();
+    }catch(e){
+        console.error("Group render after login error:", e);
+    }
+}
+
+startStatusHeartbeat();
 
         // 🔔 Login भएपछि message notification checker सुरु
         if(typeof startMessageNotification === "function"){

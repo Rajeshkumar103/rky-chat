@@ -9619,7 +9619,7 @@ async function acceptVoiceCall(){
             document.getElementById("voiceCallControls");
 
         if(voiceCallControls){
-            voiceCallControls.classList.add("rky-call-active");
+            if(window.rkyForceVoiceCallFullscreen){ window.rkyForceVoiceCallFullscreen(); } else { voiceCallControls.classList.add("rky-call-active"); }
         }
 
         peerConnection =
@@ -9988,7 +9988,7 @@ async function startVoiceCall(){
 
         const voiceCallControls = document.getElementById("voiceCallControls");
         if(voiceCallControls){
-            voiceCallControls.classList.add("rky-call-active");
+            if(window.rkyForceVoiceCallFullscreen){ window.rkyForceVoiceCallFullscreen(); } else { voiceCallControls.classList.add("rky-call-active"); }
         }
 
         peerConnection =
@@ -20073,6 +20073,43 @@ rkySentRequestsSection,
     }
   },250);
   document.addEventListener("DOMContentLoaded",watchCallSocket);
+})();
+</script>
+
+
+<script id="rky-voice-call-body-host">
+(function(){
+  window.rkyForceVoiceCallFullscreen=function(){
+    var el=document.getElementById('voiceCallControls');
+    if(!el) return null;
+
+    /* Escape any chatBox stacking/overflow/position context */
+    if(el.parentElement !== document.body){
+      document.body.appendChild(el);
+    }
+
+    el.classList.add('rky-call-active');
+
+    el.style.setProperty('position','fixed','important');
+    el.style.setProperty('top','0','important');
+    el.style.setProperty('right','0','important');
+    el.style.setProperty('bottom','0','important');
+    el.style.setProperty('left','0','important');
+    el.style.setProperty('width','100vw','important');
+    el.style.setProperty('height','100vh','important');
+    el.style.setProperty('height','100dvh','important');
+    el.style.setProperty('max-width','none','important');
+    el.style.setProperty('max-height','none','important');
+    el.style.setProperty('margin','0','important');
+    el.style.setProperty('padding','0','important');
+    el.style.setProperty('border-radius','0','important');
+    el.style.setProperty('z-index','2147483647','important');
+    el.style.setProperty('display','grid','important');
+    el.style.setProperty('overflow','hidden','important');
+    el.style.setProperty('box-sizing','border-box','important');
+
+    return el;
+  };
 })();
 </script>
 

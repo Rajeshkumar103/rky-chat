@@ -9619,7 +9619,7 @@ async function acceptVoiceCall(){
             document.getElementById("voiceCallControls");
 
         if(voiceCallControls){
-            if(window.rkyForceVoiceCallFullscreen){ window.rkyForceVoiceCallFullscreen(); } else { voiceCallControls.classList.add("rky-call-active"); }
+            voiceCallControls.classList.add("rky-call-active");
         }
 
         peerConnection =
@@ -9988,7 +9988,7 @@ async function startVoiceCall(){
 
         const voiceCallControls = document.getElementById("voiceCallControls");
         if(voiceCallControls){
-            if(window.rkyForceVoiceCallFullscreen){ window.rkyForceVoiceCallFullscreen(); } else { voiceCallControls.classList.add("rky-call-active"); }
+            voiceCallControls.classList.add("rky-call-active");
         }
 
         peerConnection =
@@ -17661,6 +17661,14 @@ setInterval(function(){
     var chat=document.getElementById("chatBox");
     var friends=document.getElementById("rkyVisibleFriends");
     var login=document.getElementById("loginBox");
+
+    /* Never let the auth visibility guard interrupt an active voice call. */
+    var voiceCall=document.getElementById("voiceCallControls");
+    var voiceActive=!!(voiceCall && voiceCall.classList.contains("rky-call-active"));
+    if(voiceActive){
+      return;
+    }
+
     if(chat && !logged && !chat.classList.contains("rky-friend-chat-open")){
       chat.style.setProperty("display","none","important");
     }
@@ -20077,41 +20085,7 @@ rkySentRequestsSection,
 </script>
 
 
-<script id="rky-voice-call-body-host">
-(function(){
-  window.rkyForceVoiceCallFullscreen=function(){
-    var el=document.getElementById('voiceCallControls');
-    if(!el) return null;
 
-    /* Escape any chatBox stacking/overflow/position context */
-    if(el.parentElement !== document.body){
-      document.body.appendChild(el);
-    }
-
-    el.classList.add('rky-call-active');
-
-    el.style.setProperty('position','fixed','important');
-    el.style.setProperty('top','0','important');
-    el.style.setProperty('right','0','important');
-    el.style.setProperty('bottom','0','important');
-    el.style.setProperty('left','0','important');
-    el.style.setProperty('width','100vw','important');
-    el.style.setProperty('height','100vh','important');
-    el.style.setProperty('height','100dvh','important');
-    el.style.setProperty('max-width','none','important');
-    el.style.setProperty('max-height','none','important');
-    el.style.setProperty('margin','0','important');
-    el.style.setProperty('padding','0','important');
-    el.style.setProperty('border-radius','0','important');
-    el.style.setProperty('z-index','2147483647','important');
-    el.style.setProperty('display','grid','important');
-    el.style.setProperty('overflow','hidden','important');
-    el.style.setProperty('box-sizing','border-box','important');
-
-    return el;
-  };
-})();
-</script>
 
 </body>
 </html>
@@ -20169,5 +20143,46 @@ html body #voiceCallControls.rky-call-active #voiceCallStatus{
 
 html body #voiceCallControls.rky-call-active #endVoiceCallButton{
   grid-column:1 / -1!important;
+}
+</style>
+
+<style id="rky-voice-call-safe-fullscreen-v3">
+#voiceCallControls.rky-call-active{
+  position:fixed!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  max-width:none!important;
+  max-height:none!important;
+  margin:0!important;
+  border-radius:0!important;
+  z-index:2147483647!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallProfile{
+  display:flex!important;
+}
+
+#voiceCallControls.rky-call-active #startVoiceCallButton{
+  display:none!important;
+}
+
+#voiceCallControls.rky-call-active #endVoiceCallButton{
+  display:block!important;
+}
+
+#voiceCallControls.rky-call-active #speakerVoiceCallButton,
+#voiceCallControls.rky-call-active #muteVoiceCallButton{
+  display:block!important;
+}
+
+#voiceCallControls.rky-call-active #voiceCallStatus{
+  display:block!important;
 }
 </style>

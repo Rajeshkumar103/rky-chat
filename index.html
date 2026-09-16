@@ -9272,20 +9272,6 @@ function setupVoiceCallHandlers(){
     callSocket.on(
         "incoming-call",
         function(data){
-            alert(
-    "📞 INCOMING CALL EVENT RECEIVED\\n" +
-    "popup=" + !!document.getElementById("incomingVoiceCall") +
-    "\\ndisplay=" + (
-        document.getElementById("incomingVoiceCall")
-        ? document.getElementById("incomingVoiceCall").style.display
-        : "NULL"
-    ) +
-    "\\ncomputed=" + (
-        document.getElementById("incomingVoiceCall")
-        ? getComputedStyle(document.getElementById("incomingVoiceCall")).display
-        : "NULL"
-    )
-);
 
             if(!data || !data.from || !data.offer){
                 return;
@@ -9325,15 +9311,7 @@ function setupVoiceCallHandlers(){
             if(popup){
                 popup.style.display = "block";
 
-                alert(
-                    "📞 POPUP AFTER DISPLAY BLOCK\\n" +
-                    "display=" + popup.style.display +
-                    "\\ncomputed=" + getComputedStyle(popup).display +
-                    "\\nvisibility=" + getComputedStyle(popup).visibility +
-                    "\\nzIndex=" + getComputedStyle(popup).zIndex
-                );
             } else {
-                alert("❌ incomingVoiceCall ELEMENT NOT FOUND");
             }
 
         }
@@ -20013,7 +19991,7 @@ rkySentRequestsSection,
   box-sizing:border-box!important;
 }
 #voiceCallControls.rky-call-active #speakerVoiceCallButton{grid-column:1!important;}
-#voiceCallControls.rky-call-active #muteVoiceCallButton{grid-column:2!important;}
+#voiceCallControls.rky-call-active #muteVoiceCallButton{grid-column:3!important;}
 #voiceCallControls.rky-call-active #endVoiceCallButton{
   grid-column:1 / -1!important;
   grid-row:5!important;
@@ -20103,3 +20081,21 @@ rkySentRequestsSection,
 
 
 
+
+<style id="rky-voice-call-buttons-v4">
+#voiceCallControls.rky-call-active{
+  grid-template-columns:1fr 1fr 1fr!important;
+}
+#voiceCallControls.rky-call-active #speakerVoiceCallButton,
+#voiceCallControls.rky-call-active #muteVoiceCallButton{
+  grid-row:4!important;
+}
+#voiceCallControls.rky-call-active #speakerVoiceCallButton{
+  margin-left:0!important;
+  transform:none!important;
+}
+#voiceCallControls.rky-call-active #muteVoiceCallButton{
+  margin-left:0!important;
+  transform:none!important;
+}
+</style>

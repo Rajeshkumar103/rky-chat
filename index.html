@@ -272,7 +272,7 @@ function rkyMoreAction(action){
             connectHeader.style.display = "block";
             connectHeader.scrollIntoView({
                 behavior: "smooth",
-                block: "nearest"
+                block: "start"
             });
         }
 
@@ -280,7 +280,7 @@ function rkyMoreAction(action){
             requestHeading.style.display = "block";
             requestHeading.scrollIntoView({
                 behavior: "smooth",
-                block: "nearest"
+                block: "center"
             });
         }
 
@@ -17124,7 +17124,7 @@ setInterval(function(){
 
     content.scrollIntoView({
       behavior:"smooth",
-      block:"nearest"
+      block:"start"
     });
   };
 
@@ -20088,474 +20088,158 @@ rkySentRequestsSection,
 
 
 
-<style id="rky-premium-home-v2">
-:root{
-  --rky-ink:#10231f;
-  --rky-muted:#71807b;
-  --rky-green:#12b886;
-  --rky-green2:#0b8f6d;
-  --rky-bg:#f4f8f6;
-  --rky-card:rgba(255,255,255,.86);
-  --rky-line:rgba(16,35,31,.08);
-  --rky-shadow:0 18px 55px rgba(22,55,47,.10);
-}
-html,body{min-height:100%;}
-body{
-  margin:0!important;
-  background:
-    radial-gradient(circle at 15% 0%,rgba(18,184,134,.13),transparent 34%),
-    radial-gradient(circle at 100% 25%,rgba(76,201,240,.10),transparent 28%),
-    linear-gradient(180deg,#eef8f4 0%,#f7faf9 42%,#eef4f1 100%)!important;
-  color:var(--rky-ink)!important;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif!important;
-}
-body>h1{
-  margin:0!important;padding:22px 20px 10px!important;
-  font-size:18px!important;font-weight:800!important;letter-spacing:-.3px!important;
-  color:var(--rky-ink)!important;text-align:center!important;
-}
-/* Login */
-#loginBox{
-  width:min(420px,calc(100vw - 32px))!important;
-  margin:10vh auto 12px!important;
-  padding:28px!important;
-  border:1px solid rgba(255,255,255,.85)!important;
-  border-radius:28px!important;
-  background:rgba(255,255,255,.76)!important;
-  box-shadow:var(--rky-shadow)!important;
-  backdrop-filter:blur(24px)!important;
-  -webkit-backdrop-filter:blur(24px)!important;
-  box-sizing:border-box!important;
-}
-#loginBox:before{
-  content:"Rky Chat";display:block;margin:0 0 5px;
-  font-size:30px;font-weight:850;letter-spacing:-1.2px;color:var(--rky-ink);
-}
-#loginBox:after{
-  content:"Connect. Chat. Stay close.";display:block;margin:0 0 22px;
-  color:var(--rky-muted);font-size:13px;font-weight:600;
-}
-#loginBox input{
-  width:100%!important;height:50px!important;margin:6px 0!important;padding:0 15px!important;
-  border:1px solid var(--rky-line)!important;border-radius:16px!important;
-  background:rgba(248,251,250,.96)!important;color:var(--rky-ink)!important;
-  box-sizing:border-box!important;outline:none!important;font-size:15px!important;
-}
-#loginBox input:focus{border-color:rgba(18,184,134,.55)!important;box-shadow:0 0 0 4px rgba(18,184,134,.10)!important;}
-#loginBox button:not(.clearBtn),#registerButton{
-  border:0!important;border-radius:16px!important;height:48px!important;padding:0 18px!important;
-  font-weight:800!important;font-size:14px!important;cursor:pointer!important;
-  box-shadow:0 10px 22px rgba(18,184,134,.20)!important;
-}
-#loginBox button:not(.clearBtn){width:100%!important;margin-top:10px!important;background:linear-gradient(135deg,var(--rky-green),#0ca678)!important;color:#fff!important;}
-#loginBox .clearBtn{margin:10px 0 0!important;background:transparent!important;border:0!important;color:var(--rky-muted)!important;font-weight:700!important;}
-#registerButton{display:block!important;width:min(420px,calc(100vw - 32px))!important;margin:10px auto!important;background:rgba(255,255,255,.72)!important;color:var(--rky-green2)!important;box-shadow:none!important;border:1px solid var(--rky-line)!important;}
-/* Logged-in shell */
-#chatBox{
-  width:min(100%,520px)!important;max-width:520px!important;min-height:100dvh!important;
-  margin:0 auto!important;padding:0!important;box-sizing:border-box!important;
-  background:rgba(247,250,249,.90)!important;
-  border-left:1px solid rgba(16,35,31,.05)!important;border-right:1px solid rgba(16,35,31,.05)!important;
-  box-shadow:0 0 60px rgba(20,60,50,.08)!important;
-}
-#rkyHeader{
-  min-height:76px!important;padding:10px 56px 10px 76px!important;
-  display:flex!important;align-items:center!important;
-  background:rgba(255,255,255,.78)!important;border:0!important;
-  border-bottom:1px solid var(--rky-line)!important;
-  box-shadow:0 8px 28px rgba(20,50,42,.06)!important;
-  backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;
-}
-#rkyHeader #profile{
-  top:14px!important;left:16px!important;width:48px!important;height:48px!important;
-  border:3px solid #fff!important;box-shadow:0 7px 20px rgba(0,0,0,.12)!important;
-}
-#rkyHeader #userName{margin:0!important;font-size:17px!important;font-weight:850!important;letter-spacing:-.25px!important;color:var(--rky-ink)!important;}
-#rkyHeader #status{position:absolute!important;left:76px!important;top:45px!important;margin:0!important;font-size:11px!important;color:var(--rky-muted)!important;}
-#rkyMoreButton{
-  position:absolute!important;right:12px!important;top:17px!important;width:42px!important;height:42px!important;
-  border:1px solid var(--rky-line)!important;border-radius:14px!important;background:rgba(255,255,255,.72)!important;
-  color:var(--rky-ink)!important;font-size:24px!important;line-height:36px!important;
-  box-shadow:0 8px 20px rgba(0,0,0,.06)!important;
-}
-/* Friends home */
-#friendList{
-  padding:16px!important;margin:0!important;background:transparent!important;
-}
-#friendList:before{
-  content:"People";display:block;padding:2px 4px 10px;
-  font-size:22px;font-weight:850;letter-spacing:-.6px;color:var(--rky-ink);
-}
-.rky-friend-card,#rkyVisibleFriends .rky-visible-friend{
-  display:flex!important;align-items:center!important;gap:13px!important;
-  width:100%!important;min-height:72px!important;margin:8px 0!important;padding:10px 13px!important;
-  border:1px solid rgba(16,35,31,.06)!important;border-radius:21px!important;
-  background:var(--rky-card)!important;box-shadow:0 8px 25px rgba(24,62,53,.06)!important;
-  box-sizing:border-box!important;backdrop-filter:blur(16px)!important;-webkit-backdrop-filter:blur(16px)!important;
-  transition:transform .16s ease,box-shadow .16s ease,background .16s ease!important;
-}
-.rky-friend-card:active,#rkyVisibleFriends .rky-visible-friend:active{transform:scale(.985)!important;}
-.rky-friend-avatar,#rkyVisibleFriends .rky-visible-avatar{
-  width:50px!important;height:50px!important;min-width:50px!important;border-radius:17px!important;
-  background:linear-gradient(145deg,#1bcf98,#087e63)!important;color:#fff!important;
-  font-size:18px!important;font-weight:850!important;box-shadow:0 8px 18px rgba(18,184,134,.22)!important;
-}
-.rky-friend-info,#rkyVisibleFriends .rky-visible-info{min-width:0!important;flex:1!important;}
-.rky-friend-name,#rkyVisibleFriends .rky-visible-name{font-size:15px!important;font-weight:800!important;color:var(--rky-ink)!important;}
-.rky-friend-status,#rkyVisibleFriends .rky-visible-status{font-size:11px!important;margin-top:5px!important;color:var(--rky-muted)!important;}
-#rkyVisibleFriends{position:relative!important;top:auto!important;left:auto!important;right:auto!important;padding:16px!important;box-sizing:border-box!important;background:transparent!important;}
-#rkyVisibleFriends:before{content:"People";display:block;padding:2px 4px 10px;font-size:22px;font-weight:850;letter-spacing:-.6px;color:var(--rky-ink);}
-/* User more menu */
-#rkyMoreMenu{
-  position:absolute!important;right:12px!important;top:62px!important;width:220px!important;padding:7px!important;
-  border:1px solid rgba(255,255,255,.8)!important;border-radius:20px!important;background:rgba(255,255,255,.94)!important;
-  box-shadow:0 18px 45px rgba(20,50,42,.16)!important;backdrop-filter:blur(22px)!important;-webkit-backdrop-filter:blur(22px)!important;
-  z-index:999999!important;
-}
-#rkyMoreMenu button{width:100%!important;height:42px!important;border:0!important;border-radius:13px!important;background:transparent!important;color:var(--rky-ink)!important;text-align:left!important;font-size:13px!important;font-weight:700!important;}
-#rkyMoreMenu button:active{background:#edf8f4!important;}
-/* Friend chat */
-#chatBox.rky-friend-chat-open{background:#edf7f3!important;}
-#chatBox.rky-friend-chat-open #messages{
-  background:radial-gradient(circle at 20% 10%,rgba(18,184,134,.07),transparent 30%),linear-gradient(180deg,#f3faf7,#eaf4f0)!important;
-  border:0!important;border-radius:0!important;padding:14px 12px!important;
-}
-#chatBox.rky-friend-chat-open .wa-bottom-bar{
-  background:rgba(255,255,255,.88)!important;border-top:1px solid rgba(16,35,31,.07)!important;
-  box-shadow:0 -10px 30px rgba(20,50,42,.07)!important;backdrop-filter:blur(20px)!important;-webkit-backdrop-filter:blur(20px)!important;
-  padding:8px 10px!important;
-}
-#chatBox.rky-friend-chat-open .wa-bottom-bar #message{
-  height:44px!important;border:1px solid rgba(16,35,31,.07)!important;border-radius:22px!important;
-  background:#f4f8f6!important;padding:0 15px!important;font-size:14px!important;box-shadow:none!important;
-}
-#chatBox.rky-friend-chat-open .wa-bottom-bar button{border:0!important;border-radius:50%!important;}
-@media(max-width:600px){
-  body>h1{display:none!important;}
-  #chatBox{width:100%!important;max-width:none!important;border:0!important;}
-  #loginBox{margin-top:14vh!important;}
-}
-</style>
+<!-- RKY FRIEND HOME FLOW FINAL FIX v5 -->
+<style id="rky-friend-home-flow-final-v5">
+/* Keep the secondary visible-friends renderer out of the home flow. */
+#rkyVisibleFriends{display:none !important;visibility:hidden !important;opacity:0 !important;}
 
-<style id="rky-premium-layout-v3">
-/* Profile → People hierarchy */
-#rkyHeader{
-  position:relative!important;
+/* Request section is a normal inline section, never a popup. */
+#rkyCircleRequestsToggle{
+  display:flex !important;
+  position:relative !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  width:100% !important;
+  box-sizing:border-box !important;
 }
-#rkyHeader:after{
-  content:"Profile";
-  position:absolute;
-  left:76px;
-  bottom:8px;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.7px;
-  text-transform:uppercase;
-  color:var(--rky-green2);
-  opacity:.9;
-}
-#rkyHeader #userName{
-  margin-top:-7px!important;
-}
-#friendList:before,
-#rkyVisibleFriends:before{
-  content:"People"!important;
-  font-size:21px!important;
-  font-weight:850!important;
-  letter-spacing:-.4px!important;
-  padding:18px 4px 10px!important;
-}
-/* Requests should open in-place below the profile/people area, never jump to the page top. */
-#rkyConnectionsSection,
-#rkyCircleRequestsContent,
-#rkySentRequestsSection{
-  scroll-margin-top:18px!important;
-}
-#rkyConnectHeader{
-  margin-top:10px!important;
-}
-/* Premium request panel */
 #rkyCircleRequestsContent{
-  margin:10px 4px 14px!important;
-  padding:12px!important;
-  border:1px solid rgba(16,35,31,.07)!important;
-  border-radius:18px!important;
-  background:rgba(255,255,255,.72)!important;
-  box-shadow:0 10px 28px rgba(24,62,53,.06)!important;
+  position:relative !important;
+  top:auto !important;
+  left:auto !important;
+  right:auto !important;
+  transform:none !important;
+  width:100% !important;
+  box-sizing:border-box !important;
 }
-#requestList{
-  margin-top:8px!important;
+#rkySentRequestsSection{
+  position:relative !important;
+  width:100% !important;
+  box-sizing:border-box !important;
 }
-@media(max-width:600px){
-  #rkyHeader:after{left:76px;bottom:7px;}
+
+/* Old popup is disabled; requests now open inline. */
+#rkyFriendPopup{display:none !important;visibility:hidden !important;opacity:0 !important;}
+#rkyConnectionsSection{display:none !important;}
+
+/* Group is a separate section. */
+#rkyGroupsSection{
+  position:relative !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  margin:18px 0 12px !important;
+  padding-top:12px !important;
+  border-top:1px solid rgba(120,120,140,.16) !important;
 }
 </style>
 
-
-
-<!-- RKY FRIEND REQUEST INLINE FLOW v4 -->
-<style id="rky-friend-request-inline-v4">
-/* Keep the request UI in the normal Friends page flow — never as a top overlay. */
-#rkyFriendPopup{
-  position:static !important;
-  inset:auto !important;
-  width:100% !important;
-  max-width:none !important;
-  min-height:0 !important;
-  display:none !important;
-  align-items:stretch !important;
-  justify-content:stretch !important;
-  background:transparent !important;
-  padding:0 !important;
-  margin:10px 0 14px !important;
-  z-index:auto !important;
-}
-#rkyFriendPopup.rky-inline-open{
-  display:block !important;
-}
-#rkyFriendPopupBox{
-  width:100% !important;
-  max-width:none !important;
-  max-height:none !important;
-  overflow:visible !important;
-  box-sizing:border-box !important;
-  background:rgba(255,255,255,.82) !important;
-  border:1px solid rgba(20,30,45,.08) !important;
-  border-radius:20px !important;
-  padding:14px !important;
-  box-shadow:0 10px 28px rgba(20,30,45,.08) !important;
-}
-#rkyFriendPopupBox .rkyFPclose{
-  display:none !important;
-}
-#rkyFriendPopupBox h2{
-  margin:0 0 12px !important;
-  font-size:17px !important;
-}
-#rkyFriendPopupBox .rkyFProw{
-  margin-bottom:12px !important;
-}
-#rkyFriendPopupBox .rkyFPsection{
-  margin:12px 0 8px !important;
-  font-weight:800 !important;
-  font-size:13px !important;
-}
-#rkyFriendPopupBox .rkyFPitem{
-  display:flex !important;
-  align-items:center !important;
-  justify-content:space-between !important;
-  gap:8px !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-  padding:10px !important;
-  margin:7px 0 !important;
-  border-radius:14px !important;
-  background:#fff !important;
-  border:1px solid rgba(20,30,45,.07) !important;
-}
-/* Profile card first, then Friends heading/list. */
-#rkyHeader{order:1 !important;}
-#friendList{order:2 !important;}
-#rkyFriendPopup{order:1 !important;}
-#chatBox.rky-friends-home-flow{
-  display:flex !important;
-  flex-direction:column !important;
-}
-#chatBox.rky-friends-home-flow > #rkyHeader{order:1 !important;}
-#chatBox.rky-friends-home-flow > #rkyFriendPopup{order:2 !important;}
-#chatBox.rky-friends-home-flow > #friendList{order:3 !important;}
-#chatBox.rky-friends-home-flow > #rkyGroupsSection{order:4 !important;}
-</style>
-
-<script id="rky-friend-request-inline-v4-script">
+<script id="rky-friend-home-flow-final-v5-js">
 (function(){
   'use strict';
 
+  function el(id){ return document.getElementById(id); }
+
   function arrange(){
-    var chat=document.getElementById('chatBox');
-    var popup=document.getElementById('rkyFriendPopup');
-    var header=document.getElementById('rkyHeader');
-    var list=document.getElementById('friendList');
-    if(!chat || !popup || !header || !list) return false;
+    var chat=el('chatBox');
+    var friendList=el('friendList');
+    if(!chat || !friendList) return;
 
-    chat.classList.add('rky-friends-home-flow');
+    var toggle=el('rkyCircleRequestsToggle');
+    var content=el('rkyCircleRequestsContent');
+    var sent=el('rkySentRequestsSection');
+    var groups=el('rkyGroupsSection');
+    var popup=el('rkyFriendPopup');
+    var connections=el('rkyConnectionsSection');
+    var visible=el('rkyVisibleFriends');
 
-    /* Put requests directly after Profile and before Friends. */
-    if(popup.parentElement !== chat || popup.previousElementSibling !== header){
-      chat.insertBefore(popup, list);
+    /* Exact home order: Profile area -> Requests -> Friends -> Groups. */
+    if(toggle) chat.insertBefore(toggle, friendList);
+    if(content) chat.insertBefore(content, friendList);
+    if(sent) chat.insertBefore(sent, friendList);
+    if(groups) chat.insertBefore(groups, el('friendProfile') || null);
+
+    /* If friendProfile exists before groups, put groups immediately after friendList. */
+    if(groups && friendList && friendList.parentNode === chat){
+      if(friendList.nextSibling !== groups){
+        chat.insertBefore(groups, friendList.nextSibling);
+      }
     }
-    return true;
+
+    if(popup){
+      popup.style.setProperty('display','none','important');
+      popup.classList.remove('rky-inline-open');
+    }
+    if(connections) connections.style.setProperty('display','none','important');
+    if(visible){
+      visible.style.setProperty('display','none','important');
+      visible.style.setProperty('visibility','hidden','important');
+      visible.style.setProperty('opacity','0','important');
+    }
   }
 
-  function openInline(){
-    if(!arrange()) return;
-    var popup=document.getElementById('rkyFriendPopup');
-    if(!popup) return;
-    popup.classList.add('rky-inline-open');
-    popup.style.setProperty('display','block','important');
-    if(typeof window.rkyLoadFriendPopup==='function') window.rkyLoadFriendPopup();
-    setTimeout(function(){
-      popup.scrollIntoView({behavior:'smooth',block:'nearest'});
-    },40);
-  }
+  window.toggleRkyCircleRequests=function(){
+    var content=el('rkyCircleRequestsContent');
+    var arrow=el('rkyCircleRequestsArrow');
+    if(!content) return;
 
-  window.rkyOpenFriendPopup=openInline;
+    var hidden=getComputedStyle(content).display==='none';
+    content.style.setProperty('display', hidden ? 'block' : 'none', 'important');
+    if(arrow) arrow.textContent=hidden ? '⌄' : '›';
 
-  window.rkyCloseFriendPopup=function(){
-    var popup=document.getElementById('rkyFriendPopup');
-    if(!popup) return;
-    popup.classList.remove('rky-inline-open');
-    popup.style.setProperty('display','none','important');
+    if(hidden && typeof window.loadRequests==='function'){
+      window.loadRequests();
+    }
   };
 
-  /* After accepting, close the request section and refresh the Friends list below it. */
-  window.rkyAcceptFriend=async function(id){
-    try{
-      var res=await fetch('/api/friends/'+encodeURIComponent(id)+'/accept',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'}
-      });
-      var data=await res.json();
-      if(!res.ok || data.success===false){
-        alert(data.message || 'Accept failed');
-        return;
-      }
+  window.rkyShowRequests=function(){
+    arrange();
+    var content=el('rkyCircleRequestsContent');
+    var arrow=el('rkyCircleRequestsArrow');
+    if(!content) return;
+    content.style.setProperty('display','block','important');
+    content.style.setProperty('visibility','visible','important');
+    content.style.setProperty('opacity','1','important');
+    if(arrow) arrow.textContent='⌄';
+    if(typeof window.loadRequests==='function') window.loadRequests();
+    /* Intentionally no scrollIntoView: stay where the user is. */
+  };
 
-      window.rkyCloseFriendPopup();
+  var previousMoreAction=window.rkyMoreAction;
 
-      if(typeof window.loadFriends==='function'){
-        await window.loadFriends();
-      }
-      if(typeof window.rkyFinalLoadFriends==='function'){
-        await window.rkyFinalLoadFriends();
-      }
+  window.rkyMoreAction=function(action){
+    if(typeof window.closeRkyMoreMenu==='function') window.closeRkyMoreMenu();
 
-      var list=document.getElementById('friendList');
-      if(list){
-        list.style.setProperty('display','block','important');
-        list.style.setProperty('visibility','visible','important');
-        list.style.setProperty('opacity','1','important');
-      }
-    }catch(e){
-      alert('❌ Server error while accepting friend');
+    if(action==='requests'){
+      arrange();
+      window.rkyShowRequests();
+      return;
     }
+    if(action==='profile'){
+      if(typeof window.openProfileSettings==='function') window.openProfileSettings();
+      return;
+    }
+    if(action==='logout'){
+      if(typeof window.logout==='function') window.logout();
+      return;
+    }
+    /* Preserve every existing non-request action. */
+    if(typeof previousMoreAction==='function') return previousMoreAction.apply(this,arguments);
   };
 
   function boot(){
     arrange();
-    var popup=document.getElementById('rkyFriendPopup');
-    if(popup) popup.style.setProperty('display','none','important');
+    var content=el('rkyCircleRequestsContent');
+    var arrow=el('rkyCircleRequestsArrow');
+    if(content && getComputedStyle(content).display==='none' && arrow) arrow.textContent='›';
   }
 
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
   else boot();
-  setTimeout(boot,300);
-  setTimeout(boot,1000);
+  window.addEventListener('load',boot);
+
 })();
 </script>
-
-
-<style id="rky-final-friend-home-flow-fix">
-/* ===== RKY FRIEND HOME FINAL FLOW ===== */
-
-#chatBox.rky-friends-home-flow{
-  display:flex !important;
-  flex-direction:column !important;
-  align-items:stretch !important;
-}
-
-/* Profile stays first */
-#chatBox.rky-friends-home-flow > #rkyHeader{
-  order:1 !important;
-}
-
-/* Friend Requests stays directly below profile */
-#chatBox.rky-friends-home-flow > #rkyCircleRequestsToggle{
-  order:2 !important;
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-}
-
-#chatBox.rky-friends-home-flow > #rkyCircleRequestsContent{
-  order:3 !important;
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-}
-
-/* Accepted friends */
-#chatBox.rky-friends-home-flow > #rkyVisibleFriends{
-  order:4 !important;
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-}
-
-/* Friend Groups always separate and below friends */
-#chatBox.rky-friends-home-flow > #rkyGroupsSection{
-  order:5 !important;
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-}
-
-/* Old request popup must not behave like a floating modal */
-#chatBox.rky-friends-home-flow > #rkyFriendPopup{
-  position:relative !important;
-  inset:auto !important;
-  order:6 !important;
-  width:100% !important;
-  max-width:none !important;
-  background:transparent !important;
-  padding:0 !important;
-  margin:0 !important;
-  box-sizing:border-box !important;
-  display:none !important;
-}
-
-/* Never let popup create a second Friend Requests UI */
-#chatBox.rky-friends-home-flow > #rkyFriendPopup.rky-inline-open{
-  display:none !important;
-}
-
-/* Clean group separation */
-#chatBox.rky-friends-home-flow > #rkyGroupsSection{
-  margin-top:18px !important;
-  padding-top:14px !important;
-  border-top:1px solid rgba(127,127,127,.16) !important;
-}
-
-/* Keep request content hidden until clicked */
-#rkyCircleRequestsContent{
-  position:relative !important;
-  max-height:none !important;
-  overflow:visible !important;
-}
-
-/* No accidental floating/absolute positioning */
-#rkyCircleRequestsToggle,
-#rkyCircleRequestsContent,
-#rkyVisibleFriends,
-#rkyGroupsSection{
-  float:none !important;
-  clear:both !important;
-}
-</style>
 
 </body>
 </html>

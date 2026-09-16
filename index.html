@@ -272,7 +272,7 @@ function rkyMoreAction(action){
             connectHeader.style.display = "block";
             connectHeader.scrollIntoView({
                 behavior: "smooth",
-                block: "start"
+                block: "nearest"
             });
         }
 
@@ -280,7 +280,7 @@ function rkyMoreAction(action){
             requestHeading.style.display = "block";
             requestHeading.scrollIntoView({
                 behavior: "smooth",
-                block: "center"
+                block: "nearest"
             });
         }
 
@@ -17124,7 +17124,7 @@ setInterval(function(){
 
     content.scrollIntoView({
       behavior:"smooth",
-      block:"start"
+      block:"nearest"
     });
   };
 
@@ -20183,7 +20183,7 @@ body>h1{
   padding:16px!important;margin:0!important;background:transparent!important;
 }
 #friendList:before{
-  content:"Your people";display:block;padding:2px 4px 10px;
+  content:"People";display:block;padding:2px 4px 10px;
   font-size:22px;font-weight:850;letter-spacing:-.6px;color:var(--rky-ink);
 }
 .rky-friend-card,#rkyVisibleFriends .rky-visible-friend{
@@ -20204,7 +20204,7 @@ body>h1{
 .rky-friend-name,#rkyVisibleFriends .rky-visible-name{font-size:15px!important;font-weight:800!important;color:var(--rky-ink)!important;}
 .rky-friend-status,#rkyVisibleFriends .rky-visible-status{font-size:11px!important;margin-top:5px!important;color:var(--rky-muted)!important;}
 #rkyVisibleFriends{position:relative!important;top:auto!important;left:auto!important;right:auto!important;padding:16px!important;box-sizing:border-box!important;background:transparent!important;}
-#rkyVisibleFriends:before{content:"Your people";display:block;padding:2px 4px 10px;font-size:22px;font-weight:850;letter-spacing:-.6px;color:var(--rky-ink);}
+#rkyVisibleFriends:before{content:"People";display:block;padding:2px 4px 10px;font-size:22px;font-weight:850;letter-spacing:-.6px;color:var(--rky-ink);}
 /* User more menu */
 #rkyMoreMenu{
   position:absolute!important;right:12px!important;top:62px!important;width:220px!important;padding:7px!important;
@@ -20234,6 +20234,60 @@ body>h1{
   body>h1{display:none!important;}
   #chatBox{width:100%!important;max-width:none!important;border:0!important;}
   #loginBox{margin-top:14vh!important;}
+}
+</style>
+
+<style id="rky-premium-layout-v3">
+/* Profile → People hierarchy */
+#rkyHeader{
+  position:relative!important;
+}
+#rkyHeader:after{
+  content:"Profile";
+  position:absolute;
+  left:76px;
+  bottom:8px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.7px;
+  text-transform:uppercase;
+  color:var(--rky-green2);
+  opacity:.9;
+}
+#rkyHeader #userName{
+  margin-top:-7px!important;
+}
+#friendList:before,
+#rkyVisibleFriends:before{
+  content:"People"!important;
+  font-size:21px!important;
+  font-weight:850!important;
+  letter-spacing:-.4px!important;
+  padding:18px 4px 10px!important;
+}
+/* Requests should open in-place below the profile/people area, never jump to the page top. */
+#rkyConnectionsSection,
+#rkyCircleRequestsContent,
+#rkySentRequestsSection{
+  scroll-margin-top:18px!important;
+}
+#rkyConnectHeader{
+  margin-top:10px!important;
+}
+/* Premium request panel */
+#rkyCircleRequestsContent{
+  margin:10px 4px 14px!important;
+  padding:12px!important;
+  border:1px solid rgba(16,35,31,.07)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.72)!important;
+  box-shadow:0 10px 28px rgba(24,62,53,.06)!important;
+}
+#requestList{
+  margin-top:8px!important;
+}
+@media(max-width:600px){
+  #rkyHeader:after{left:76px;bottom:7px;}
 }
 </style>
 

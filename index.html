@@ -1360,7 +1360,7 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
 <button
   id="rkyCircleRequestsToggle"
   type="button"
-  onclick="toggleRkyCircleRequests()"
+  onclick="toggleRkyFriendRequests()"
   style="
   width:100%;
   display:none;
@@ -17122,10 +17122,7 @@ setInterval(function(){
       window.loadRequests();
     }
 
-    content.scrollIntoView({
-      behavior:"smooth",
-      block:"start"
-    });
+    /* Keep request section in place; do not jump to top. */
   };
 
   document.addEventListener("DOMContentLoaded",function(){

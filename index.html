@@ -20291,6 +20291,169 @@ body>h1{
 }
 </style>
 
+
+
+<!-- RKY FRIEND REQUEST INLINE FLOW v4 -->
+<style id="rky-friend-request-inline-v4">
+/* Keep the request UI in the normal Friends page flow — never as a top overlay. */
+#rkyFriendPopup{
+  position:static !important;
+  inset:auto !important;
+  width:100% !important;
+  max-width:none !important;
+  min-height:0 !important;
+  display:none !important;
+  align-items:stretch !important;
+  justify-content:stretch !important;
+  background:transparent !important;
+  padding:0 !important;
+  margin:10px 0 14px !important;
+  z-index:auto !important;
+}
+#rkyFriendPopup.rky-inline-open{
+  display:block !important;
+}
+#rkyFriendPopupBox{
+  width:100% !important;
+  max-width:none !important;
+  max-height:none !important;
+  overflow:visible !important;
+  box-sizing:border-box !important;
+  background:rgba(255,255,255,.82) !important;
+  border:1px solid rgba(20,30,45,.08) !important;
+  border-radius:20px !important;
+  padding:14px !important;
+  box-shadow:0 10px 28px rgba(20,30,45,.08) !important;
+}
+#rkyFriendPopupBox .rkyFPclose{
+  display:none !important;
+}
+#rkyFriendPopupBox h2{
+  margin:0 0 12px !important;
+  font-size:17px !important;
+}
+#rkyFriendPopupBox .rkyFProw{
+  margin-bottom:12px !important;
+}
+#rkyFriendPopupBox .rkyFPsection{
+  margin:12px 0 8px !important;
+  font-weight:800 !important;
+  font-size:13px !important;
+}
+#rkyFriendPopupBox .rkyFPitem{
+  display:flex !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  width:100% !important;
+  box-sizing:border-box !important;
+  padding:10px !important;
+  margin:7px 0 !important;
+  border-radius:14px !important;
+  background:#fff !important;
+  border:1px solid rgba(20,30,45,.07) !important;
+}
+/* Profile card first, then Friends heading/list. */
+#rkyHeader{order:1 !important;}
+#friendList{order:2 !important;}
+#rkyFriendPopup{order:1 !important;}
+#chatBox.rky-friends-home-flow{
+  display:flex !important;
+  flex-direction:column !important;
+}
+#chatBox.rky-friends-home-flow > #rkyHeader{order:1 !important;}
+#chatBox.rky-friends-home-flow > #rkyFriendPopup{order:2 !important;}
+#chatBox.rky-friends-home-flow > #friendList{order:3 !important;}
+#chatBox.rky-friends-home-flow > #rkyGroupsSection{order:4 !important;}
+</style>
+
+<script id="rky-friend-request-inline-v4-script">
+(function(){
+  'use strict';
+
+  function arrange(){
+    var chat=document.getElementById('chatBox');
+    var popup=document.getElementById('rkyFriendPopup');
+    var header=document.getElementById('rkyHeader');
+    var list=document.getElementById('friendList');
+    if(!chat || !popup || !header || !list) return false;
+
+    chat.classList.add('rky-friends-home-flow');
+
+    /* Put requests directly after Profile and before Friends. */
+    if(popup.parentElement !== chat || popup.previousElementSibling !== header){
+      chat.insertBefore(popup, list);
+    }
+    return true;
+  }
+
+  function openInline(){
+    if(!arrange()) return;
+    var popup=document.getElementById('rkyFriendPopup');
+    if(!popup) return;
+    popup.classList.add('rky-inline-open');
+    popup.style.setProperty('display','block','important');
+    if(typeof window.rkyLoadFriendPopup==='function') window.rkyLoadFriendPopup();
+    setTimeout(function(){
+      popup.scrollIntoView({behavior:'smooth',block:'nearest'});
+    },40);
+  }
+
+  window.rkyOpenFriendPopup=openInline;
+
+  window.rkyCloseFriendPopup=function(){
+    var popup=document.getElementById('rkyFriendPopup');
+    if(!popup) return;
+    popup.classList.remove('rky-inline-open');
+    popup.style.setProperty('display','none','important');
+  };
+
+  /* After accepting, close the request section and refresh the Friends list below it. */
+  window.rkyAcceptFriend=async function(id){
+    try{
+      var res=await fetch('/api/friends/'+encodeURIComponent(id)+'/accept',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'}
+      });
+      var data=await res.json();
+      if(!res.ok || data.success===false){
+        alert(data.message || 'Accept failed');
+        return;
+      }
+
+      window.rkyCloseFriendPopup();
+
+      if(typeof window.loadFriends==='function'){
+        await window.loadFriends();
+      }
+      if(typeof window.rkyFinalLoadFriends==='function'){
+        await window.rkyFinalLoadFriends();
+      }
+
+      var list=document.getElementById('friendList');
+      if(list){
+        list.style.setProperty('display','block','important');
+        list.style.setProperty('visibility','visible','important');
+        list.style.setProperty('opacity','1','important');
+      }
+    }catch(e){
+      alert('❌ Server error while accepting friend');
+    }
+  };
+
+  function boot(){
+    arrange();
+    var popup=document.getElementById('rkyFriendPopup');
+    if(popup) popup.style.setProperty('display','none','important');
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
+  else boot();
+  setTimeout(boot,300);
+  setTimeout(boot,1000);
+})();
+</script>
+
 </body>
 </html>
 

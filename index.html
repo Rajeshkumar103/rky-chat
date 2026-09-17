@@ -1360,10 +1360,10 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
 <button
   id="rkyCircleRequestsToggle"
   type="button"
-  onclick="toggleRkyFriendRequests()"
+  onclick="toggleRkyCircleRequests()"
   style="
   width:100%;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:space-between;
   margin:12px 0 8px;
@@ -1382,7 +1382,7 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
     <span
       id="friendRequestBadge"
       style="
-        display:flex;
+        display:none;
         min-width:20px;
         height:20px;
         padding:0 6px;
@@ -1404,33 +1404,21 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
 function toggleRkyFriendRequests(){
     const box = document.getElementById("rkyCircleRequestsContent");
     const arrow = document.getElementById("rkyCircleRequestsArrow");
-    const toggle = document.getElementById("rkyCircleRequestsToggle");
 
-    if(!box) {
-        console.error("Rky Circle Requests content not found");
-        return;
-    }
+    if(!box) return;
 
-    const opening =
-        getComputedStyle(box).display === "none";
+    const opening = box.style.display === "none" || box.style.display === "";
 
-    box.style.setProperty("display", opening ? "block" : "none", "important");
+    box.style.display = opening ? "block" : "none";
 
     if(arrow){
         arrow.textContent = opening ? "⌄" : "›";
     }
 
-    if(toggle){
-        toggle.setAttribute("aria-expanded", opening ? "true" : "false");
-    }
-
-    if(opening && typeof window.loadRequests === "function"){
-        window.loadRequests();
+    if(opening && typeof loadRequests === "function"){
+        loadRequests();
     }
 }
-
-window.toggleRkyFriendRequests = toggleRkyFriendRequests;
-window.toggleRkyCircleRequests = toggleRkyFriendRequests;
 </script>
 
 <div id="rkyCircleRequestsContent"
@@ -16973,29 +16961,43 @@ document.addEventListener("input", function(e){
 
     btn.type="button";
 
-    btn.onclick=function(){
-      const open =
-        box.style.display==="none" ||
-        box.style.display==="";
+    btn.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
 
-      box.style.display=open ? "block" : "none";
-      arrow.textContent=open ? "⌄" : "›";
+      const isHidden =
+        getComputedStyle(box).display === "none" ||
+        box.hidden === true;
 
-      if(open && typeof window.loadRequests==="function"){
-        window.loadRequests();
+      if(isHidden){
+        box.hidden=false;
+        box.style.setProperty("display","block","important");
+        box.style.setProperty("visibility","visible","important");
+        box.style.setProperty("opacity","1","important");
+        arrow.textContent="⌄";
+
+        if(typeof window.loadRequests==="function"){
+          window.loadRequests();
+        }
+
+        if(typeof window.loadSentFriendRequests==="function"){
+          window.loadSentFriendRequests();
+        }
+      }else{
+        box.style.setProperty("display","none","important");
+        arrow.textContent="›";
       }
+
+      return false;
     };
 
     return true;
   }
 
   if(!setupRkyFriendRequests()){
-    document.addEventListener(
-      "DOMContentLoaded",
-      setupRkyFriendRequests,
-      {once:true}
-    );
+    document.addEventListener("DOMContentLoaded",setupRkyFriendRequests,{once:true});
     setTimeout(setupRkyFriendRequests,500);
+    setTimeout(setupRkyFriendRequests,1500);
   }
 })();
 </script>
@@ -17134,7 +17136,10 @@ setInterval(function(){
       window.loadRequests();
     }
 
-    /* Keep request section in place; do not jump to top. */
+    content.scrollIntoView({
+      behavior:"smooth",
+      block:"start"
+    });
   };
 
   document.addEventListener("DOMContentLoaded",function(){
@@ -20097,162 +20102,170 @@ rkySentRequestsSection,
 
 
 
-<!-- RKY FRIEND HOME FLOW FINAL FIX v5 -->
-<style id="rky-friend-home-flow-final-v5">
-/* Keep the secondary visible-friends renderer out of the home flow. */
-#rkyVisibleFriends{display:none !important;visibility:hidden !important;opacity:0 !important;}
 
-/* Request section is a normal inline section, never a popup. */
-#rkyCircleRequestsToggle{
+<!-- RKY-COMPLETE-FRIEND-REQUEST-INLINE-FIX -->
+<style id="rky-complete-friend-request-inline-css">
+#rkyCircleRequestsToggle.rky-inline-request-visible{
   display:flex !important;
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  width:100% !important;
-  box-sizing:border-box !important;
+  visibility:visible !important;
+  opacity:1 !important;
 }
-#rkyCircleRequestsContent{
-  position:relative !important;
-  top:auto !important;
-  left:auto !important;
-  right:auto !important;
-  transform:none !important;
-  width:100% !important;
-  box-sizing:border-box !important;
+#rkyCircleRequestsContent.rky-inline-request-visible{
+  display:block !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
 }
-#rkySentRequestsSection{
-  position:relative !important;
-  width:100% !important;
-  box-sizing:border-box !important;
+#rkyCircleRequestsContent.rky-inline-request-visible #requestList{
+  display:block !important;
+  visibility:visible !important;
 }
-
-/* Old popup is disabled; requests now open inline. */
-#rkyFriendPopup{display:none !important;visibility:hidden !important;opacity:0 !important;}
-#rkyConnectionsSection{display:none !important;}
-
-/* Group is a separate section. */
-#rkyGroupsSection{
-  position:relative !important;
-  width:100% !important;
-  box-sizing:border-box !important;
-  margin:18px 0 12px !important;
-  padding-top:12px !important;
-  border-top:1px solid rgba(120,120,140,.16) !important;
+#rkyCircleRequestsContent .rky-request-actions{
+  display:flex !important;
+  gap:6px !important;
+  flex-shrink:0 !important;
+}
+#rkyCircleRequestsContent .rky-request-actions button{
+  margin:0 !important;
+  padding:7px 10px !important;
+  border:0 !important;
+  border-radius:9px !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:700 !important;
+  cursor:pointer !important;
+}
+#rkyCircleRequestsContent .rky-request-accept{background:#078f78 !important;}
+#rkyCircleRequestsContent .rky-request-reject{background:#e53935 !important;}
+@media(max-width:500px){
+  #rkyCircleRequestsContent .rky-request-actions button{padding:7px 8px !important;font-size:11px !important;}
 }
 </style>
-
-<script id="rky-friend-home-flow-final-v5-js">
+<script id="rky-complete-friend-request-inline-js">
 (function(){
   'use strict';
 
   function el(id){ return document.getElementById(id); }
 
-  function arrange(){
-    var chat=el('chatBox');
-    var friendList=el('friendList');
-    if(!chat || !friendList) return;
-
+  function showInlineRequests(load){
     var toggle=el('rkyCircleRequestsToggle');
     var content=el('rkyCircleRequestsContent');
+    var list=el('requestList');
+    var arrow=el('rkyCircleRequestsArrow');
     var sent=el('rkySentRequestsSection');
-    var groups=el('rkyGroupsSection');
-    var popup=el('rkyFriendPopup');
     var connections=el('rkyConnectionsSection');
-    var visible=el('rkyVisibleFriends');
 
-    /* Exact home order: Profile area -> Requests -> Friends -> Groups. */
-    if(toggle) chat.insertBefore(toggle, friendList);
-    if(content) chat.insertBefore(content, friendList);
-    if(sent) chat.insertBefore(sent, friendList);
-    if(groups) chat.insertBefore(groups, el('friendProfile') || null);
+    if(toggle){
+      toggle.classList.add('rky-inline-request-visible');
+      toggle.style.setProperty('display','flex','important');
+      toggle.style.setProperty('visibility','visible','important');
+      toggle.style.setProperty('opacity','1','important');
+    }
+    if(content){
+      content.classList.add('rky-inline-request-visible');
+      content.style.setProperty('display','block','important');
+      content.style.setProperty('visibility','visible','important');
+      content.style.setProperty('opacity','1','important');
+      content.style.setProperty('height','auto','important');
+      content.style.setProperty('max-height','none','important');
+      content.style.setProperty('overflow','visible','important');
+    }
+    if(list) list.style.setProperty('display','block','important');
+    if(arrow) arrow.textContent='⌄';
+    if(sent){ sent.style.setProperty('display','block','important'); }
+    if(connections){ connections.style.setProperty('display','block','important'); }
 
-    /* If friendProfile exists before groups, put groups immediately after friendList. */
-    if(groups && friendList && friendList.parentNode === chat){
-      if(friendList.nextSibling !== groups){
-        chat.insertBefore(groups, friendList.nextSibling);
-      }
+    if(load!==false){
+      if(typeof window.loadRequests==='function') window.loadRequests();
+      if(typeof window.loadSentFriendRequests==='function') window.loadSentFriendRequests();
+      if(typeof window.loadRkyConnections==='function') window.loadRkyConnections();
     }
 
-    if(popup){
-      popup.style.setProperty('display','none','important');
-      popup.classList.remove('rky-inline-open');
+    if(content){
+      try{ content.scrollIntoView({behavior:'smooth',block:'nearest'}); }catch(e){}
     }
-    if(connections) connections.style.setProperty('display','none','important');
-    if(visible){
-      visible.style.setProperty('display','none','important');
-      visible.style.setProperty('visibility','hidden','important');
-      visible.style.setProperty('opacity','0','important');
+  }
+
+  function hideInlineRequests(){
+    var content=el('rkyCircleRequestsContent');
+    var arrow=el('rkyCircleRequestsArrow');
+    if(content){
+      content.classList.remove('rky-inline-request-visible');
+      content.style.setProperty('display','none','important');
     }
+    if(arrow) arrow.textContent='›';
   }
 
   window.toggleRkyFriendRequests=function(){
-  var content=document.getElementById('rkyCircleRequestsContent');
-  var arrow=document.getElementById('rkyCircleRequestsArrow');
-  if(!content) return;
-
-  var hidden=getComputedStyle(content).display==='none';
-
-  content.style.setProperty('display', hidden ? 'block' : 'none', 'important');
-
-  if(arrow){
-    arrow.textContent=hidden ? '⌄' : '›';
-  }
-
-  if(hidden && typeof window.loadRequests==='function'){
-    window.loadRequests();
-  }
-};
-
-window.toggleRkyCircleRequests=window.toggleRkyFriendRequests;
-
-  window.rkyShowRequests=function(){
-    arrange();
     var content=el('rkyCircleRequestsContent');
-    var arrow=el('rkyCircleRequestsArrow');
     if(!content) return;
-    content.style.setProperty('display','block','important');
-    content.style.setProperty('visibility','visible','important');
-    content.style.setProperty('opacity','1','important');
-    if(arrow) arrow.textContent='⌄';
-    if(typeof window.loadRequests==='function') window.loadRequests();
-    /* Intentionally no scrollIntoView: stay where the user is. */
+    var hidden=getComputedStyle(content).display==='none';
+    if(hidden) showInlineRequests(true);
+    else hideInlineRequests();
   };
+  window.toggleRkyCircleRequests=window.toggleRkyFriendRequests;
+  window.rkyShowRequests=function(){ showInlineRequests(true); };
 
-  var previousMoreAction=window.rkyMoreAction;
-
+  /* Final owner of the top 3-dot actions. Requests stay inline; other existing actions are preserved. */
   window.rkyMoreAction=function(action){
     if(typeof window.closeRkyMoreMenu==='function') window.closeRkyMoreMenu();
 
     if(action==='requests'){
-      arrange();
-      window.rkyShowRequests();
+      showInlineRequests(true);
       return;
     }
     if(action==='profile'){
       if(typeof window.openProfileSettings==='function') window.openProfileSettings();
       return;
     }
-    if(action==='logout'){
-      if(typeof window.logout==='function') window.logout();
+    if(action==='callHistory'){
+      var panel=el('callHistoryPanel');
+      var chat=el('chatBox');
+      var open=!!(chat && chat.classList.contains('rky-show-call-history'));
+      if(chat) chat.classList.toggle('rky-show-call-history',!open);
+      if(panel) panel.style.setProperty('display',open?'none':'block','important');
       return;
     }
-    /* Preserve every existing non-request action. */
-    if(typeof previousMoreAction==='function') return previousMoreAction.apply(this,arguments);
+    if(action==='search'){
+      var input=el('searchMessage');
+      if(input){
+        input.style.setProperty('display','block','important');
+        input.style.setProperty('visibility','visible','important');
+        try{ input.focus(); input.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){}
+      }
+      return;
+    }
+    if(action==='starred'){
+      if(typeof window.showStarredMessages==='function') window.showStarredMessages();
+      return;
+    }
+    if(action==='clear'){
+      if(typeof window.clearCurrentChat==='function') window.clearCurrentChat();
+      return;
+    }
+    if(action==='logout'){
+      if(typeof window.logout==='function') window.logout();
+    }
   };
 
-  function boot(){
-    arrange();
-    var content=el('rkyCircleRequestsContent');
+  function install(){
+    var toggle=el('rkyCircleRequestsToggle');
     var arrow=el('rkyCircleRequestsArrow');
-    if(content && getComputedStyle(content).display==='none' && arrow) arrow.textContent='›';
+    if(!toggle || !arrow) return false;
+    toggle.type='button';
+    toggle.onclick=function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      window.toggleRkyFriendRequests();
+    };
+    return true;
   }
 
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',boot);
-  else boot();
-  window.addEventListener('load',boot);
-
+  if(!install()) document.addEventListener('DOMContentLoaded',install,{once:true});
+  setTimeout(install,300);
+  setTimeout(install,1000);
 })();
 </script>
 

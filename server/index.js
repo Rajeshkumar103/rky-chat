@@ -2968,7 +2968,36 @@ console.log("📞 SENDING incoming-call to:", to);
 
     /* 👥 GROUP CALL SIGNALING */
 
-    socket.on("group-call-join", data => {
+
+/* 📡 GROUP CALL ONLINE/OFFLINE STATUS */
+socket.on("group-call-check-users", data => {
+  const groupId = Number(data && data.groupId);
+  const username = String(data && data.username || "").trim();
+
+  if(!groupId || !username) return;
+
+  const members = db.prepare(
+    "SELECT username FROM group_members WHERE group_id=? AND username!=?"
+  ).all(groupId, username);
+
+  const status = members.map(member => ({
+    username: member.username,
+    online: !!onlineCallUsers.get(member.username)
+  }));
+
+  socket.emit("group-call-users-status", {
+    groupId,
+    users: status
+  });
+
+  console.log(
+    "📡 Group call users status:",
+    username,
+    status
+  );
+});
+
+socket.on("group-call-join", data => {
         const groupId = Number(data && data.groupId);
         const username = String(data && data.username || "").trim();
 
@@ -2986,10 +3015,36 @@ console.log("📞 SENDING incoming-call to:", to);
         socket.data.groupCallGroupId = groupId;
         socket.data.groupCallUsername = username;
 
+        /* 📲 GROUP CALL INCOMING INVITE */
+        const groupMembers = db.prepare(
+            "SELECT username FROM group_members WHERE group_id=? AND username!=?"
+        ).all(groupId, username);
+
+        for(const member of groupMembers){
+            const targetSocket = onlineCallUsers.get(member.username);
+
+            if(targetSocket){
+                io.to(targetSocket).emit("group-call-invite", {
+                    groupId: groupId,
+                    from: username,
+                    mode: String(data && data.mode || "audio")
+                });
+            }
+        }
+
         socket.to(room).emit("group-call-user-joined", {
             groupId: groupId,
             username: username
         });
+
+        console.log(
+            "📲 Group call invite:",
+            username,
+            "group:",
+            groupId,
+            "members:",
+            groupMembers.map(m => m.username)
+        );
 
         console.log(
             "👥 Group call joined:",

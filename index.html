@@ -1382,7 +1382,7 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
     <span
       id="friendRequestBadge"
       style="
-        display:none;
+        display:flex;
         min-width:20px;
         height:20px;
         padding:0 6px;
@@ -1404,21 +1404,33 @@ box-shadow:0 3px 12px rgba(0,0,0,.08);
 function toggleRkyFriendRequests(){
     const box = document.getElementById("rkyCircleRequestsContent");
     const arrow = document.getElementById("rkyCircleRequestsArrow");
+    const toggle = document.getElementById("rkyCircleRequestsToggle");
 
-    if(!box) return;
+    if(!box) {
+        console.error("Rky Circle Requests content not found");
+        return;
+    }
 
-    const opening = box.style.display === "none" || box.style.display === "";
+    const opening =
+        getComputedStyle(box).display === "none";
 
-    box.style.display = opening ? "block" : "none";
+    box.style.setProperty("display", opening ? "block" : "none", "important");
 
     if(arrow){
         arrow.textContent = opening ? "⌄" : "›";
     }
 
-    if(opening && typeof loadRequests === "function"){
-        loadRequests();
+    if(toggle){
+        toggle.setAttribute("aria-expanded", opening ? "true" : "false");
+    }
+
+    if(opening && typeof window.loadRequests === "function"){
+        window.loadRequests();
     }
 }
+
+window.toggleRkyFriendRequests = toggleRkyFriendRequests;
+window.toggleRkyCircleRequests = toggleRkyFriendRequests;
 </script>
 
 <div id="rkyCircleRequestsContent"
@@ -20175,19 +20187,25 @@ rkySentRequestsSection,
     }
   }
 
-  window.toggleRkyCircleRequests=function(){
-    var content=el('rkyCircleRequestsContent');
-    var arrow=el('rkyCircleRequestsArrow');
-    if(!content) return;
+  window.toggleRkyFriendRequests=function(){
+  var content=document.getElementById('rkyCircleRequestsContent');
+  var arrow=document.getElementById('rkyCircleRequestsArrow');
+  if(!content) return;
 
-    var hidden=getComputedStyle(content).display==='none';
-    content.style.setProperty('display', hidden ? 'block' : 'none', 'important');
-    if(arrow) arrow.textContent=hidden ? '⌄' : '›';
+  var hidden=getComputedStyle(content).display==='none';
 
-    if(hidden && typeof window.loadRequests==='function'){
-      window.loadRequests();
-    }
-  };
+  content.style.setProperty('display', hidden ? 'block' : 'none', 'important');
+
+  if(arrow){
+    arrow.textContent=hidden ? '⌄' : '›';
+  }
+
+  if(hidden && typeof window.loadRequests==='function'){
+    window.loadRequests();
+  }
+};
+
+window.toggleRkyCircleRequests=window.toggleRkyFriendRequests;
 
   window.rkyShowRequests=function(){
     arrange();
